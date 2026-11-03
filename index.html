@@ -648,9 +648,9 @@ function passo2d(h){
  const tx=IN.tx;if(Math.abs(tx)>.08)p.verso=Math.sign(tx);
  p.px=p.x;p.py=p.y;const vy0=p.vy;
  p.animT+=h;const su0=!!p.ultimoSuolo;
- p.carica=Math.abs(tx)>.6&&su0?p.carica+h:(Math.abs(tx)>.6?p.carica:0);
- if(!p.rotola&&(p.carica>.25||p.scatto>0)){p.rotola=true;p.anim='chiude';p.animT=p.scatto>0?.1:0;p.Wv-=6;schizzi2(p.x,p.y-p.R,5,amico().colore,3);}
- else if(p.rotola&&su0&&Math.abs(p.vx)<2.5&&p.scatto<=0){p.rotola=false;p.anim='apre';p.animT=0;p.carica=0;p.Wv+=4;}
+ p.carica=Math.abs(tx)>.3?p.carica+h:0;
+ if(!p.rotola&&(p.carica>.15||Math.abs(p.vx)>3||p.scatto>0)){p.rotola=true;p.anim='chiude';p.animT=p.scatto>0?.1:0;p.Wv-=6;schizzi2(p.x,p.y-p.R,5,amico().colore,3);}
+ else if(p.rotola&&su0&&Math.abs(p.vx)<1.2&&Math.abs(tx)<.25&&p.scatto<=0){p.rotola=false;p.anim='apre';p.animT=0;p.carica=0;p.Wv+=4;}
  if(p.scatto>0){p.scatto-=h;p.vx=p.verso*(p.vS||11);p.vy=Math.max(p.vy,0);if(Math.random()<.5)schizzi2(p.x,p.y,1,amico().colore,1);if(p.scatto<=0)p.vx*=.6;
   const q=Math.round(p.x+p.verso*.8),r=Math.round(p.y);if(cel(q,r)==='C')rompiCassa(q,r);}
  else{
