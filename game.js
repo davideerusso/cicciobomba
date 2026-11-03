@@ -47,7 +47,7 @@ const ANAN=document.createElement('canvas');ANAN.width=ANAN.height=96;(function(
 const PIZZA=new Image();PIZZA.src='assets/pizza.webp';
 const ICONE={};function icona(n){if(!ICONE[n]&&KIT.complete){const c=document.createElement('canvas');c.width=c.height=64;sp(c.getContext('2d'),n,0,0,64,64);ICONE[n]=c.toDataURL();}return ICONE[n]||'';}
 /* ---------- PERSONAGGIO: riga 0 fermo, riga 1 camminata, riga 2 si chiude (0-2) e rotola (3-6) ---------- */
-const VITE_INFINITE=true; /* per le prove: rimettere false per tornare ai cuori */
+const VITE_INFINITE=false; /* per le prove: true per non perdere mai cuori */
 const FOGLIO=new Image();FOGLIO.src='assets/personaggio.webp';
 const FOGLIO2=new Image();FOGLIO2.src='assets/personaggio2.webp'; /* riga 0 girata, 1 camminata, 2 corsa, 3 salto (0-4) e mazza (5-7) */
 const CELLA2=200;
@@ -135,7 +135,7 @@ function suono(f,d,tipo,vol,f2){if(!AC||!S.audio)return;try{const o=AC.createOsc
 function vibra(ms){try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}}
 
 /* ---------- STATO ---------- */
-const G={carica:0,stato:'menu',modo:'menu',t:0,mondo:0,cuori:5,gettoni:0,uccisi:0,tempo:0,scudo:false,stella:0,avanz:0,scossa:0};
+const G={carica:0,stato:'menu',modo:'menu',t:0,mondo:0,cuori:3,gettoni:0,uccisi:0,tempo:0,scudo:false,stella:0,avanz:0,scossa:0};
 
 /* ---------- COMANDI ---------- */
 const IN={tx:0,tz:0,tiltX:0,tiltZ:0,tiltOn:false,ricevuto:false,stickX:0,stickZ:0};
@@ -190,7 +190,7 @@ function leggiInput(dt){
 }
 
 /* ---------- CUORI ---------- */
-const MAXC=9;
+const MAXC=3;
 function togliCuore(){if(VITE_INFINITE)return;G.cuori--;hud();if(G.cuori<=0)fine(false);}
 
 /* ---------- CORSA 2D ---------- */
@@ -209,12 +209,18 @@ const PEZZI={
  ricci:["       c    c           ","      -------           ","                        ","   r          r         ","###########   ##########"],
  sciame:["    f       f      f    ","                        ","  c    c  H    c    c   ","  ------- ---- -------  ","                        ","     e        ^^^       ","########################"],
 intreccio:["                                                    ","                                        D           ","                                        D           ","                                        D           ","                       cccccc           D           ","                      --------          D           ","                                        D           ","                                        D           ","           O  /%          B             D           ","     ##############xxxxx######  ###     D           ","                                        D           ","                                        D           ","   B    c   c   e    c   ce   PP        D  cccc  e  ","####################################################"],
- ponte:["                                                  ","                                                  ","                                                  ","                                                  ","                                      ccccc       ","                                  --#########     ","                                    X       #     ","                                --- X       #     ","                                    X ccccc #     ","                             ---    X       #     ","           c c c c c c c            X H T U #  e  ","##########xxxxxxxxxxxxxxxx########################"],
- valanga:["                                                            ","                                                            ","                                                            ","                                                            ","                                                            ","          ######%                                           ","          #######%                                          ","          ########% c                             ####      ","        B #########% e C                          X  #      ","    ####################%                       --X  #      ","    #####################% c       c   c   c      Xcc#      ","    ######################% e e               --  X  #      ","  B ###########################%    e C e e C e   XHT#      ","############################################################"],
+ approdo:["                                                          ","                                                          ","                                                          ","                                                          ","                       ccc             ccc                ","                                                          ","                   e       e  ^^     e                    ","              #######yy##########yy##########       cc    ","              ##                      c                   ","    ccc      ###      ccccccc  H    ccccc        ^^  r !! ","##########   #############################################"],
+ magazzino:["                                                              ","                                                              ","                                          D                   ","     #########                            D                   ","     #                                    D                   ","     # cccc                               D                   ","     #  Tccc            ccccccc           D                   ","     #########------------------          D                   ","         f            f                   D                   ","                                          D                   ","          O  /%               B           D                   ","     #############xxxxxxxxxx####  ###     D                   ","                                          D                   ","                                          D                   ","   B    e       e   ^^  e   r   PP        D  ccccc  e   e !!  ","##############################################################"],
+ crollo:["                                                            ","                                                            ","                                                            ","                                                            ","                                             ccecc          ","                                         --#########        ","                                           X       #        ","              f           f            --- X       #        ","                                           X ccccc #        ","                                    ---    X       #        ","         c c c c c   c c c c c c           X H U T #  !!! e ","########xxxxxxxxxxx  xxxxxxxxxxxx###########################"],
+ scalata:["                                            ","                                            ","                                            ","####                        ccccc cccc      ","####                       -------####      ","####                              ####      ","####                  ----        ####      ","# c               cc              ####      ","#Hc              xxxx             ####      ","####-----                         ####      ","####        ----                  ####      ","####     f       cc               ####      ","####            xxxx              ####      ","                                  ####      ","           ----                   ####      ","       cc                         ####      ","      ----                        ####      ","              e         r   ^^^   ####  ^^ e","############################################"],
+ artiglieria:["                                                      ","                                                      ","                                                      ","                                                      ","                                                      ","                                         ccTcc        ","                                        -------       ","                                                      ","                     cc                               ","                      g                cccBcc         ","                C   ####          cc  --------        ","       g cc   ----- ####        g                     ","      ###   C       ####       ###  C      #          ","   e  ###  CC  e    #### er ^^ ### CCC   B #  e   e   ","######################################################"],
+ valanga:["                                                                      ","                                                                      ","                                                                      ","                                                                      ","                                                                      ","             c                                                        ","          ######%                                                     ","          #######%                                                    ","          ########% c                                     #####       ","        B #########% e C                                  X   #       ","    ####################%                              -- X   #       ","    #####################% eC     c    c      c           Xccc#       ","    #########################%                      --    X   #       ","  B ##########################%  e C e  e C e  e C e      XH T#   e   ","######################################################################"],
  gradini:["                 c c    ","               #####    ","            ###         ","    c   ###       f     ","     ###                ","  ###            ^^     ","########################"]
 };
+/* pareti finte: rettangoli [x0,y0,x1,y1] in caselle del pezzo; sembrano terra ma si attraversano */
+const FINTI={"approdo":[[16,3,44,4]],"magazzino":[[6,11,13,13]],"scalata":[[1,12,3,13]],"artiglieria":[[40,3,43,4]]};
 const CORSE=[
- ['prato','buca','spine','casse','collina','prato','sciame','buca','torre','spine','collina','casse','sciame'],
+ ['approdo','magazzino','crollo','scalata','artiglieria','valanga'],
  ['duePiani','tempo','ricci','torre','fosso','casse','cannoni','gradini','buca','tempo','duePiani','sciame','isole'],
  ['cannoni','ricci','isole','tempo','fosso','sciame','gradini','cannoni','torre','ricci','tempo','duePiani','isole','fosso']
 ];
@@ -228,7 +234,7 @@ addEventListener('resize',suRidimensiona);addEventListener('orientationchange',(
 document.addEventListener('focusout',()=>setTimeout(suRidimensiona,250));
 function costruisci(i,lista){
  const g=[];for(let y=0;y<ALTO;y++)g.push([]);
- const m={i,g,w:0,oggetti:[],nemici:[],colpi:[],spine:{},fine:0,gusci:[],pesi:[],pulsanti:[],porte:[],crolli:{},pezzi:0,nomi:[]};
+ const m={i,g,w:0,oggetti:[],nemici:[],colpi:[],spine:{},fine:0,gusci:[],pesi:[],pulsanti:[],porte:[],crolli:{},pezzi:0,nomi:[],finti:[],fintoSet:new Set()};
  const riga=(y,x,t)=>{g[y][x]=t;};
  const pezzo=(rows)=>{
   const n=rows.length,w=rows[0].length,base=m.w;
@@ -242,7 +248,7 @@ function costruisci(i,lista){
    else if(t==='O')m.pesi.push({x,y:y+.1,x0:x,y0:y+.1,px:x,py:y,vx:0,vy:0,suolo:null});
    else if(t==='P'){riga(y,x,'P');m.pulsanti.push({x,y,g:m.pezzi,giu:false});}
    else if(t==='D'){riga(y,x,'D');m.porte.push({x,y,g:m.pezzi});}
-   else if(t==='x'){riga(y,x,'x');m.crolli[y+'_'+x]={x,y,t:-1,via:0};}
+   else if(t==='x'||t==='y'){riga(y,x,t);m.crolli[y+'_'+x]={x,y,t:-1,via:0,c:t};}
    else if(t!==' ')riga(y,x,t);
    if(r===n-1&&t==='#'){riga(1,x,'#');riga(0,x,'#');}
   }}
@@ -250,7 +256,7 @@ function costruisci(i,lista){
  };
  pezzo(["          ","##########"]);
  m.start={x:3,y:2.97};
- (lista||CORSE[i]).forEach(n=>{m.nomi.push({x:m.w,n});pezzo(PEZZI[n]);});
+ (lista||CORSE[i]).forEach(n=>{m.nomi.push({x:m.w,n});(FINTI[n]||[]).forEach(f=>{const r=[m.w+f[0],f[1],m.w+f[2],f[3]];m.finti.push(r);for(let y=r[1];y<=r[3];y++)for(let x=r[0];x<=r[2];x++)m.fintoSet.add(y+'_'+x);});pezzo(PEZZI[n]);});
  pezzo(["                ","                ","################"]);
  m.fine=m.w-6;
  for(let y=0;y<ALTO;y++)for(let x=0;x<m.w;x++)if(g[y][x]===undefined)g[y][x]=' ';
@@ -258,7 +264,7 @@ function costruisci(i,lista){
  return m;
 }
 const cel=(x,y)=>{const r=M.g[y];return r?(r[x]||' '):' ';};
-const pieno=t=>t==='#'||t==='C'||t==='D'||t==='x'||t==='X';
+const pieno=t=>t==='#'||t==='C'||t==='D'||t==='x'||t==='y'||t==='X';
 function urta(o,R){
  o.suolo=null;
  const cx=Math.round(o.x),cy=Math.round(o.y);
@@ -315,18 +321,18 @@ function premi(k){
  sfx('magic')||suono(440,.3,'triangle',.1,880);vibra(40);if(n)avviso('La porta si è aperta!',1800);
 }
 /* blocchi che crollano: mezzo secondo dopo che ci sali cadono, e tornano dopo quattro secondi */
-function calpesta(x,yPiedi){const r=Math.round(yPiedi-.3);for(const dx of[-.35,0,.35]){const q=Math.round(x+dx),k=M.crolli[r+'_'+q];if(k&&k.t<0&&M.g[r][q]==='x'){k.t=0;suono(300,.08,'square',.05,200);}}}
+function calpesta(x,yPiedi){const r=Math.round(yPiedi-.3);for(const dx of[-.35,0,.35]){const q=Math.round(x+dx),k=M.crolli[r+'_'+q];if(k&&k.t<0&&M.g[r][q]===k.c){k.t=0;if(k.c==='x')suono(300,.08,'square',.05,200);}}}
 function passoCrolli(dt){
  const p=P2;
  for(const key in M.crolli){const k=M.crolli[key];
-  if(M.g[k.y][k.x]==='x'){if(k.t>=0){k.t+=dt;if(k.t>.5){M.g[k.y][k.x]=' ';k.via=0;schizzi2(k.x,k.y,8,'#c28a48',4);suono(160,.15,'square',.07,70);}}}
-  else{k.via+=dt;const libero=Math.hypot(p.x-k.x,p.y-k.y)>1.2&&M.pesi.every(a=>Math.hypot(a.x-k.x,a.y-k.y)>1.2);if(k.via>4&&libero){M.g[k.y][k.x]='x';k.t=-1;}}}
+  if(M.g[k.y][k.x]===k.c){if(k.t>=0){k.t+=dt;if(k.t>(k.c==='y'?.8:.5)){M.g[k.y][k.x]=' ';k.via=0;schizzi2(k.x,k.y,8,'#c28a48',4);suono(160,.15,'square',.07,70);}}}
+  else{k.via+=dt;const libero=Math.hypot(p.x-k.x,p.y-k.y)>1.2&&M.pesi.every(a=>Math.hypot(a.x-k.x,a.y-k.y)>1.2);if(k.via>4&&libero){M.g[k.y][k.x]=k.c;k.t=-1;}}}
 }
 /* muri crepati: solo l'esplosione li apre */
 function rompiCrepa(x,y){M.g[y][x]=' ';schizzi2(x,y,10,'#b0643a',6);if(!M.dettaCrepa){M.dettaCrepa=true;avviso('Muro aperto: dentro c’è una stanza segreta!',2200);}}
 /* combo: nemici e casse travolti uno dopo l'altro valgono di più */
 function combo(){if(P2.slancio>0)P2.slancio=Math.max(P2.slancio,.8);G.combo=G.comboT>0?(G.combo||0)+1:1;G.comboT=1.5;if(G.combo>=2){G.gettoni+=G.combo;$('gett').textContent=G.gettoni;G.comboV={n:G.combo,t:G.t};suono(400+G.combo*90,.12,'triangle',.09,800+G.combo*120);}}
-const AIUTI={intreccio:'Inclina per far scivolare il peso: se cade sul pulsante, la porta si apre',ponte:'Il ponte crolla appena ci sali: non fermarti! Il muro crepato si apre solo con l’esplosione',valanga:'Lanciati giù per la discesa: a tutta velocità travolgi nemici e casse'};
+const AIUTI={magazzino:'Inclina per far scivolare il peso: se cade sul pulsante, la porta si apre',crollo:'Il ponte crolla appena ci sali: non fermarti!',valanga:'Lanciati giù per la discesa: a tutta velocità travolgi nemici e casse'};
 function passo2d(h){
  const p=P2;p.cd=Math.max(0,p.cd-h);if(p.cd===0)$('aSin').classList.add('pronto');p.inv=Math.max(0,p.inv-h);p.buf=Math.max(0,p.buf-h);p.coyote=Math.max(0,p.coyote-h);
  const tx=IN.tx;if(Math.abs(tx)>.08)p.verso=Math.sign(tx);
@@ -354,7 +360,7 @@ function passo2d(h){
  if(p.suolo&&!p.ultimoSuolo&&vy0<-12)botto();
  if(p.suolo&&!p.ultimoSuolo&&vy0<-4)p.atterra=.2;p.atterra=Math.max(0,p.atterra-h);p.fermoT=p.suolo&&Math.abs(p.vx)<.25&&!p.rotola?p.fermoT+h:0;if(p.fermoT>6.3)p.fermoT=0;
  if(p.suolo){if(vy0<-7&&!p.ultimoSuolo){p.Wv-=Math.min(14,-vy0*.9);suono(120,.08,'sine',.08);}p.coyote=.1;
-  const q=Math.round(p.x),r=Math.round(p.y-p.R-.3);if(p.suolo.y>.9&&pieno(cel(q,r))&&pieno(cel(q-1,r))&&pieno(cel(q+1,r))){p.sx=q;p.sy=r+1.2;}}
+  const q=Math.round(p.x),r=Math.round(p.y-p.R-.3);if(p.suolo.y>.9&&cel(q,r)==='#'&&cel(q-1,r)==='#'&&cel(q+1,r)==='#'){p.sx=q;p.sy=r+1.2;}}
  /* cadendo da un punto più alto fa un rimbalzino */
  if(p.suolo&&!p.ultimoSuolo&&vy0<-10.5&&p.vy<=0){p.vy=Math.min(-vy0*.22,3);p.y+=.02;p.suolo=null;}
  p.ultimoSuolo=p.suolo;
@@ -371,8 +377,8 @@ function passo2d(h){
 }
 function passoOggetti(dt){
  const p=P2;G.comboT=Math.max(0,(G.comboT||0)-dt);if(M.crolli)passoCrolli(dt);
- if(M.prova)for(const q of M.nomi)if(!q.detto&&p.x>q.x+1.5&&AIUTI[q.n]){q.detto=true;avviso(AIUTI[q.n],3800);}
- if(M.pesi&&!M.dettaCrepa&&!M.vistaCrepa&&cel(Math.round(p.x+p.verso*1.2),Math.round(p.y))==='X'){M.vistaCrepa=true;avviso('Muro crepato: si apre solo con l’esplosione. Mangia pizza e sbattici contro forte',3000);}
+ for(const q of M.nomi)if(!q.detto&&p.x>q.x+1.5&&AIUTI[q.n]){q.detto=true;avviso(AIUTI[q.n],3800);}
+ if(!M.boss&&!M.dettaCrepa&&!M.vistaCrepa&&cel(Math.round(p.x+p.verso*1.2),Math.round(p.y))==='X'){M.vistaCrepa=true;avviso('Muro crepato: si apre solo con l’esplosione. Mangia pizza e sbattici contro forte',3000);}
  for(let i=M.oggetti.length-1;i>=0;i--){const o=M.oggetti[i];if(Math.abs(o.x-p.x)<.75&&Math.abs(o.y-p.y)<.8){raccogli(o);M.oggetti.splice(i,1);}}
  for(const k in M.spine){const a=M.spine[k];if(a.t==='!'){const on=Math.sin(G.t*1.4+a.fase)>0;a.s=lerp(a.s,on?1:.1,1-Math.exp(-dt*12));}}
 }
@@ -424,7 +430,7 @@ function cuoreP(c,x,y,s){c.beginPath();c.moveTo(x,y+s*.55);c.bezierCurveTo(x-s*1
 function fondale(c,m){const h=Math.max(V.H*.66,200),w=h,f=FONDI[m.fondo],nv=FONDI.clouds;c.fillStyle='#c4e2ff';c.fillRect(0,0,V.W,V.H);
  if(nv.complete){const o=((V.cx*V.ts0*.1)%w+w)%w;for(let x=-o;x<V.W;x+=w)c.drawImage(nv,x,V.H-2*h+1,w+1,h);}
  if(f.complete){const o=((V.cx*V.ts0*.2)%w+w)%w;for(let x=-o;x<V.W;x+=w)c.drawImage(f,x,V.H-h,w+1,h);}}
-function solidoK(x,y){if(y<0)return cel(x,0)==='#';const t=cel(x,y);return t==='#'||t==='/'||t==='%';}
+function solidoK(x,y){if(y<0)return cel(x,0)==='#';const t=cel(x,y);return t==='#'||t==='/'||t==='%'||t==='y'||!!(M.fintoSet&&M.fintoSet.has(y+'_'+x));}
 function nomeTile(x,y,k){
  const u=solidoK(x,y+1),d=y<=0||solidoK(x,y-1),l=solidoK(x-1,y),r=solidoK(x+1,y);let n;
  if(!u&&!d)n=l&&r?'horizontal_middle':l?'horizontal_right':r?'horizontal_left':'block';
@@ -435,7 +441,7 @@ function nomeTile(x,y,k){
  return 'terrain_'+k+'_'+n;
 }
 function disegna2d(){
- const c=ctx2,m=MONDI[M.i],ts=V.ts,W=V.W,H=V.H,p=P2,k=m.kit;
+ const c=ctx2,m=MONDI[M.i],ts=V.ts,W=V.W,H=V.H,p=P2,k=m.kit,k0=k;
  c.setTransform(V.dpr,0,0,V.dpr,0,0);fondale(c,m);if(G.scossa>0)c.translate(rnd(-5,5)*G.scossa*2,rnd(-5,5)*G.scossa*2);
  const sx=x=>(x-V.cx)*ts+W/2,sy=y=>H/2-(y-V.cy)*ts,mz=ts+.8,lento=Math.floor(G.t*3)%2,veloce=Math.floor(G.t*7)%2;
  const c0=Math.floor(V.cx-W/2/ts)-1,c1=Math.ceil(V.cx+W/2/ts)+1,y0=Math.floor(V.cy-H/2/ts)-1,y1=Math.ceil(V.cy+H/2/ts)+1;
@@ -450,6 +456,7 @@ function disegna2d(){
   else if(t==='D')sp(c,'lock_blue',a,b,mz,mz);
   else if(t==='X')sp(c,'bricks_brown',a,b,mz,mz);
   else if(t==='P'){const k=M.pulsanti.find(q=>q.x===x&&q.y===y);sp(c,k&&k.giu?'switch_blue_pressed':'switch_blue',a,b,mz,mz);}
+  else if(t==='y'){const k=M.crolli[y+'_'+x],tr=k&&k.t>.4?rnd(-1.5,1.5):0;sp(c,nomeTile(x,y,k0),a+tr,b,mz,mz);}
   else if(t==='x'){const k=M.crolli[y+'_'+x],tr=k&&k.t>=0?rnd(-2,2):0;sp(c,k&&k.t>=0?'block_fall':'block_idle',a+tr,b,mz,mz);}
   else if(t==='-'){const l=cel(x-1,y)==='-',r=cel(x+1,y)==='-';sp(c,'terrain_'+k+'_cloud_'+(l&&r?'middle':l?'right':r?'left':'middle'),a,b,mz,mz);}
   else if(t==='/')sp(c,'terrain_'+k+'_ramp_short_b',a,b,mz,mz,true);
@@ -457,7 +464,7 @@ function disegna2d(){
   else if(t==='B')sp(c,M.molla&&M.molla.k===y+'_'+x&&G.t-M.molla.t<.25?'spring_out':'spring',a,b,mz,mz);
   else if(t==='^'||t==='!'){const s=M.spine[y+'_'+x].s;sp(c,'spikes',a,b+ts*(1-s),mz,mz*s);}
  }
- for(const key in M.crolli||{}){const k=M.crolli[key];if(M.g[k.y][k.x]!=='x'&&k.via>3.3&&k.x>=c0&&k.x<=c1){c.globalAlpha=.35;sp(c,'block_rest',sx(k.x)-ts/2,sy(k.y)-ts/2,mz,mz);c.globalAlpha=1;}}
+ for(const key in M.crolli||{}){const k=M.crolli[key];if(k.c==='x'&&M.g[k.y][k.x]!=='x'&&k.via>3.3&&k.x>=c0&&k.x<=c1){c.globalAlpha=.35;sp(c,'block_rest',sx(k.x)-ts/2,sy(k.y)-ts/2,mz,mz);c.globalAlpha=1;}}
  for(const a of M.pesi||[]){if(a.x<c0-2||a.x>c1+2)continue;const z=ts*1.15;sp(c,'weight',sx(a.x)-z/2,sy(a.y-PESO_R)-z*.98,z,z);}
  for(const o of M.oggetti){if(o.x<c0-1||o.x>c1+1)continue;const a=sx(o.x)-ts/2,b=sy(o.y+Math.sin(G.t*3+o.fase)*.08)-ts/2;
   if(o.tipo==='c'){c.drawImage(PIZZA,a+ts*.03,b+ts*.03,ts*.94,ts*.94);}
@@ -493,6 +500,8 @@ function disegna2d(){
    if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.5,0,6.3);c.stroke();}
    if(G.stella>0){c.strokeStyle=`hsl(${G.t*400%360},95%,62%)`;c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.3,0,6.3);c.stroke();}}}
  if(G.boom){const e=(G.t-G.boom.t)/.55;if(e<1)disegnaEspl(c,sx(G.boom.x),sy(G.boom.y),G.boom.r*ts,e);else G.boom=null;}
+ for(const f of M.finti||[]){if(f[2]<c0||f[0]>c1)continue;const dentro=p.x>f[0]-.7&&p.x<f[2]+.7&&p.y>f[1]-.7&&p.y<f[3]+.7;f.a=lerp(f.a===undefined?1:f.a,dentro?.25:1,.15);c.globalAlpha=f.a;
+  for(let y=f[1];y<=f[3];y++)for(let x=f[0];x<=f[2];x++)if(!pieno(cel(x,y)))sp(c,nomeTile(x,y,k),sx(x)-ts/2,sy(y)-ts/2,mz,mz);c.globalAlpha=1;}
  if(G.comboV&&G.t-G.comboV.t<.9){const e=(G.t-G.comboV.t)/.9,z=ts*(.9+Math.min(1,e*6)*.35+G.comboV.n*.04);c.save();c.globalAlpha=1-e*e;c.font=`400 ${z}px "Bowlby One","Arial Black",sans-serif`;c.textAlign='center';c.lineWidth=z*.16;c.strokeStyle='#2a1a10';c.fillStyle='#f6c445';const tx=sx(p.x),ty=sy(p.y+1.6+e*1.2);c.strokeText('x'+G.comboV.n,tx,ty);c.fillText('x'+G.comboV.n,tx,ty);c.restore();}
  if(p.slancio>0&&!riduci){c.strokeStyle='#ffffffaa';c.lineWidth=3;for(let i=0;i<3;i++){const yy=sy(p.y-.3+i*.3),xx=sx(p.x-Math.sign(p.vx)*(.8+i*.25));c.beginPath();c.moveTo(xx,yy);c.lineTo(xx-Math.sign(p.vx)*ts*(.6+i*.2),yy);c.stroke();}}
  for(const q of goo){c.fillStyle=q.c;c.globalAlpha=clamp(q.v*2.4,0,1);c.beginPath();c.arc(sx(q.x),sy(q.y),q.r*ts,0,6.3);c.fill();}c.globalAlpha=1;
@@ -636,7 +645,7 @@ let tAvv=0;function avviso(t,ms){const a=$('avviso');a.textContent=t;a.hidden=fa
 function giocoUI(on){['hud','tocchi','aSin','aDes'].forEach(i=>$(i).hidden=!on);}
 function dissolvi(fn){G.stato='velo';$('velo').classList.add('on');setTimeout(()=>{fn();$('velo').classList.remove('on');},380);}
 function banner(t){$('grande').textContent=t;$('grande').hidden=false;$('avviso').hidden=true;G.pronti=1.4;G.stato='pronti';}
-function iniziaRun(prova){Object.assign(G,{carica:0,avvisato:false,base:0,cuori:5,gettoni:0,uccisi:0,tempo:0,scudo:false,stella:0,avanz:0,scossa:0,jelly:0,visti:G.visti||0});mostra('');giocoUI(true);hud();aggBarra();$('gett').textContent='0';entraCorsa(0,Array.isArray(prova)?prova:null);sveglia();}
+function iniziaRun(prova){Object.assign(G,{carica:0,avvisato:false,base:0,cuori:3,gettoni:0,uccisi:0,tempo:0,scudo:false,stella:0,avanz:0,scossa:0,jelly:0,visti:G.visti||0});mostra('');giocoUI(true);hud();aggBarra();$('gett').textContent='0';entraCorsa(0,Array.isArray(prova)?prova:null);sveglia();}
 function entraCorsa(i,prova){
  G.modo='2d';G.mondo=i;M=costruisci(i,prova);M.prova=!!prova;goo.length=0;fumi.length=0;polveri.length=0;G.combo=0;G.comboT=0;
  Object.assign(P2,{slancio:0,x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
@@ -681,7 +690,6 @@ function disegnaAmici(){const a=$('listaAmici');a.textContent='';
 async function bloccaOrizzontale(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();await screen.orientation.lock('landscape');}catch(e){}}
 $('bGioca').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();if(S.guidaVista)iniziaRun();else apriGuida(iniziaRun);};
 $('bGuida').onclick=()=>{audioOn();apriGuida(null);};
-$('bProva').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();iniziaRun(['intreccio','ponte','valanga']);};
 $('bAmici').onclick=()=>{audioOn();disegnaAmici();mostra('sAmici');};
 $('amiciChiudi').onclick=()=>mostra('sMenu');
 $('nuovoAmico').addEventListener('submit',e=>{e.preventDefault();const n=$('nomeNuovo').value.trim();if(!n)return;S.amici.push({nome:n,colore:COLORI[S.amici.length%COLORI.length],skin:'classica',foto:null});S.sel=S.amici.length-1;$('nomeNuovo').value='';$('nomeNuovo').blur();salva();vestiPalla();disegnaAmici();});

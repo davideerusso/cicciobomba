@@ -13,7 +13,7 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
 - Testi, nomi di variabili e commenti in italiano. Il codice è compatto (righe lunghe, nomi brevi): mantieni lo stesso stile.
 - Grafica e suoni solo CC0 (Kenney, New Platformer Pack) o disegnati nel codice. Un nuovo asset va in `assets/` e si richiama con un percorso scritto per intero tra apici (`'assets/...'`), altrimenti `build.py` non lo mette nel file unico.
 - Il salvataggio sta nel `localStorage` con chiave `rotolamici-v1`. Se cambi la struttura di `S`, gestisci i salvataggi vecchi.
-- `VITE_INFINITE` in `game.js` è un'impostazione per le prove: con `true` non si perdono cuori.
+- `VITE_INFINITE` in `game.js` è un'impostazione per le prove: con `true` non si perdono cuori. Va lasciata `false`.
 - Quello che va su `main` finisce subito online su GitHub Pages: si pubblica solo dopo averlo provato.
 
 ## Provare il gioco
@@ -24,20 +24,26 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
 - Comandi da tastiera nel browser: frecce per muoversi, spazio per saltare, Shift o X per scattare, Esc per la pausa. Sul telefono si inclina per rotolare e si tocca a destra/sinistra per saltare/scattare.
 - `window.__rotolamici` espone `G`, `P2`, `M` e il resto per le prove da console. Con il pannello del browser nascosto `requestAnimationFrame` si ferma e il gioco non avanza: in quel caso si può usare una copia di `index.html` in `dist/` che sostituisce `requestAnimationFrame` con una coda da far avanzare a mano.
 
-## Tappa di prova: Nuova tappa
-- Si apre dal pulsante "Prova: nuova tappa" nel menu. Usa i pezzi `intreccio`, `ponte` e `valanga` di `PEZZI` e alla fine torna al menu invece di andare al boss (`M.prova`). All'inizio di ogni pezzo compare il suggerimento di `AIUTI`.
-- La Spremiananas (ananas da spingere, cesta, bilance, vasca di succo, crosta, pressa) è stata tolta perché non piaceva: non rimetterla.
-- Caratteri nuovi nei pezzi:
+## Livello 1 (Isola degli Ananas)
+- È la prima corsa, `CORSE[0]`: sei pezzi, `approdo`, `magazzino`, `crollo`, `scalata`, `artiglieria` e `valanga`, poi il boss Ananassone. Gli altri mondi usano ancora i pezzi vecchi; attenzione a non riusarne i nomi (`torre`, `cannoni`… ci sono già).
+- I pezzi e `FINTI` si generano con `tools/livello1.py`. Lo si cambia lì e poi si lancia `python3 tools/livello1.py --scrivi`; senza argomenti disegna i pezzi a schermo.
+- Il livello ha dei segreti che l'utente vuole scoprire da solo: non elencarli e non descriverne la posizione nelle risposte.
+- Difficoltà alta voluta: 3 cuori in tutto (`MAXC=3`), niente vite infinite. Se finisci i cuori riparti dall'inizio.
+- Caratteri nei pezzi:
   - `O` peso: scivola dove inclini il telefono e Matteo lo spinge. Se cade fuori torna al suo posto.
   - `P` pulsante, `D` porta: quando il peso cade sul pulsante, le porte dello stesso pezzo si aprono per sempre. Matteo da solo non lo preme.
   - `x` blocco che crolla: mezzo secondo dopo che ci sali cade, e torna dopo 4 secondi.
-  - `X` muro crepato: si apre solo con l'esplosione e nasconde le stanze segrete.
+  - `y` botola: sembra terra, ma se ti fermi sopra crolla dopo 0,8 secondi.
+  - `X` muro crepato: si apre solo con l'esplosione.
+  - **Pareti finte** (rettangoli in `FINTI`): si disegnano come terra sopra quello che c'è dietro, si attraversano e sbiadiscono quando Matteo ci entra.
 - Valide in tutto il gioco:
   - **Slancio:** rotolando giù per una rampa a più di 6 di velocità, Matteo travolge nemici e casse per circa un secondo, e ogni colpo lo rinnova (`p.slancio`).
   - **Combo:** nemici e casse travolti di fila valgono bocconi in più e mostrano "x2", "x3"… (`combo`).
-  - **Discesa:** in discesa Matteo resta attaccato alla rampa invece di decollare.
+  - **Pendenze:** in pendenza accelera la gravità; inclinare in discesa aggiunge poco, in salita aiuta. In discesa Matteo resta attaccato alla rampa invece di decollare.
+  - **Ripartenza:** dopo una caduta si riparte solo da terra vera (`#`), mai da un blocco che crolla.
 - Gli sprite nuovi vengono dal New Platformer Pack e stanno in `assets/kit2.webp`: pulsante, lucchetto, peso, mattoni e i blocchi con la faccia. `sp()` li disegna quando la voce di `KMAP` ha un terzo valore.
-- I pezzi si generano con uno script Python che li disegna casella per casella. Prima di cambiarli, controlla che le molle portino abbastanza in alto: una molla fa salire di circa 4,9 caselle e un salto di circa 2,3.
+- Misure per disegnare i pezzi: una molla fa salire di circa 4,9 caselle e un salto di circa 2,3; per atterrare su una piattaforma il centro di Matteo deve superarne la cima di 0,46. Ogni salto difficile va provato nel browser.
+- Per provare dei pezzi a parte da console: `__rotolamici.iniziaRun(['nome',...])` (alla fine torna al menu). La Spremiananas è stata tolta perché non piaceva: non rimetterla.
 
 ## Note
 - Il progetto sta su un disco esterno (`/Volumes/TOSHIBA EXT`). I file `._*` li crea macOS e sono esclusi da git.
