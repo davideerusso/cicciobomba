@@ -200,6 +200,7 @@ const PEZZI={
  isole:[" c     c    c    H       ","                         ","####  ###  ###  ###  ####"],
  ricci:["       c    c           ","      -------           ","                        ","   r          r         ","###########   ##########"],
  sciame:["    f       f      f    ","                        ","  c    c  H    c    c   ","  ------- ---- -------  ","                        ","     e        ^^^       ","########################"],
+ carico:["                                                        D   ","                                                        D   ","                                                        D   ","                         cccc                           D   ","                                                        D   ","        ccc            /######%      c    c         c   D   ","     A                /########%                K       Dcc ","/###########%  /##################### #### ########   #####%","##################################### #### ########   ######"],
  gradini:["                 c c    ","               #####    ","            ###         ","    c   ###       f     ","     ###                ","  ###            ^^     ","########################"]
 };
 const CORSE=[
@@ -215,9 +216,9 @@ function misure2d(){V.W=SC.W;V.H=SC.H;V.dpr=Math.min(devicePixelRatio||1,2);cons
 function suRidimensiona(){orienta();misure2d();}
 addEventListener('resize',suRidimensiona);addEventListener('orientationchange',()=>setTimeout(suRidimensiona,200));
 document.addEventListener('focusout',()=>setTimeout(suRidimensiona,250));
-function costruisci(i){
+function costruisci(i,lista){
  const g=[];for(let y=0;y<ALTO;y++)g.push([]);
- const m={i,g,w:0,oggetti:[],nemici:[],colpi:[],spine:{},fine:0,gusci:[]};
+ const m={i,g,w:0,oggetti:[],nemici:[],colpi:[],spine:{},fine:0,gusci:[],ananas:[],ceste:[],cancelli:[],pezzi:0};
  const riga=(y,x,t)=>{g[y][x]=t;};
  const pezzo=(rows)=>{
   const n=rows.length,w=rows[0].length,base=m.w;
@@ -228,22 +229,25 @@ function costruisci(i){
    else if(t==='f')m.nemici.push({tipo:'f',x,y,x0:x,y0:y,vivo:true,fase:x});
    else if(t==='g'){m.nemici.push({tipo:'g',x,y,vivo:true,t:1+q%3,fase:x});}
    else if(t==='^'||t==='!'){riga(y,x,t);m.spine[y+'_'+x]={t,s:1,fase:x*.8};}
+   else if(t==='A')m.ananas.push({x,y:y+.2,x0:x,y0:y+.2,px:x,py:y,vx:0,vy:0,rot:0,g:m.pezzi,preso:false,suolo:null});
+   else if(t==='K'){riga(y,x,'K');m.ceste.push({x,y,g:m.pezzi,piena:false});}
+   else if(t==='D'){riga(y,x,'D');m.cancelli.push({x,y,g:m.pezzi});}
    else if(t!==' ')riga(y,x,t);
    if(r===n-1&&t==='#'){riga(1,x,'#');riga(0,x,'#');}
   }}
-  m.w+=w;
+  m.w+=w;m.pezzi++;
  };
  pezzo(["          ","##########"]);
  m.start={x:3,y:2.97};
- CORSE[i].forEach(n=>pezzo(PEZZI[n]));
+ (lista||CORSE[i]).forEach(n=>pezzo(PEZZI[n]));
  pezzo(["                ","                ","################"]);
  m.fine=m.w-6;
  for(let y=0;y<ALTO;y++)for(let x=0;x<m.w;x++)if(g[y][x]===undefined)g[y][x]=' ';
- const dc=MONDI[i].decor;m.decor=[];for(let x=1;x<m.w-8;x++){const h=(x*2654435761>>>0)>>>7;if(h%7<2&&g[2][x]==='#'&&g[3][x]===' '&&!m.oggetti.some(o=>o.x===x&&o.y===3))m.decor.push({x,n:dc[(h>>>3)%dc.length]});}
+ const dc=MONDI[i].decor;m.decor=[];if(!lista)for(let x=1;x<m.w-8;x++){const h=(x*2654435761>>>0)>>>7;if(h%7<2&&g[2][x]==='#'&&g[3][x]===' '&&!m.oggetti.some(o=>o.x===x&&o.y===3))m.decor.push({x,n:dc[(h>>>3)%dc.length]});}
  return m;
 }
 const cel=(x,y)=>{const r=M.g[y];return r?(r[x]||' '):' ';};
-const pieno=t=>t==='#'||t==='C';
+const pieno=t=>t==='#'||t==='C'||t==='D';
 function urta(o,R){
  o.suolo=null;
  const cx=Math.round(o.x),cy=Math.round(o.y);
@@ -278,6 +282,28 @@ function raccogli(o){
 }
 function rompiCassa(x,y){M.g[y][x]=' ';const k=(x*7+y*3)%5,t=['H','c','U','Z','c','T'][(x*7+y*3)%6];schizzi2(x,y,16,'#c28a48',5);sfx('disappear')||suono(200,.15,'square',.09,90);
  if(t==='c')for(let j=0;j<3;j++)M.oggetti.push({tipo:'c',x:x-.6+j*.6,y:y+.2,fase:x+j});else M.oggetti.push({tipo:t,x,y,fase:x});}
+/* ananas da spingere: lo fa rotolare l'inclinazione come Matteo, e lo sposta chi gli va addosso */
+const AN_R=.62;
+function passoAnanas(h){
+ const p=P2;if(!M.ananas)return;
+ for(const a of M.ananas){if(a.preso)continue;
+  const su=!!a.suolo;a.vx+=IN.tx*(su?9:3)*h;a.vx*=Math.exp(-(su?(Math.abs(IN.tx)<.1?1.8:.5):.1)*h);a.vx=clamp(a.vx,-7,7);a.vy-=14*h;
+  a.px=a.x;a.py=a.y;a.x+=a.vx*h;a.y+=a.vy*h;urta(a,AN_R);a.rot+=a.vx*h/AN_R;
+  const dx=a.x-p.x,dy=a.y-p.y,d=Math.hypot(dx,dy),min=p.R+AN_R;
+  if(d<min&&d>1e-6){const nx=dx/d,ny=dy/d,pen=min-d,sopra=ny<-.5;
+   if(sopra){p.x-=nx*pen;p.y-=ny*pen;const vn=(p.vx-a.vx)*nx+(p.vy-a.vy)*ny;if(vn>0){p.vx-=vn*nx;p.vy-=vn*ny;}p.suolo={x:-nx,y:-ny};}
+   else{p.x-=nx*pen*.35;p.y-=ny*pen*.35;a.x+=nx*pen*.65;a.y+=ny*pen*.65;
+    const vr=(a.vx-p.vx)*nx+(a.vy-p.vy)*ny;if(vr<0){const j=-1.2*vr/(1/1.6+1);a.vx+=j*nx;a.vy+=j*ny;p.vx-=j*nx/1.6;p.vy-=j*ny/1.6;}}}
+  if(a.y<-4){a.x=a.x0;a.y=a.y0+.6;a.vx=a.vy=0;a.rot=0;schizzi2(a.x,a.y,10,'#f6c445',4);suono(500,.3,'sine',.08,200);avviso('L’ananas è caduto: ricompare dove l’hai trovato',1800);}
+  for(const k of M.ceste)if(!k.piena&&k.g===a.g&&Math.abs(a.x-k.x)<.6&&Math.abs(a.y-k.y)<1){if(Math.abs(a.vx)<3.2)riempiCesta(k,a);else if(!k.detto){k.detto=true;avviso('Troppo veloce: la cesta lo prende solo se arriva piano',2200);}}
+ }
+ if(!M.dettoCancello&&cel(Math.round(p.x+p.verso*.8),Math.round(p.y))==='D'){M.dettoCancello=true;avviso('Il cancello si apre solo con l’ananas nella cesta',2400);}
+}
+function riempiCesta(k,a){
+ k.piena=true;a.preso=true;a.x=k.x;a.y=k.y+.15;a.vx=a.vy=0;
+ for(const q of M.cancelli)if(q.g===k.g&&M.g[q.y][q.x]==='D'){M.g[q.y][q.x]=' ';schizzi2(q.x,q.y,6,'#c28a48',4);}
+ G.gettoni+=10;$('gett').textContent=G.gettoni;sfx('magic')||suono(440,.3,'triangle',.1,880);vibra(40);avviso('Cancello aperto! +10 bocconi',1800);
+}
 function passo2d(h){
  const p=P2;p.cd=Math.max(0,p.cd-h);if(p.cd===0)$('aSin').classList.add('pronto');p.inv=Math.max(0,p.inv-h);p.buf=Math.max(0,p.buf-h);p.coyote=Math.max(0,p.coyote-h);
  const tx=IN.tx;if(Math.abs(tx)>.08)p.verso=Math.sign(tx);
@@ -294,7 +320,7 @@ function passo2d(h){
   p.vy-=(p.ultimoSuolo&&p.ultimoSuolo.y<.95?5:20)*h;
  }
  p.x+=p.vx*h;p.y+=p.vy*h;p.x=Math.max(p.R,p.x);
- const vx0=p.vx;p.urtoX=0;urta(p,p.R);
+ const vx0=p.vx;p.urtoX=0;urta(p,p.R);passoAnanas(h);
  if(p.urtoX&&Math.abs(vx0)>=7&&Math.abs(p.vx)<Math.abs(vx0)*.5)botto();
  if(p.suolo&&!p.ultimoSuolo&&vy0<-12)botto();
  if(p.suolo&&!p.ultimoSuolo&&vy0<-4)p.atterra=.2;p.atterra=Math.max(0,p.atterra-h);p.fermoT=p.suolo&&Math.abs(p.vx)<.25&&!p.rotola?p.fermoT+h:0;if(p.fermoT>6.3)p.fermoT=0;
@@ -312,7 +338,7 @@ function passo2d(h){
  p.rot-=p.vx*h/p.R*.5;p.passi+=Math.abs(p.vx)*h*4.6;
  if(p.ultimoSuolo&&Math.abs(p.vx)<.7){const q=Math.atan2(Math.sin(p.rot),Math.cos(p.rot));p.rot-=q*Math.min(1,h*12);}
  if(p.y<-4){togliCuore();if(G.stato==='gioco'){p.x=p.sx||M.start.x;p.y=(p.sy||M.start.y)+1;p.vx=p.vy=0;p.inv=1.6;p.scatto=0;suono(500,.4,'sine',.1,90);}}
- if(!M.boss&&p.x>M.fine&&G.stato==='gioco'){G.stato='velo';dissolvi(()=>entraBoss(M.i));}
+ if(!M.boss&&p.x>M.fine&&G.stato==='gioco'){G.stato='velo';dissolvi(()=>M.prova?finisciProva():entraBoss(M.i));}
 }
 function passoOggetti(dt){
  const p=P2;
@@ -377,6 +403,15 @@ function nomeTile(x,y,k){
  else n=l&&r?'block_center':l?'block_right':'block_left';
  return 'terrain_'+k+'_'+n;
 }
+function cesta(c,x,y,ts){
+ const w=ts*.8,b=ts*.58,h=ts*.75,forma=()=>{c.beginPath();c.moveTo(x-w,y-h);c.lineTo(x+w,y-h);c.lineTo(x+b,y);c.lineTo(x-b,y);c.closePath();};
+ c.save();forma();c.fillStyle='#b8783a';c.fill();c.clip();c.strokeStyle='#7a4a24';c.lineWidth=Math.max(2,ts*.07);
+ for(let i=1;i<4;i++){const q=y-h*i/4;c.beginPath();c.moveTo(x-w,q);c.lineTo(x+w,q);c.stroke();}
+ for(let i=-3;i<=3;i++){c.beginPath();c.moveTo(x+i*w/3.5,y-h);c.lineTo(x+i*b/3.5,y);c.stroke();}
+ c.restore();c.lineWidth=Math.max(2,ts*.08);c.strokeStyle='#2a1a10';forma();c.stroke();
+ c.fillStyle='#e5b873';c.fillRect(x-w-ts*.06,y-h-ts*.07,2*w+ts*.12,ts*.14);c.strokeRect(x-w-ts*.06,y-h-ts*.07,2*w+ts*.12,ts*.14);
+}
+function cancello(c,a,b,s){c.fillStyle='#7a4a24';c.fillRect(a,b,s,s);c.fillStyle='#b07a47';for(let i=0;i<3;i++)c.fillRect(a+s*(.08+i*.31),b,s*.23,s);c.fillStyle='#4a4a55';c.fillRect(a,b+s*.42,s,s*.16);c.strokeStyle='#2a1a10';c.lineWidth=2;c.strokeRect(a+1,b+1,s-2,s-2);}
 function disegna2d(){
  const c=ctx2,m=MONDI[M.i],ts=V.ts,W=V.W,H=V.H,p=P2,k=m.kit;
  c.setTransform(V.dpr,0,0,V.dpr,0,0);fondale(c,m);if(G.scossa>0)c.translate(rnd(-5,5)*G.scossa*2,rnd(-5,5)*G.scossa*2);
@@ -390,12 +425,15 @@ function disegna2d(){
   const t=y<0?'#':cel(x,y);if(t===' ')continue;
   if(t==='#')sp(c,nomeTile(x,y,k),a,b,mz,mz);
   else if(t==='C')sp(c,'block_exclamation',a,b,mz,mz);
+  else if(t==='D')cancello(c,a,b,mz);
   else if(t==='-'){const l=cel(x-1,y)==='-',r=cel(x+1,y)==='-';sp(c,'terrain_'+k+'_cloud_'+(l&&r?'middle':l?'right':r?'left':'middle'),a,b,mz,mz);}
   else if(t==='/')sp(c,'terrain_'+k+'_ramp_short_b',a,b,mz,mz,true);
   else if(t==='%')sp(c,'terrain_'+k+'_ramp_short_b',a,b,mz,mz);
   else if(t==='B')sp(c,M.molla&&M.molla.k===y+'_'+x&&G.t-M.molla.t<.25?'spring_out':'spring',a,b,mz,mz);
   else if(t==='^'||t==='!'){const s=M.spine[y+'_'+x].s;sp(c,'spikes',a,b+ts*(1-s),mz,mz*s);}
  }
+ for(const a of M.ananas||[]){if(a.x<c0-2||a.x>c1+2)continue;const s=AN_R*ts*3.3;c.save();c.translate(sx(a.x),sy(a.y));c.rotate(a.preso?0:a.rot);c.drawImage(ANAN,-s*.5,-s*.646,s,s);c.restore();}
+ for(const k of M.ceste||[])if(k.x>=c0-2&&k.x<=c1+2)cesta(c,sx(k.x),sy(k.y-.5),ts);
  for(const o of M.oggetti){if(o.x<c0-1||o.x>c1+1)continue;const a=sx(o.x)-ts/2,b=sy(o.y+Math.sin(G.t*3+o.fase)*.08)-ts/2;
   if(o.tipo==='c'){c.drawImage(PIZZA,a+ts*.03,b+ts*.03,ts*.94,ts*.94);}
   else sp(c,o.tipo==='H'?'heart':o.tipo==='U'?'gem_blue':o.tipo==='Z'?'bomb':'star',a,b,ts,ts);}
@@ -511,7 +549,8 @@ function esplodi(){
  const f=G.carica;vibra(150);sfx('disappear');suono(70,.6,'sawtooth',.16,30);
  const l=$('lampo');l.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>l.classList.remove('on')));
  {const p=P2,R=2.5+f*4;G.boom={x:p.x,y:p.y,t:G.t,r:R};
-  M.nemici.forEach(n=>{if(n.vivo&&Math.hypot(n.x-p.x,n.y-p.y)<R)uccidi2(n);});M.colpi=M.colpi.filter(q=>Math.hypot(q.x-p.x,q.y-p.y)>=R);
+  M.nemici.forEach(n=>{if(n.vivo&&Math.hypot(n.x-p.x,n.y-p.y)<R)uccidi2(n);});
+  (M.ananas||[]).forEach(a=>{const d=Math.hypot(a.x-p.x,a.y-p.y);if(!a.preso&&d<R){const k=(1-d/R)*9+3;a.vx+=(a.x-p.x)/(d||1)*k;a.vy+=6;}});M.colpi=M.colpi.filter(q=>Math.hypot(q.x-p.x,q.y-p.y)>=R);
   const q=Math.ceil(R);for(let y=Math.round(p.y)-q;y<=Math.round(p.y)+q;y++)for(let x=Math.round(p.x)-q;x<=Math.round(p.x)+q;x++)if(cel(x,y)==='C'&&Math.hypot(x-p.x,y-p.y)<R)rompiCassa(x,y);
   schizzi2(p.x,p.y,50,'#ffb13a',9);schizzi2(p.x,p.y,30,'#d8432e',7);p.vy=Math.max(p.vy,8);p.Wv+=12;p.ultimoSuolo=null;p.inv=Math.max(p.inv,.6);
  const b=M.boss;if(b&&b.vita>0&&Math.hypot(b.x-p.x,b.y-p.y)<R+b.r){if(b.stato==='stordito')colpisciBoss(b);else{b.stato='stordito';b.t=b.cfg.stordito;b.vy=0;avviso('Boss stordito: scattagli addosso!',1400);}}
@@ -568,14 +607,16 @@ let tAvv=0;function avviso(t,ms){const a=$('avviso');a.textContent=t;a.hidden=fa
 function giocoUI(on){['hud','tocchi','aSin','aDes'].forEach(i=>$(i).hidden=!on);}
 function dissolvi(fn){G.stato='velo';$('velo').classList.add('on');setTimeout(()=>{fn();$('velo').classList.remove('on');},380);}
 function banner(t){$('grande').textContent=t;$('grande').hidden=false;$('avviso').hidden=true;G.pronti=1.4;G.stato='pronti';}
-function iniziaRun(){Object.assign(G,{carica:0,avvisato:false,base:0,cuori:5,gettoni:0,uccisi:0,tempo:0,scudo:false,stella:0,avanz:0,scossa:0,jelly:0,visti:G.visti||0});mostra('');giocoUI(true);hud();aggBarra();$('gett').textContent='0';entraCorsa(0);sveglia();}
-function entraCorsa(i){
- G.modo='2d';G.mondo=i;M=costruisci(i);goo.length=0;fumi.length=0;polveri.length=0;
+function iniziaRun(prova){Object.assign(G,{carica:0,avvisato:false,base:0,cuori:5,gettoni:0,uccisi:0,tempo:0,scudo:false,stella:0,avanz:0,scossa:0,jelly:0,visti:G.visti||0});mostra('');giocoUI(true);hud();aggBarra();$('gett').textContent='0';entraCorsa(0,Array.isArray(prova)?prova:null);sveglia();}
+function entraCorsa(i,prova){
+ G.modo='2d';G.mondo=i;M=costruisci(i,prova);M.prova=!!prova;goo.length=0;fumi.length=0;polveri.length=0;
  Object.assign(P2,{x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
  V.dir=1;V.la=2;V.attesa=0;V.py=P2.y;V.zoom=1;V.ts=V.ts0;V.cx=P2.x+2;V.cy=centroY();$('bossBox').hidden=true;$('nomeTappa').textContent=amico().nome+' · Mondo '+(i+1);$('aSin').classList.add('pronto');
- banner(MONDI[i].nome);
- if(i===0)setTimeout(()=>{if(G.modo==='2d'&&G.stato==='gioco'&&G.mondo===0)avviso('Mangia per caricare l\u2019esplosione. Le casse si rompono con lo scatto.',3400);},2200);
+ banner(prova?'La Spremiananas':MONDI[i].nome);
+ if(prova)setTimeout(()=>{if(G.modo==='2d'&&G.stato==='gioco')avviso('Porta l’ananas nella cesta: quando inclini, rotola anche lui',3600);},1600);
+ else if(i===0)setTimeout(()=>{if(G.modo==='2d'&&G.stato==='gioco'&&G.mondo===0)avviso('Mangia per caricare l\u2019esplosione. Le casse si rompono con lo scatto.',3400);},2200);
 }
+function finisciProva(){incassa();vaiMenu();avviso('Prova finita: l’ananas è arrivato!',2600);}
 function entraBoss(i){
  M=costruisciArena(i);goo.length=0;fumi.length=0;polveri.length=0;G.scossa=0;
  Object.assign(P2,{x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
@@ -612,6 +653,7 @@ function disegnaAmici(){const a=$('listaAmici');a.textContent='';
 async function bloccaOrizzontale(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();await screen.orientation.lock('landscape');}catch(e){}}
 $('bGioca').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();if(S.guidaVista)iniziaRun();else apriGuida(iniziaRun);};
 $('bGuida').onclick=()=>{audioOn();apriGuida(null);};
+$('bProva').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();iniziaRun(['carico']);};
 $('bAmici').onclick=()=>{audioOn();disegnaAmici();mostra('sAmici');};
 $('amiciChiudi').onclick=()=>mostra('sMenu');
 $('nuovoAmico').addEventListener('submit',e=>{e.preventDefault();const n=$('nomeNuovo').value.trim();if(!n)return;S.amici.push({nome:n,colore:COLORI[S.amici.length%COLORI.length],skin:'classica',foto:null});S.sel=S.amici.length-1;$('nomeNuovo').value='';$('nomeNuovo').blur();salva();vestiPalla();disegnaAmici();});
