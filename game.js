@@ -201,6 +201,10 @@ const PEZZI={
  ricci:["       c    c           ","      -------           ","                        ","   r          r         ","###########   ##########"],
  sciame:["    f       f      f    ","                        ","  c    c  H    c    c   ","  ------- ---- -------  ","                        ","     e        ^^^       ","########################"],
  carico:["                                                        D   ","                                                        D   ","                                                        D   ","                         cccc                           D   ","                                                        D   ","        ccc            /######%      c    c         c   D   ","     A                /########%                K       Dcc ","/###########%  /##################### #### ########   #####%","##################################### #### ########   ######"],
+bilance:["                               Q          ","                               Q          ","                               Q          ","                               Q          ","                               Q          ","          ccc                  Q          ","                               Q          ","   A                           Q  ccc     ","/########=====#####%PP/##################%","#########     ############################"],
+ vasca:["                                  ","                                  ","                                  ","                       cc         ","                      ####%       ","   /####              #####%      ","  /#####~~~~~~~~~~~~~~######%     "," /######~~~~~~~~~~~~~~#######%    ","/#######^^^~~~~ccc~~~~########%   ","##################################"],
+ scivolo:["                                        ","                                        ","                                        ","                  Z      Z      Z       ","     /####%       Z      Z      Z       ","    /######%      Z      Z      Z       ","   /########%     Z      Z      Z       ","  /##########%    Z  cc  Z  cc  Z       ","/######################################%","########################################"],
+ pressa:["          MM                        ","                                    ","                wwwwwwww            ","                wwwwwwww###%        ","                wwwwwwww####%       ","                wwwwwwww#####%      ","     A       cc wwwwwwww######%     ","  /#######%/####wwwwwwww#######%    "," /##############wwwwwwww########%   ","/###############wwBwwwww#########   ","####################################"],
  gradini:["                 c c    ","               #####    ","            ###         ","    c   ###       f     ","     ###                ","  ###            ^^     ","########################"]
 };
 const CORSE=[
@@ -218,7 +222,7 @@ addEventListener('resize',suRidimensiona);addEventListener('orientationchange',(
 document.addEventListener('focusout',()=>setTimeout(suRidimensiona,250));
 function costruisci(i,lista){
  const g=[];for(let y=0;y<ALTO;y++)g.push([]);
- const m={i,g,w:0,oggetti:[],nemici:[],colpi:[],spine:{},fine:0,gusci:[],ananas:[],ceste:[],cancelli:[],pezzi:0};
+ const m={i,g,w:0,oggetti:[],nemici:[],colpi:[],spine:{},fine:0,gusci:[],ananas:[],ceste:[],cancelli:[],pezzi:0,assi:[],pedane:[],porte:[],vasche:[],presse:[],nomi:[]};
  const riga=(y,x,t)=>{g[y][x]=t;};
  const pezzo=(rows)=>{
   const n=rows.length,w=rows[0].length,base=m.w;
@@ -232,14 +236,23 @@ function costruisci(i,lista){
    else if(t==='A')m.ananas.push({x,y:y+.2,x0:x,y0:y+.2,px:x,py:y,vx:0,vy:0,rot:0,g:m.pezzi,preso:false,suolo:null});
    else if(t==='K'){riga(y,x,'K');m.ceste.push({x,y,g:m.pezzi,piena:false});}
    else if(t==='D'){riga(y,x,'D');m.cancelli.push({x,y,g:m.pezzi});}
+   else if(t==='P'){riga(y,x,'P');m.pedane.push({x,y,g:m.pezzi});}
+   else if(t==='Q'){riga(y,x,'Q');m.porte.push({x,y,g:m.pezzi});}
+   else if(t==='='||t==='~'||t==='w'||t==='M'){}
    else if(t!==' ')riga(y,x,t);
    if(r===n-1&&t==='#'){riga(1,x,'#');riga(0,x,'#');}
   }}
+  /* assi a bilanciere e presse: file di '=' e di 'M'; vasche: il riquadro dei '~' (piena) o dei 'w' (da riempire) */
+  for(let r=0;r<n;r++){const y=2+(n-1-r),row=rows[r];for(let q=0;q<w;q++){const t=row[q];if((t==='='||t==='M')&&row[q-1]!==t){let e=q;while(row[e+1]===t)e++;const xc=base+(q+e)/2,L=(e-q+1)/2;
+   if(t==='=')m.assi.push({xc,yc:y+.38,L,th:0,w:0,tor:0});
+   else{let f=y-1;while(f>0&&(g[f][Math.round(xc)]===undefined||g[f][Math.round(xc)]===' '))f--;const tf=g[f][Math.round(xc)];m.presse.push({xc,L,y0:y,fondo:(tf==='/'||tf==='%'?f-.5:f+.5)+.3,g:m.pezzi,fase:0,hb:y,giu:false});}}}}
+  for(const ch of['~','w']){let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(let r=0;r<n;r++)for(let q=0;q<w;q++)if(rows[r][q]===ch){const y=2+(n-1-r);x0=Math.min(x0,base+q);x1=Math.max(x1,base+q);y0=Math.min(y0,y);y1=Math.max(y1,y);}
+   if(x1>=x0){const piena=ch==='~';m.vasche.push({x0:x0-.5,x1:x1+.5,yb:y0-.5,h:piena?y1+.5:y0-.5,meta:piena?y1+.5:y1+.2,top:piena?y1+4:y1+.5,s:0,g:m.pezzi,piena});}}
   m.w+=w;m.pezzi++;
  };
  pezzo(["          ","##########"]);
  m.start={x:3,y:2.97};
- (lista||CORSE[i]).forEach(n=>pezzo(PEZZI[n]));
+ (lista||CORSE[i]).forEach(n=>{m.nomi.push({x:m.w,n});pezzo(PEZZI[n]);});
  pezzo(["                ","                ","################"]);
  m.fine=m.w-6;
  for(let y=0;y<ALTO;y++)for(let x=0;x<m.w;x++)if(g[y][x]===undefined)g[y][x]=' ';
@@ -247,7 +260,7 @@ function costruisci(i,lista){
  return m;
 }
 const cel=(x,y)=>{const r=M.g[y];return r?(r[x]||' '):' ';};
-const pieno=t=>t==='#'||t==='C'||t==='D';
+const pieno=t=>t==='#'||t==='C'||t==='D'||t==='Q'||t==='Z';
 function urta(o,R){
  o.suolo=null;
  const cx=Math.round(o.x),cy=Math.round(o.y);
@@ -286,19 +299,67 @@ function rompiCassa(x,y){M.g[y][x]=' ';const k=(x*7+y*3)%5,t=['H','c','U','Z','c
 const AN_R=.62,AN_M=2.6; /* più pesante di Matteo (1.6): si sposta, non vola via */
 function passoAnanas(h){
  const p=P2;if(!M.ananas)return;
- for(const a of M.ananas){if(a.preso)continue;
+ urtaAssi(p,p.R,1.6);urtaPresse(p,p.R,pr=>{colpito2(Math.sign(p.x-pr.xc)||1);p.x=pr.xc+(Math.sign(p.x-pr.xc)||1)*(pr.L+p.R+.1);});galleggia(p,h);
+ for(const a of M.ananas){if(a.preso||Math.abs(a.x-p.x)>24)continue;
   const su=!!a.suolo;a.vx+=IN.tx*(su?9:3)*h;a.vx*=Math.exp(-(su?(Math.abs(IN.tx)<.1?1.8:.5):.1)*h);a.vx=clamp(a.vx,-7,7);a.vy-=16*h;
-  a.px=a.x;a.py=a.y;a.x+=a.vx*h;a.y+=a.vy*h;urta(a,AN_R);a.rot+=a.vx*h/AN_R;
+  a.px=a.x;a.py=a.y;a.x+=a.vx*h;a.y+=a.vy*h;sfonda(a,AN_R,Math.abs(a.vx)>6.2,false);urta(a,AN_R);urtaAssi(a,AN_R,AN_M);urtaPresse(a,AN_R,()=>spremi(a));if(a.preso)continue;galleggia(a,h);a.rot+=a.vx*h/AN_R;
   const dx=a.x-p.x,dy=a.y-p.y,d=Math.hypot(dx,dy),min=p.R+AN_R;
   if(d<min&&d>1e-6){const nx=dx/d,ny=dy/d,pen=min-d,sopra=ny<-.5;
    if(sopra){p.x-=nx*pen;p.y-=ny*pen;const vn=(p.vx-a.vx)*nx+(p.vy-a.vy)*ny;if(vn>0){p.vx-=vn*nx;p.vy-=vn*ny;}p.suolo={x:-nx,y:-ny};}
    else{const qa=1.6/(1.6+AN_M);p.x-=nx*pen*(1-qa);p.y-=ny*pen*(1-qa);a.x+=nx*pen*qa;a.y+=Math.min(0,ny*pen*qa);
     const vr=(a.vx-p.vx)*nx+(a.vy-p.vy)*ny;if(vr<0){const j=-1.05*vr/(1/1.6+1/AN_M);a.vx=clamp(a.vx+j*nx/AN_M,-6,6);a.vy+=Math.min(0,j*ny/AN_M);p.vx-=j*nx/1.6;p.vy-=j*ny/1.6;}}}
-  if(a.y<-4){a.x=a.x0;a.y=a.y0+.6;a.vx=a.vy=0;a.rot=0;schizzi2(a.x,a.y,10,'#f6c445',4);suono(500,.3,'sine',.08,200);avviso('L’ananas è caduto: ricompare dove l’hai trovato',1800);}
+  if(a.y<-4||M.vasche.some(v=>!v.piena&&a.x>v.x0&&a.x<v.x1&&a.y<v.top)){a.x=a.x0;a.y=a.y0+.6;a.vx=a.vy=0;a.rot=0;schizzi2(a.x,a.y,10,'#f6c445',4);suono(500,.3,'sine',.08,200);avviso('L’ananas è caduto: ricompare dove l’hai trovato',1800);}
   for(const k of M.ceste)if(!k.piena&&k.g===a.g&&Math.abs(a.x-k.x)<.6&&Math.abs(a.y-k.y)<1){if(Math.abs(a.vx)<3.2)riempiCesta(k,a);else if(!k.detto){k.detto=true;avviso('Troppo veloce: la cesta lo prende solo se arriva piano',2200);}}
  }
  if(!M.dettoCancello&&cel(Math.round(p.x+p.verso*.8),Math.round(p.y))==='D'){M.dettoCancello=true;avviso('Il cancello si apre solo con l’ananas nella cesta',2400);}
+ passoMobili(h);
+ if(M.prova)for(const q of M.nomi)if(!q.detto&&p.x>q.x+1.5&&AIUTI[q.n]){q.detto=true;avviso(AIUTI[q.n],3800);}
 }
+/* asse a bilanciere: segmento che ruota sul perno, chi ci sta sopra lo piega dal suo lato */
+function urtaAssi(o,R,massa){
+ for(const a of M.assi){const c=Math.cos(a.th),s=Math.sin(a.th),ax=a.xc-a.L*c,ay=a.yc-a.L*s,dx=2*a.L*c,dy=2*a.L*s,t=clamp(((o.x-ax)*dx+(o.y-ay)*dy)/(dx*dx+dy*dy),0,1),qx=ax+dx*t,qy=ay+dy*t,ex=o.x-qx,ey=o.y-qy,d=Math.hypot(ex,ey);
+  if(d>=R+.12||d<1e-6)continue;const nx=ex/d,ny=ey/d,pen=R+.12-d;o.x+=nx*pen;o.y+=ny*pen;const vn=o.vx*nx+o.vy*ny;if(vn<0){o.vx-=vn*nx;o.vy-=vn*ny;}
+  if(ny>.35){o.suolo={x:nx,y:ny};a.tor-=massa*(qx-a.xc);}}
+}
+/* pressa: un blocco che scende a tempo; schiaccia chi ci sta sotto */
+function urtaPresse(o,R,suSchiaccia){
+ for(const pr of M.presse){const qx=clamp(o.x,pr.xc-pr.L,pr.xc+pr.L),qy=clamp(o.y,pr.hb,pr.hb+1),dx=o.x-qx,dy=o.y-qy,d=Math.hypot(dx,dy);
+  if(d>=R||d<1e-6)continue;const nx=dx/d,ny=dy/d;
+  if(ny<-.5&&pr.giu){suSchiaccia(pr);continue;}
+  o.x+=nx*(R-d);o.y+=ny*(R-d);const vn=o.vx*nx+o.vy*ny;if(vn<0){o.vx-=vn*nx;o.vy-=vn*ny;}if(ny>.35)o.suolo={x:nx,y:ny};}
+}
+/* succo: galleggia chi ci entra; la superficie segue l'inclinazione */
+function livello(v,x){return clamp(v.h+v.s*(x-(v.x0+v.x1)/2),v.yb,v.top);}
+function galleggia(o,h){
+ let dentro=false;
+ for(const v of M.vasche){if(o.x<v.x0||o.x>v.x1)continue;const L=livello(v,o.x);if(L<=v.yb+.05||o.y>L+.3)continue;dentro=true;
+  const d=L-o.y;o.vy+=40*clamp(d+.3,0,1.2)*h;o.vy*=Math.exp(-2.5*h);o.vx*=Math.exp(-.8*h);}
+ if(dentro&&!o.bagnato)schizzi2(o.x,o.y,8,'#ffc23a',3);o.bagnato=dentro;
+}
+/* muri di crosta: si rompono solo se ci arrivi forte rotolando */
+function sfonda(o,R,forte,parla){
+ const d=Math.sign(o.vx);if(!d)return;const q=Math.round(o.x+d*(R+.45));
+ for(let r=Math.round(o.y)-1;r<=Math.round(o.y)+1;r++)if(cel(q,r)==='Z'){
+  if(forte)rompiCrosta(q,r);
+  else if(parla&&!M.dettaCrosta&&Math.abs(o.vx)>1){M.dettaCrosta=true;avviso(P2.scatto>0?'Lo scatto non basta: serve lo slancio della rotolata':'Serve slancio: rotola forte senza fermarti',2400);}}
+}
+function rompiCrosta(q,r){let y=r;while(cel(q,y-1)==='Z')y--;while(cel(q,y)==='Z'){M.g[y][q]=' ';schizzi2(q,y,10,'#e9c27a',5);y++;}sfx('disappear')||suono(200,.15,'square',.09,90);vibra(30);}
+function spremi(a){
+ if(a.preso)return;a.preso=true;a.spremuto=true;schizzi2(a.x,a.y,40,'#ffc23a',8);schizzi2(a.x,a.y,12,'#39b86b',5);sfx('bump')||suono(120,.3,'square',.1,60);vibra(60);
+ let fatta=false;for(const v of M.vasche)if(v.g===a.g&&!v.piena){v.piena=true;fatta=true;}
+ avviso(fatta?'Succo! La vasca si riempie: galleggia fino in cima':'Ananas spremuto',2400);
+}
+function passoMobili(h){
+ const p=P2;
+ for(const a of M.assi){a.w+=(a.tor*4-3*a.w-1.5*a.th)*h;a.th+=a.w*h;if(Math.abs(a.th)>.24){a.th=Math.sign(a.th)*.24;a.w=0;}a.tor=0;}
+ for(const pr of M.presse){pr.fase+=h;const T=3,t=(pr.fase+pr.xc*.37)%T,su=pr.fondo+3.2;pr.giu=t>=1.6&&t<1.8;pr.trema=t>1.2&&t<1.6;
+  pr.hb=t<1.6?su:t<1.8?lerp(su,pr.fondo,(t-1.6)/.2):t<2.3?pr.fondo:lerp(pr.fondo,su,(t-2.3)/.7);
+  if(t>=1.8&&!pr.botto){pr.botto=true;if(Math.abs(p.x-pr.xc)<10){suono(90,.2,'square',.1,50);G.scossa=Math.max(G.scossa,.15);}}if(t<1.6)pr.botto=false;}
+ for(const v of M.vasche){v.s=lerp(v.s,IN.tx*.5,1-Math.exp(-3*h));if(v.piena&&v.h<v.meta)v.h=Math.min(v.meta,v.h+1.6*h);}
+ const aperta={};for(const k of M.pedane){const su=[p,...M.ananas.filter(a=>!a.preso)].some(o=>Math.abs(o.x-k.x)<.8&&o.y>k.y-.6&&o.y<k.y+1.6);k.giu=su;if(su)aperta[k.g]=true;}
+ for(const q of M.porte){const vuoi=aperta[q.g]?'q':'Q';if(M.g[q.y][q.x]!==vuoi){M.g[q.y][q.x]=vuoi;if(q===M.porte.find(z=>z.g===q.g))suono(vuoi==='q'?520:260,.12,'triangle',.08,vuoi==='q'?780:180);}}
+}
+const AIUTI={bilance:'Bilance: il tuo peso piega l’asse. La porta resta aperta solo con un peso sulla pedana: lascia lì l’ananas e saltalo',vasca:'Vasca di succo: galleggi, e inclinando il succo sale da quella parte',scivolo:'Muri di crosta: si rompono solo se arrivi rotolando forte',pressa:'La pressa: mettici sotto l’ananas e riempi la vasca col succo'};
 function riempiCesta(k,a){
  k.piena=true;a.preso=true;a.x=k.x;a.y=k.y+.15;a.vx=a.vy=0;
  for(const q of M.cancelli)if(q.g===k.g&&M.g[q.y][q.x]==='D'){M.g[q.y][q.x]=' ';schizzi2(q.x,q.y,6,'#c28a48',4);}
@@ -320,7 +381,7 @@ function passo2d(h){
   p.vy-=(p.ultimoSuolo&&p.ultimoSuolo.y<.95?5:20)*h;
  }
  p.x+=p.vx*h;p.y+=p.vy*h;p.x=Math.max(p.R,p.x);
- const vx0=p.vx;p.urtoX=0;urta(p,p.R);passoAnanas(h);
+ const vx0=p.vx;p.urtoX=0;if(M.ananas)sfonda(p,p.R,p.scatto<=0&&Math.abs(p.vx)>7.5,true);urta(p,p.R);passoAnanas(h);
  if(p.urtoX&&Math.abs(vx0)>=7&&Math.abs(p.vx)<Math.abs(vx0)*.5)botto();
  if(p.suolo&&!p.ultimoSuolo&&vy0<-12)botto();
  if(p.suolo&&!p.ultimoSuolo&&vy0<-4)p.atterra=.2;p.atterra=Math.max(0,p.atterra-h);p.fermoT=p.suolo&&Math.abs(p.vx)<.25&&!p.rotola?p.fermoT+h:0;if(p.fermoT>6.3)p.fermoT=0;
@@ -411,6 +472,8 @@ function cesta(c,x,y,ts){
  c.restore();c.lineWidth=Math.max(2,ts*.08);c.strokeStyle='#2a1a10';forma();c.stroke();
  c.fillStyle='#e5b873';c.fillRect(x-w-ts*.06,y-h-ts*.07,2*w+ts*.12,ts*.14);c.strokeRect(x-w-ts*.06,y-h-ts*.07,2*w+ts*.12,ts*.14);
 }
+function crosta(c,a,b,s,x,y){c.fillStyle='#e9c27a';c.fillRect(a,b,s,s);c.fillStyle='#c9964a';for(let i=0;i<4;i++){const h=((x*31+y*17+i*7)%10)/10;c.fillRect(a+s*h*.8,b+s*(.15+i*.22),s*.18,s*.07);}c.strokeStyle='#7a4a24';c.lineWidth=2;c.strokeRect(a+1,b+1,s-2,s-2);}
+function pedana(c,a,b,s,giu){const y=b+s*(giu?.9:.78);c.fillStyle='#4a4a55';c.fillRect(a+s*.08,y,s*.84,b+s-y);c.fillStyle=giu?'#39b86b':'#d8432e';c.fillRect(a+s*.14,y-s*.08,s*.72,s*.1);c.strokeStyle='#2a1a10';c.lineWidth=2;c.strokeRect(a+s*.08,y-s*.08,s*.84,b+s-y+s*.08);}
 function cancello(c,a,b,s){c.fillStyle='#7a4a24';c.fillRect(a,b,s,s);c.fillStyle='#b07a47';for(let i=0;i<3;i++)c.fillRect(a+s*(.08+i*.31),b,s*.23,s);c.fillStyle='#4a4a55';c.fillRect(a,b+s*.42,s,s*.16);c.strokeStyle='#2a1a10';c.lineWidth=2;c.strokeRect(a+1,b+1,s-2,s-2);}
 function disegna2d(){
  const c=ctx2,m=MONDI[M.i],ts=V.ts,W=V.W,H=V.H,p=P2,k=m.kit;
@@ -426,13 +489,19 @@ function disegna2d(){
   if(t==='#')sp(c,nomeTile(x,y,k),a,b,mz,mz);
   else if(t==='C')sp(c,'block_exclamation',a,b,mz,mz);
   else if(t==='D')cancello(c,a,b,mz);
+  else if(t==='Q'){cancello(c,a,b,mz);c.fillStyle='#d8432e';c.fillRect(a,b+mz*.42,mz,mz*.16);}
+  else if(t==='q'){c.strokeStyle='#7a4a2466';c.lineWidth=2;c.strokeRect(a+2,b+2,mz-4,mz-4);}
+  else if(t==='Z')crosta(c,a,b,mz,x,y);
+  else if(t==='P'){const k=M.pedane.find(q=>q.x===x&&q.y===y);pedana(c,a,b,mz,k&&k.giu);}
   else if(t==='-'){const l=cel(x-1,y)==='-',r=cel(x+1,y)==='-';sp(c,'terrain_'+k+'_cloud_'+(l&&r?'middle':l?'right':r?'left':'middle'),a,b,mz,mz);}
   else if(t==='/')sp(c,'terrain_'+k+'_ramp_short_b',a,b,mz,mz,true);
   else if(t==='%')sp(c,'terrain_'+k+'_ramp_short_b',a,b,mz,mz);
   else if(t==='B')sp(c,M.molla&&M.molla.k===y+'_'+x&&G.t-M.molla.t<.25?'spring_out':'spring',a,b,mz,mz);
   else if(t==='^'||t==='!'){const s=M.spine[y+'_'+x].s;sp(c,'spikes',a,b+ts*(1-s),mz,mz*s);}
  }
- for(const a of M.ananas||[]){if(a.x<c0-2||a.x>c1+2)continue;const s=AN_R*ts*3.3;c.save();c.translate(sx(a.x),sy(a.y));c.rotate(a.preso?0:a.rot);c.drawImage(ANAN,-s*.5,-s*.646,s,s);c.restore();}
+ for(const a of M.assi||[]){if(a.xc<c0-4||a.xc>c1+4)continue;c.fillStyle='#6a4c42';c.fillRect(sx(a.xc)-ts*.12,sy(a.yc),ts*.24,H);c.save();c.translate(sx(a.xc),sy(a.yc));c.rotate(-a.th);c.fillStyle='#b07a47';c.fillRect(-a.L*ts,-ts*.12,a.L*2*ts,ts*.24);c.strokeStyle='#2a1a10';c.lineWidth=2;c.strokeRect(-a.L*ts,-ts*.12,a.L*2*ts,ts*.24);c.restore();c.fillStyle='#4a4a55';c.beginPath();c.arc(sx(a.xc),sy(a.yc),ts*.14,0,6.3);c.fill();}
+ for(const pr of M.presse||[]){if(pr.xc<c0-3||pr.xc>c1+3)continue;const tr=pr.trema?rnd(-.04,.04):0,l=sx(pr.xc-pr.L+tr),r=sx(pr.xc+pr.L+tr),top=sy(pr.hb+1),bot=sy(pr.hb);c.fillStyle='#4a4a55';c.fillRect(sx(pr.xc)-ts*.18,-10,ts*.36,top+10);c.fillStyle='#7d6e66';c.fillRect(l,top,r-l,bot-top);c.fillStyle='#d8432e';for(let i=0;i<4;i++)c.fillRect(l+(r-l)*(i/4),bot-ts*.18,(r-l)/8,ts*.18);c.strokeStyle='#2a1a10';c.lineWidth=2.5;c.strokeRect(l,top,r-l,bot-top);}
+ for(const a of M.ananas||[]){if(a.spremuto||a.x<c0-2||a.x>c1+2)continue;const s=AN_R*ts*3.3;c.save();c.translate(sx(a.x),sy(a.y));c.rotate(a.preso?0:a.rot);c.drawImage(ANAN,-s*.5,-s*.646,s,s);c.restore();}
  for(const k of M.ceste||[])if(k.x>=c0-2&&k.x<=c1+2)cesta(c,sx(k.x),sy(k.y-.5),ts);
  for(const o of M.oggetti){if(o.x<c0-1||o.x>c1+1)continue;const a=sx(o.x)-ts/2,b=sy(o.y+Math.sin(G.t*3+o.fase)*.08)-ts/2;
   if(o.tipo==='c'){c.drawImage(PIZZA,a+ts*.03,b+ts*.03,ts*.94,ts*.94);}
@@ -465,6 +534,7 @@ function disegna2d(){
    if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.5,0,6.3);c.stroke();}
    if(G.stella>0){c.strokeStyle=`hsl(${G.t*400%360},95%,62%)`;c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.3,0,6.3);c.stroke();}}}
  if(G.boom){const e=(G.t-G.boom.t)/.55;if(e<1)disegnaEspl(c,sx(G.boom.x),sy(G.boom.y),G.boom.r*ts,e);else G.boom=null;}
+ for(const v of M.vasche||[]){if(v.x1<c0-1||v.x0>c1+1||v.h<=v.yb+.02)continue;c.beginPath();c.moveTo(sx(v.x0),sy(v.yb));for(let k=0;k<=24;k++){const x=v.x0+(v.x1-v.x0)*k/24;c.lineTo(sx(x),sy(livello(v,x)+Math.sin(G.t*3+x*1.3)*.05));}c.lineTo(sx(v.x1),sy(v.yb));c.closePath();c.fillStyle='rgba(255,186,40,.55)';c.fill();c.strokeStyle='#ffe38288';c.lineWidth=3;c.stroke();}
  for(const q of goo){c.fillStyle=q.c;c.globalAlpha=clamp(q.v*2.4,0,1);c.beginPath();c.arc(sx(q.x),sy(q.y),q.r*ts,0,6.3);c.fill();}c.globalAlpha=1;
 }
 const M0={W:0,Wv:0,t:0};
@@ -551,7 +621,7 @@ function esplodi(){
  {const p=P2,R=2.5+f*4;G.boom={x:p.x,y:p.y,t:G.t,r:R};
   M.nemici.forEach(n=>{if(n.vivo&&Math.hypot(n.x-p.x,n.y-p.y)<R)uccidi2(n);});
   (M.ananas||[]).forEach(a=>{const d=Math.hypot(a.x-p.x,a.y-p.y);if(!a.preso&&d<R){const k=(1-d/R)*6+2;a.vx+=(a.x-p.x)/(d||1)*k;a.vy+=4;}});M.colpi=M.colpi.filter(q=>Math.hypot(q.x-p.x,q.y-p.y)>=R);
-  const q=Math.ceil(R);for(let y=Math.round(p.y)-q;y<=Math.round(p.y)+q;y++)for(let x=Math.round(p.x)-q;x<=Math.round(p.x)+q;x++)if(cel(x,y)==='C'&&Math.hypot(x-p.x,y-p.y)<R)rompiCassa(x,y);
+  const q=Math.ceil(R);for(let y=Math.round(p.y)-q;y<=Math.round(p.y)+q;y++)for(let x=Math.round(p.x)-q;x<=Math.round(p.x)+q;x++)if(cel(x,y)==='C'&&Math.hypot(x-p.x,y-p.y)<R)rompiCassa(x,y);else if(cel(x,y)==='Z'&&Math.hypot(x-p.x,y-p.y)<R)rompiCrosta(x,y);
   schizzi2(p.x,p.y,50,'#ffb13a',9);schizzi2(p.x,p.y,30,'#d8432e',7);p.vy=Math.max(p.vy,8);p.Wv+=12;p.ultimoSuolo=null;p.inv=Math.max(p.inv,.6);
  const b=M.boss;if(b&&b.vita>0&&Math.hypot(b.x-p.x,b.y-p.y)<R+b.r){if(b.stato==='stordito')colpisciBoss(b);else{b.stato='stordito';b.t=b.cfg.stordito;b.vy=0;avviso('Boss stordito: scattagli addosso!',1400);}}
  }
@@ -653,7 +723,7 @@ function disegnaAmici(){const a=$('listaAmici');a.textContent='';
 async function bloccaOrizzontale(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();await screen.orientation.lock('landscape');}catch(e){}}
 $('bGioca').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();if(S.guidaVista)iniziaRun();else apriGuida(iniziaRun);};
 $('bGuida').onclick=()=>{audioOn();apriGuida(null);};
-$('bProva').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();iniziaRun(['carico']);};
+$('bProva').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();iniziaRun(['carico','bilance','vasca','scivolo','pressa']);};
 $('bAmici').onclick=()=>{audioOn();disegnaAmici();mostra('sAmici');};
 $('amiciChiudi').onclick=()=>mostra('sMenu');
 $('nuovoAmico').addEventListener('submit',e=>{e.preventDefault();const n=$('nomeNuovo').value.trim();if(!n)return;S.amici.push({nome:n,colore:COLORI[S.amici.length%COLORI.length],skin:'classica',foto:null});S.sel=S.amici.length-1;$('nomeNuovo').value='';$('nomeNuovo').blur();salva();vestiPalla();disegnaAmici();});
