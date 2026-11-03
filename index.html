@@ -513,7 +513,11 @@ function disegnaSlime(c,x,y,r,rot,st){
  pa.quadraticCurveTo(pts[0][0],pts[0][1],(pts[0][0]+pts[1][0])/2,(pts[0][1]+pts[1][1])/2);pa.closePath();
  const col=amico().colore;
  c.save();c.clip(pa);c.fillStyle=col;c.fillRect(x-r*2,y-r*2,r*4,r*4);
- c.translate(x+ox,y-oy);c.save();c.rotate(rot);c.globalAlpha=.97;c.drawImage(cvPalla,256,0,512,512,-r*1.08,-r*1.08,r*2.16,r*2.16);c.restore();
+ c.translate(x+ox,y-oy);c.save();c.rotate(rot);c.globalAlpha=.97;if(st.disegno&&FOGLIO.complete){
+  const giro=((rot%6.2832)+6.2832)%6.2832,q=st.foto?3:Math.floor(giro/1.5708)%4,lato=CELLA*r*2.3/PALLA_L,ry=(CELLA*.97-PALLA_H[q]/2)/CELLA*lato;c.globalAlpha=1;
+  c.drawImage(foglioAmico(),(3+q)*CELLA,2*CELLA,CELLA,CELLA,-lato/2,-ry,lato,lato);
+  if(st.foto){const m=Math.min(st.foto.width,st.foto.height),g=r*.74;c.save();c.beginPath();c.arc(0,0,g,0,6.3);c.clip();c.drawImage(st.foto,(st.foto.width-m)/2,(st.foto.height-m)/2,m,m,-g,-g,g*2,g*2);c.restore();c.lineWidth=Math.max(2,r*.08);c.strokeStyle='#14100c';c.beginPath();c.arc(0,0,g,0,6.3);c.stroke();}
+ }else c.drawImage(cvPalla,256,0,512,512,-r*1.08,-r*1.08,r*2.16,r*2.16);c.restore();
  const g=c.createRadialGradient(-r*.25,-r*.35,r*.2,0,0,r*1.15);g.addColorStop(0,'#ffffff30');g.addColorStop(.6,'#ffffff00');g.addColorStop(1,'#00000055');c.fillStyle=g;c.fillRect(-r*2,-r*2,r*4,r*4);
  c.fillStyle='#ffffffb0';c.beginPath();c.ellipse(-r*.38,-r*.5,r*.2,r*.12,-.6,0,6.3);c.fill();c.beginPath();c.arc(-r*.08,-r*.66,r*.05,0,6.3);c.fill();
  c.restore();c.lineWidth=Math.max(2,r*.09);c.strokeStyle='#2a1a10cc';c.stroke(pa);
@@ -574,7 +578,7 @@ function disegna2d(){
  if(!(p.inv>0&&Math.floor(G.t*14)%2===0)){const op={t:G.t,W:p.W,vx:p.vx,vy:p.vy,n:p.ultimoSuolo,stella:G.stella,scudo:G.scudo};
   const n=p.ultimoSuolo,r=p.R*ts*1.02,pie=sy(p.y-p.R),ang=n?Math.atan2(n.x,n.y):0,am=amico();
   if(p.rotola&&!(p.anim==='chiude'&&p.animT<.2)){
-   if(am.skin!=='classica'&&!am.foto)disegnaSlime(c,sx(p.x),sy(p.y),r,p.rot,op);else disegnaPalla(c,sx(p.x),sy(p.y),r,-p.rot,p.W,!!n,am._img);}
+   op.disegno=am.skin==='classica'||!!am.foto;op.foto=am._img;disegnaSlime(c,sx(p.x),sy(p.y),r,-p.rot,op);}
   else{
    if(p.rotola)disegnaPasso(c,sx(p.x),pie,r,Math.min(2,Math.floor(p.animT/.067)),2,p.verso,p.W,ang);
    else if(p.anim==='apre'&&p.animT<.2)disegnaPasso(c,sx(p.x),pie,r,p.animT<.1?2:1,2,p.verso,p.W,ang);
