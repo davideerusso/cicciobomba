@@ -629,7 +629,7 @@ function urta(o,R){
 const P2={x:0,y:0,px:0,py:0,vx:0,vy:0,R:.46,suolo:null,ultimoSuolo:null,verso:1,rotola:false,carica:0,passi:0,anim:'',animT:9,atterra:0,fermoT:0,coyote:0,buf:0,scatto:0,cd:0,inv:0,rot:0,W:0,Wv:0,sx:0,sy:0,sicuro:0};
 const goo=[];
 function schizzi2(x,y,n,colore,f){for(let i=0;i<n&&goo.length<130;i++)goo.push({x,y,vx:rnd(-1,1)*f,vy:rnd(.1,1.2)*f,v:rnd(.3,.75),c:colore,r:rnd(.05,.13)});}
-function scatta2(){if(P2.cd>0)return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('aSin').classList.remove('pronto');}
+function scatta2(){if(P2.cd>0)return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.catena=Math.abs(P2.vx)>=6?2:1;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('aSin').classList.remove('pronto');}
 function colpito2(nx){
  if(P2.inv>0||G.stella>0||G.stato!=='gioco')return;P2.inv=1.5;P2.vx=nx*6;P2.vy=6;P2.Wv+=8;
  if(G.scudo){G.scudo=false;suono(900,.25,'triangle',.1,300);schizzi2(P2.x,P2.y,16,'#7fe0ff',5);avviso('Scudo rotto',900);return;}
@@ -690,7 +690,9 @@ function passoNemici2(dt){
   else if(n.tipo==='g'){n.t-=dt;if(n.t<=0&&Math.abs(n.x-p.x)<10){n.t=3;const d=Math.sign(p.x-n.x)||-1;M.colpi.push({x:n.x+d*.6,y:n.y,vx:d*4.5,v:3.6});suono(300,.12,'square',.05,120);}}
   const d=Math.hypot(p.x-n.x,p.y-n.y),rn=n.tipo==='r'?.45:.42;
   if(d<p.R+rn){
-   if(forte){uccidi2(n);if(p.scatto>0)p.cd=Math.min(p.cd,.3);}
+   if(forte){uccidi2(n);if(p.scatto>0){p.cd=Math.min(p.cd,.3);if(G.stella<=0){p.catena--;
+     /* lanciato forte: lo scatto prosegue sul secondo nemico; altrimenti si ferma al primo */
+     if(p.catena>0)p.scatto=.34;else{if(p.colpiti)avviso('Doppia eliminazione!',1000);p.scatto=0;p.vx*=.6;}p.colpiti=p.catena>0;}}}
    else if(n.tipo==='e'&&p.vy<0&&p.y>n.y+.35){p.vy=7;p.Wv+=7;}
    else colpito2(Math.sign(p.x-n.x)||1);
   }
