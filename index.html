@@ -397,14 +397,14 @@ function impostaCamera(){
 
 
 /* ---------- COMANDI ---------- */
-const IN={tx:0,tz:0,tiltX:0,tiltZ:0,tiltOn:false,ricevuto:false,rawX:0,rawY:0,neutro:null,stickX:0,stickZ:0};
+const IN={tx:0,tz:0,tiltX:0,tiltZ:0,tiltOn:false,ricevuto:false,rawX:0,rawY:0,neutro:null,nx:0,stickX:0,stickZ:0};
 const tasti={};const puntatori=new Map();let stickId=null;
 function suOrient(e){
  if(e.beta==null||e.gamma==null)return;IN.ricevuto=true;
  const an=SC.rot?90:(screen.orientation&&screen.orientation.angle)||window.orientation||0,g=e.gamma,b=e.beta;let x=g,y=b;
  if(an===90){x=b;y=-g;}else if(an===-90||an===270){x=-b;y=g;}else if(an===180){x=-g;y=-b;}
  IN.rawX=x;IN.rawY=y;if(IN.neutro===null)IN.neutro=y;
- IN.tiltX=clamp(x/20,-1,1);IN.tiltZ=clamp((IN.neutro-y)/20,-1,1);
+ const zm=v=>Math.abs(v)<.8?0:v-Math.sign(v)*.8;IN.tiltX=clamp(zm(x-IN.nx)/8,-1,1);IN.tiltZ=clamp(zm(IN.neutro-y)/8,-1,1);
 }
 let provato=false;
 async function chiediSensori(){
@@ -447,11 +447,11 @@ function leggiInput(dt){
  let tx=kx||IN.stickX,tz=kz||IN.stickZ;
  if(!kx&&!kz&&IN.tiltOn){tx=IN.tiltX*S.sens;tz=IN.tiltZ*S.sens;}
  else{tx*=S.sens;tz*=S.sens;}
- const k=1-Math.exp(-dt*9);IN.tx=lerp(IN.tx,clamp(tx,-1,1),k);IN.tz=lerp(IN.tz,clamp(tz,-1,1),k);
+ const k=1-Math.exp(-dt*(IN.tiltOn?18:9));IN.tx=lerp(IN.tx,clamp(tx,-1,1),k);IN.tz=lerp(IN.tz,clamp(tz,-1,1),k);
 }
 
 /* ---------- FISICA ---------- */
-const GRAV=20,SPINTA=10.5,MAXV=6.5,MAXC=9,SALTO=8.2,VSCATTO=11;
+const GRAV=20,SPINTA=19,MAXV=9.5,MAXC=9,SALTO=8.2,VSCATTO=11;
 function solido(x,z){const t=cellaP(x,z);if(!t||t==='o')return false;for(const b of L.buchiT)if(b.att&&Math.hypot(x-b.x,z-b.z)<.62)return false;return true;}
 function urtaMuri(o,r,rimbalzo){
  const c0=toCol(o.x),r0=toRow(o.z);
@@ -632,7 +632,7 @@ function urta(o,R){
 const P2={x:0,y:0,px:0,py:0,vx:0,vy:0,R:.46,suolo:null,ultimoSuolo:null,verso:1,rotola:false,carica:0,passi:0,anim:'',animT:9,atterra:0,fermoT:0,coyote:0,buf:0,scatto:0,cd:0,inv:0,rot:0,W:0,Wv:0,sx:0,sy:0,sicuro:0};
 const goo=[];
 function schizzi2(x,y,n,colore,f){for(let i=0;i<n&&goo.length<130;i++)goo.push({x,y,vx:rnd(-1,1)*f,vy:rnd(.1,1.2)*f,v:rnd(.3,.75),c:colore,r:rnd(.05,.13)});}
-function scatta2(){if(P2.cd>0)return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('aSin').classList.remove('pronto');}
+function scatta2(){if(P2.cd>0)return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('aSin').classList.remove('pronto');}
 function colpito2(nx){
  if(P2.inv>0||G.stella>0||G.stato!=='gioco')return;P2.inv=1.5;P2.vx=nx*6;P2.vy=6;P2.Wv+=8;
  if(G.scudo){G.scudo=false;suono(900,.25,'triangle',.1,300);schizzi2(P2.x,P2.y,16,'#7fe0ff',5);avviso('Scudo rotto',900);return;}
@@ -651,14 +651,14 @@ function passo2d(h){
  const tx=IN.tx;if(Math.abs(tx)>.08)p.verso=Math.sign(tx);
  p.px=p.x;p.py=p.y;const vy0=p.vy;
  p.animT+=h;const su0=!!p.ultimoSuolo;
- p.carica=Math.abs(tx)>.7&&su0?p.carica+h:(Math.abs(tx)>.7?p.carica:0);
- if(!p.rotola&&(p.carica>.7||p.scatto>0)){p.rotola=true;p.anim='chiude';p.animT=p.scatto>0?.1:0;p.Wv-=6;schizzi2(p.x,p.y-p.R,5,amico().colore,3);}
+ p.carica=Math.abs(tx)>.6&&su0?p.carica+h:(Math.abs(tx)>.6?p.carica:0);
+ if(!p.rotola&&(p.carica>.25||p.scatto>0)){p.rotola=true;p.anim='chiude';p.animT=p.scatto>0?.1:0;p.Wv-=6;schizzi2(p.x,p.y-p.R,5,amico().colore,3);}
  else if(p.rotola&&su0&&Math.abs(p.vx)<2.5&&p.scatto<=0){p.rotola=false;p.anim='apre';p.animT=0;p.carica=0;p.Wv+=4;}
- if(p.scatto>0){p.scatto-=h;p.vx=p.verso*11;p.vy=Math.max(p.vy,0);if(Math.random()<.5)schizzi2(p.x,p.y,1,amico().colore,1);if(p.scatto<=0)p.vx*=.6;
+ if(p.scatto>0){p.scatto-=h;p.vx=p.verso*(p.vS||11);p.vy=Math.max(p.vy,0);if(Math.random()<.5)schizzi2(p.x,p.y,1,amico().colore,1);if(p.scatto<=0)p.vx*=.6;
   const q=Math.round(p.x+p.verso*.8),r=Math.round(p.y);if(cel(q,r)==='C')rompiCassa(q,r);}
  else{
-  const su=su0;p.vx+=tx*(!p.rotola?8:su?13:8)*h;
-  const k=Math.exp(-(Math.abs(tx)<.1&&su?3.2:su?1.4:.2)*h);p.vx*=k;p.vx=clamp(p.vx,p.rotola?-5.5:-3.4,p.rotola?5.5:3.4);
+  const su=su0;p.vx+=tx*(!p.rotola?16:su?30:15)*h;
+  const k=Math.exp(-(Math.abs(tx)<.1&&su?3.2:su?1.4:.2)*h);p.vx*=k;const tetto=p.rotola?5.5+Math.max(0,Math.abs(tx)-.5)*12:3.4;if(Math.abs(p.vx)>tetto)p.vx=lerp(p.vx,Math.sign(p.vx)*tetto,1-Math.exp(-h*8));
   p.vy-=(p.ultimoSuolo&&p.ultimoSuolo.y<.95?5:20)*h;
  }
  p.x+=p.vx*h;p.y+=p.vy*h;p.x=Math.max(p.R,p.x);
@@ -853,7 +853,7 @@ $('foto').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;c
 $('pausa').onclick=pausa;
 $('bRiprendi').onclick=()=>{mostra('');G.stato='gioco';};
 $('bEsci').onclick=()=>{incassa();vaiMenu();};
-$('bTara').onclick=()=>{IN.neutro=IN.rawY;avviso('Fatto: questa è la nuova posizione in piano',1600);};
+$('bTara').onclick=()=>{IN.neutro=IN.rawY;IN.nx=clamp(IN.rawX,-8,8);avviso('Fatto: questa è la nuova posizione in piano',1600);};
 $('sens').addEventListener('input',e=>{S.sens=+e.target.value;salva();});
 $('bAudio').onclick=()=>{S.audio=!S.audio;$('bAudio').textContent='Audio: '+(S.audio?'sì':'no');audioOn();salva();};
 $('bAudio').textContent='Audio: '+(S.audio?'sì':'no');
@@ -867,7 +867,7 @@ function telecamera2d(dt){
  const p=P2;
  /* cambia lato solo se il personaggio va davvero dall'altra parte per un attimo */
  const d=Math.abs(p.vx)>1?Math.sign(p.vx):V.dir;V.attesa=d!==V.dir?V.attesa+dt:0;if(V.attesa>.7){V.dir=d;V.attesa=0;}
- const meta=V.dir*Math.min(V.W/V.ts*.16,3),max=1.5*dt;V.la+=clamp(meta-V.la,-max,max);
+ const meta=V.dir*(Math.min(V.W/V.ts*.16,3)+Math.abs(p.vx)*.3),max=(1.5+Math.abs(p.vx)*.35)*dt;V.la+=clamp(meta-V.la,-max,max);
  V.cx=lerp(V.cx,p.x+V.la,1-Math.exp(-dt*3.5));V.cx=Math.max(V.cx,V.W/V.ts/2-1);
  /* in verticale segue il piano su cui poggia, non ogni salto */
  if(p.ultimoSuolo)V.py=p.y;else if(p.y>V.py+3.2)V.py=p.y-3.2;else if(p.y<V.py-1.5)V.py=p.y+1.5;
@@ -900,7 +900,7 @@ function ciclo(ora){
  G.t+=dt;
  if(G.modo==='menu'){disegnaMenu(dt);return;}
  leggiInput(dt);
- if(G.stato==='pronti'){G.pronti-=dt;if(G.pronti<=0){if(IN.tiltOn)IN.neutro=IN.rawY;G.stato='gioco';$('grande').hidden=true;}}
+ if(G.stato==='pronti'){G.pronti-=dt;if(G.pronti<=0){if(IN.tiltOn){IN.neutro=IN.rawY;IN.nx=clamp(IN.rawX,-8,8);}G.stato='gioco';$('grande').hidden=true;}}
  if(G.stato==='sconfitto'){G.finT-=dt;if(G.finT<=0){G.stato='velo';dopoBoss();}}
  if(G.stato==='fineAtt'){G.finT-=dt;if(G.finT<=0)mostraFine();}
  if(G.stato==='gioco')G.tempo+=dt;
@@ -918,7 +918,7 @@ misure2d();vestiPalla();vaiMenu();
 FOGLIO.addEventListener('load',()=>{vestiPalla();});KIT.addEventListener('load',hud);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(vestiPalla);
 requestAnimationFrame(ciclo);
-window.__rotolamici={G,B,P2,V,get L(){return L},get M(){return M},iniziaRun,entraBoss,entraCorsa,IN,CORSE,PEZZI};
+window.__rotolamici={suOrient,G,B,P2,V,get L(){return L},get M(){return M},iniziaRun,entraBoss,entraCorsa,IN,CORSE,PEZZI};
 })();
 </script>
 
