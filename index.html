@@ -126,7 +126,6 @@ input[type=range]{width:100%;accent-color:var(--vernice)}
     <input id="sens" type="range" min="0.5" max="1.8" step="0.1" value="1">
   </div>
   <button id="bRiprendi" class="btn primo">Riprendi</button>
-  <button id="bTara" class="btn" hidden>Rimetti in piano il telefono</button>
   <div class="riga"><button id="bAudio" class="btn piccolo">Audio: sì</button><button id="bEsci" class="btn piccolo">Esci</button></div>
 </section>
 
@@ -397,14 +396,13 @@ function impostaCamera(){
 
 
 /* ---------- COMANDI ---------- */
-const IN={tx:0,tz:0,tiltX:0,tiltZ:0,tiltOn:false,ricevuto:false,rawX:0,rawY:0,neutro:null,nx:0,stickX:0,stickZ:0};
+const IN={tx:0,tz:0,tiltX:0,tiltZ:0,tiltOn:false,ricevuto:false,stickX:0,stickZ:0};
 const tasti={};const puntatori=new Map();let stickId=null;
 function suOrient(e){
  if(e.beta==null||e.gamma==null)return;IN.ricevuto=true;
  const an=SC.rot?90:(screen.orientation&&screen.orientation.angle)||window.orientation||0,g=e.gamma,b=e.beta;let x=g,y=b;
  if(an===90){x=b;y=-g;}else if(an===-90||an===270){x=-b;y=g;}else if(an===180){x=-g;y=-b;}
- IN.rawX=x;IN.rawY=y;if(IN.neutro===null)IN.neutro=y;
- const zm=v=>Math.abs(v)<.8?0:v-Math.sign(v)*.8;IN.tiltX=clamp(zm(x-IN.nx)/8,-1,1);IN.tiltZ=clamp(zm(IN.neutro-y)/8,-1,1);
+  const zm=v=>Math.abs(v)<.8?0:v-Math.sign(v)*.8;IN.tiltX=clamp(zm(x)/8,-1,1);IN.tiltZ=clamp(zm(-y)/8,-1,1); /* assoluto: telefono in piano = piano dritto */
 }
 let provato=false;
 async function chiediSensori(){
@@ -416,7 +414,6 @@ async function chiediSensori(){
 }
 function note(){IN.tiltOn=false;aggComandi();}
 function aggComandi(){
- $('bTara').hidden=!IN.tiltOn;
  $('aSin').textContent='SCATTO';
  if(!IN.tiltOn&&provato)$('noteComandi').textContent='Sensori non disponibili qui: trascina il dito per inclinare il piano, tocca a destra per saltare e a sinistra per scattare.';
  else if(IN.tiltOn)$('noteComandi').textContent='Inclinazione attiva. Tocca a destra per saltare, a sinistra per scattare.';
@@ -853,7 +850,6 @@ $('foto').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;c
 $('pausa').onclick=pausa;
 $('bRiprendi').onclick=()=>{mostra('');G.stato='gioco';};
 $('bEsci').onclick=()=>{incassa();vaiMenu();};
-$('bTara').onclick=()=>{IN.neutro=IN.rawY;IN.nx=clamp(IN.rawX,-8,8);avviso('Fatto: questa è la nuova posizione in piano',1600);};
 $('sens').addEventListener('input',e=>{S.sens=+e.target.value;salva();});
 $('bAudio').onclick=()=>{S.audio=!S.audio;$('bAudio').textContent='Audio: '+(S.audio?'sì':'no');audioOn();salva();};
 $('bAudio').textContent='Audio: '+(S.audio?'sì':'no');
@@ -900,7 +896,7 @@ function ciclo(ora){
  G.t+=dt;
  if(G.modo==='menu'){disegnaMenu(dt);return;}
  leggiInput(dt);
- if(G.stato==='pronti'){G.pronti-=dt;if(G.pronti<=0){if(IN.tiltOn){IN.neutro=IN.rawY;IN.nx=clamp(IN.rawX,-8,8);}G.stato='gioco';$('grande').hidden=true;}}
+ if(G.stato==='pronti'){G.pronti-=dt;if(G.pronti<=0){G.stato='gioco';$('grande').hidden=true;}}
  if(G.stato==='sconfitto'){G.finT-=dt;if(G.finT<=0){G.stato='velo';dopoBoss();}}
  if(G.stato==='fineAtt'){G.finT-=dt;if(G.finT<=0)mostraFine();}
  if(G.stato==='gioco')G.tempo+=dt;
