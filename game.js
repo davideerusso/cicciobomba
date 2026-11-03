@@ -283,17 +283,17 @@ function raccogli(o){
 function rompiCassa(x,y){M.g[y][x]=' ';const k=(x*7+y*3)%5,t=['H','c','U','Z','c','T'][(x*7+y*3)%6];schizzi2(x,y,16,'#c28a48',5);sfx('disappear')||suono(200,.15,'square',.09,90);
  if(t==='c')for(let j=0;j<3;j++)M.oggetti.push({tipo:'c',x:x-.6+j*.6,y:y+.2,fase:x+j});else M.oggetti.push({tipo:t,x,y,fase:x});}
 /* ananas da spingere: lo fa rotolare l'inclinazione come Matteo, e lo sposta chi gli va addosso */
-const AN_R=.62;
+const AN_R=.62,AN_M=2.6; /* più pesante di Matteo (1.6): si sposta, non vola via */
 function passoAnanas(h){
  const p=P2;if(!M.ananas)return;
  for(const a of M.ananas){if(a.preso)continue;
-  const su=!!a.suolo;a.vx+=IN.tx*(su?9:3)*h;a.vx*=Math.exp(-(su?(Math.abs(IN.tx)<.1?1.8:.5):.1)*h);a.vx=clamp(a.vx,-7,7);a.vy-=14*h;
+  const su=!!a.suolo;a.vx+=IN.tx*(su?9:3)*h;a.vx*=Math.exp(-(su?(Math.abs(IN.tx)<.1?1.8:.5):.1)*h);a.vx=clamp(a.vx,-7,7);a.vy-=16*h;
   a.px=a.x;a.py=a.y;a.x+=a.vx*h;a.y+=a.vy*h;urta(a,AN_R);a.rot+=a.vx*h/AN_R;
   const dx=a.x-p.x,dy=a.y-p.y,d=Math.hypot(dx,dy),min=p.R+AN_R;
   if(d<min&&d>1e-6){const nx=dx/d,ny=dy/d,pen=min-d,sopra=ny<-.5;
    if(sopra){p.x-=nx*pen;p.y-=ny*pen;const vn=(p.vx-a.vx)*nx+(p.vy-a.vy)*ny;if(vn>0){p.vx-=vn*nx;p.vy-=vn*ny;}p.suolo={x:-nx,y:-ny};}
-   else{p.x-=nx*pen*.35;p.y-=ny*pen*.35;a.x+=nx*pen*.65;a.y+=ny*pen*.65;
-    const vr=(a.vx-p.vx)*nx+(a.vy-p.vy)*ny;if(vr<0){const j=-1.2*vr/(1/1.6+1);a.vx+=j*nx;a.vy+=j*ny;p.vx-=j*nx/1.6;p.vy-=j*ny/1.6;}}}
+   else{const qa=1.6/(1.6+AN_M);p.x-=nx*pen*(1-qa);p.y-=ny*pen*(1-qa);a.x+=nx*pen*qa;a.y+=Math.min(0,ny*pen*qa);
+    const vr=(a.vx-p.vx)*nx+(a.vy-p.vy)*ny;if(vr<0){const j=-1.05*vr/(1/1.6+1/AN_M);a.vx=clamp(a.vx+j*nx/AN_M,-6,6);a.vy+=Math.min(0,j*ny/AN_M);p.vx-=j*nx/1.6;p.vy-=j*ny/1.6;}}}
   if(a.y<-4){a.x=a.x0;a.y=a.y0+.6;a.vx=a.vy=0;a.rot=0;schizzi2(a.x,a.y,10,'#f6c445',4);suono(500,.3,'sine',.08,200);avviso('L’ananas è caduto: ricompare dove l’hai trovato',1800);}
   for(const k of M.ceste)if(!k.piena&&k.g===a.g&&Math.abs(a.x-k.x)<.6&&Math.abs(a.y-k.y)<1){if(Math.abs(a.vx)<3.2)riempiCesta(k,a);else if(!k.detto){k.detto=true;avviso('Troppo veloce: la cesta lo prende solo se arriva piano',2200);}}
  }
@@ -550,7 +550,7 @@ function esplodi(){
  const l=$('lampo');l.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>l.classList.remove('on')));
  {const p=P2,R=2.5+f*4;G.boom={x:p.x,y:p.y,t:G.t,r:R};
   M.nemici.forEach(n=>{if(n.vivo&&Math.hypot(n.x-p.x,n.y-p.y)<R)uccidi2(n);});
-  (M.ananas||[]).forEach(a=>{const d=Math.hypot(a.x-p.x,a.y-p.y);if(!a.preso&&d<R){const k=(1-d/R)*9+3;a.vx+=(a.x-p.x)/(d||1)*k;a.vy+=6;}});M.colpi=M.colpi.filter(q=>Math.hypot(q.x-p.x,q.y-p.y)>=R);
+  (M.ananas||[]).forEach(a=>{const d=Math.hypot(a.x-p.x,a.y-p.y);if(!a.preso&&d<R){const k=(1-d/R)*6+2;a.vx+=(a.x-p.x)/(d||1)*k;a.vy+=4;}});M.colpi=M.colpi.filter(q=>Math.hypot(q.x-p.x,q.y-p.y)>=R);
   const q=Math.ceil(R);for(let y=Math.round(p.y)-q;y<=Math.round(p.y)+q;y++)for(let x=Math.round(p.x)-q;x<=Math.round(p.x)+q;x++)if(cel(x,y)==='C'&&Math.hypot(x-p.x,y-p.y)<R)rompiCassa(x,y);
   schizzi2(p.x,p.y,50,'#ffb13a',9);schizzi2(p.x,p.y,30,'#d8432e',7);p.vy=Math.max(p.vy,8);p.Wv+=12;p.ultimoSuolo=null;p.inv=Math.max(p.inv,.6);
  const b=M.boss;if(b&&b.vita>0&&Math.hypot(b.x-p.x,b.y-p.y)<R+b.r){if(b.stato==='stordito')colpisciBoss(b);else{b.stato='stordito';b.t=b.cfg.stordito;b.vy=0;avviso('Boss stordito: scattagli addosso!',1400);}}
