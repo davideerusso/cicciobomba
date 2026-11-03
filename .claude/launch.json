@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "cicciobomba",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-I", "-c",
+        "import functools,os,http.server as h;h.ThreadingHTTPServer(('127.0.0.1',int(os.environ.get('PORT','8765'))),functools.partial(h.SimpleHTTPRequestHandler,directory='/Volumes/TOSHIBA EXT/cicciobomba')).serve_forever()"
+      ],
+      "port": 8765
+    }
+  ]
+}
