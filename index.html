@@ -131,6 +131,7 @@ input[type=range]{width:100%;accent-color:var(--vernice)}
   </form>
   <label class="btn piccolo fotobtn" for="foto"><span id="fotoTesto">Metti la foto sulla sfera</span></label>
   <input id="foto" type="file" accept="image/*">
+  <button id="togliFoto" class="btn piccolo" hidden>Togli la foto</button>
   <button id="togliAmico" class="btn piccolo" hidden>Togli questo amico</button>
   <div class="intesta"><h3>Skin</h3><span style="font-weight:800"><span id="saldo">0</span> bocconi</span></div>
   <div id="listaSkin" class="griglia"></div>
@@ -762,7 +763,7 @@ function disegnaAmici(){const a=$('listaAmici');a.textContent='';
  const l=$('listaSkin');l.textContent='';const f=amico();
  SKIN.forEach(k=>{const b=document.createElement('button'),ha=S.skin.includes(k.id);b.className='scelta'+(f.skin===k.id?' attiva':'');const s=document.createElement('span');s.textContent=k.nome;const c=document.createElement('i');c.textContent=ha?(f.skin===k.id?'Indossata':'Tua'):k.costo+' bocconi';b.append(anteprima(f,k.id),s,c);
   b.onclick=()=>{if(!ha){if(S.gettoni<k.costo){c.textContent='Ne servono '+(k.costo-S.gettoni);return;}S.gettoni-=k.costo;S.skin.push(k.id);suono(660,.25,'triangle',.1,1320);}f.skin=k.id;salva();vestiPalla();disegnaAmici();};l.append(b);});
- $('saldo').textContent=S.gettoni;$('togliAmico').hidden=S.sel===0;$('fotoTesto').textContent=(f.foto?'Cambia la foto di ':'Metti la foto di ')+f.nome;
+ $('saldo').textContent=S.gettoni;$('togliAmico').hidden=S.sel===0;$('togliFoto').hidden=!f.foto;$('togliFoto').textContent='Togli la foto di '+f.nome;$('fotoTesto').textContent=(f.foto?'Cambia la foto di ':'Metti la foto di ')+f.nome;
 }
 async function bloccaOrizzontale(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();await screen.orientation.lock('landscape');}catch(e){}}
 $('bGioca').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();if(S.guidaVista)iniziaRun();else apriGuida(iniziaRun);};
@@ -771,6 +772,7 @@ $('bAmici').onclick=()=>{audioOn();disegnaAmici();mostra('sAmici');};
 $('amiciChiudi').onclick=()=>mostra('sMenu');
 $('nuovoAmico').addEventListener('submit',e=>{e.preventDefault();const n=$('nomeNuovo').value.trim();if(!n)return;S.amici.push({nome:n,colore:COLORI[S.amici.length%COLORI.length],skin:'classica',foto:null});S.sel=S.amici.length-1;$('nomeNuovo').value='';$('nomeNuovo').blur();salva();vestiPalla();disegnaAmici();});
 $('togliAmico').onclick=()=>{if(S.sel===0)return;S.amici.splice(S.sel,1);S.sel=0;salva();vestiPalla();disegnaAmici();};
+$('togliFoto').onclick=()=>{const a=amico();a.foto=null;a._img=null;a._v=0;salva();vestiPalla();disegnaAmici();};
 $('foto').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{const c=document.createElement('canvas'),q=Math.min(im.width,im.height);c.width=c.height=320;c.getContext('2d').drawImage(im,(im.width-q)/2,(im.height-q)/2,q,q,0,0,320,320);const a=amico();a.foto=c.toDataURL('image/jpeg',.8);a._img=null;a._v=0;URL.revokeObjectURL(u);salva();vestiPalla();disegnaAmici();};im.src=u;e.target.value='';});
 $('pausa').onclick=pausa;
 $('bRiprendi').onclick=()=>{mostra('');G.stato='gioco';};
