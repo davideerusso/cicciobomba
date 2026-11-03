@@ -6,7 +6,7 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
 - `index.html`: solo il markup delle schermate (menu, guida, amici e skin, pausa, fine, HUD).
 - `style.css`: lo stile, con i colori come variabili su `:root`.
 - `game.js`: tutta la logica, in un unico script classico chiuso in una funzione e diviso in sezioni `/* ---------- NOME ---------- */`: orientamento, salvataggio, mondi e tappe, kit grafico e sonoro, skin, palla dipinta, audio, stato, comandi, cuori, corsa 2D, boss 2D, la bomba, guida, flusso, menu, ciclo.
-- `assets/`: `kit.webp` (atlante dei blocchi Kenney, coordinate in `KMAP`), `personaggio.webp` e `personaggio2.webp` (fogli delle animazioni di Matteo), `fumo.webp`, `polvere.webp`, `esplosione.webp`, `pizza.webp`, `bomba.webp` (Matteo carico al massimo: 37 fotogrammi da 160 in righe da 10, mappa in `disegnaBomba`), `fondi/*.webp`, `suoni/*.mp3`.
+- `assets/`: `kit.webp` (atlante dei blocchi Kenney, coordinate in `KMAP`), `personaggio.webp` e `personaggio2.webp` (fogli delle animazioni di Matteo), `fumo.webp`, `polvere.webp`, `esplosione.webp`, `pizza.webp`, `kit2.webp` (altri pezzi del kit), `bomba.webp` (Matteo carico al massimo: 37 fotogrammi da 160 in righe da 10, mappa in `disegnaBomba`), `fondi/*.webp`, `suoni/*.mp3`.
 - `tools/build.py`: ricompone tutto in `dist/cicciobomba.html`, un file unico con le risorse dentro, che si apre con un doppio clic. `dist/` è generata ed esclusa da git: non modificarla a mano.
 
 ## Regole
@@ -24,10 +24,20 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
 - Comandi da tastiera nel browser: frecce per muoversi, spazio per saltare, Shift o X per scattare, Esc per la pausa. Sul telefono si inclina per rotolare e si tocca a destra/sinistra per saltare/scattare.
 - `window.__rotolamici` espone `G`, `P2`, `M` e il resto per le prove da console. Con il pannello del browser nascosto `requestAnimationFrame` si ferma e il gioco non avanza: in quel caso si può usare una copia di `index.html` in `dist/` che sostituisce `requestAnimationFrame` con una coda da far avanzare a mano.
 
-## Tappa di prova: La Spremiananas
-- Si apre dal pulsante "Prova: Spremiananas" nel menu. Usa solo il pezzo `carico` di `PEZZI` e alla fine torna al menu invece di andare al boss (`M.prova`).
-- Caratteri nuovi nei pezzi: `A` ananas da spingere, `K` cesta, `D` cancello. Si collegano tra loro se stanno nello stesso pezzo, e il cancello si apre quando l'ananas entra nella cesta.
-- L'ananas rotola con l'inclinazione (`IN.tx`), Matteo lo spinge e l'esplosione lo lancia. Se cade ricompare dove l'hai trovato, senza perdere cuori, e la cesta lo prende solo se arriva piano. Fisica in `passoAnanas`.
+## Tappa di prova: Nuova tappa
+- Si apre dal pulsante "Prova: nuova tappa" nel menu. Usa i pezzi `intreccio`, `ponte` e `valanga` di `PEZZI` e alla fine torna al menu invece di andare al boss (`M.prova`). All'inizio di ogni pezzo compare il suggerimento di `AIUTI`.
+- La Spremiananas (ananas da spingere, cesta, bilance, vasca di succo, crosta, pressa) è stata tolta perché non piaceva: non rimetterla.
+- Caratteri nuovi nei pezzi:
+  - `O` peso: scivola dove inclini il telefono e Matteo lo spinge. Se cade fuori torna al suo posto.
+  - `P` pulsante, `D` porta: quando il peso cade sul pulsante, le porte dello stesso pezzo si aprono per sempre. Matteo da solo non lo preme.
+  - `x` blocco che crolla: mezzo secondo dopo che ci sali cade, e torna dopo 4 secondi.
+  - `X` muro crepato: si apre solo con l'esplosione e nasconde le stanze segrete.
+- Valide in tutto il gioco:
+  - **Slancio:** rotolando giù per una rampa a più di 6 di velocità, Matteo travolge nemici e casse per circa un secondo, e ogni colpo lo rinnova (`p.slancio`).
+  - **Combo:** nemici e casse travolti di fila valgono bocconi in più e mostrano "x2", "x3"… (`combo`).
+  - **Discesa:** in discesa Matteo resta attaccato alla rampa invece di decollare.
+- Gli sprite nuovi vengono dal New Platformer Pack e stanno in `assets/kit2.webp`: pulsante, lucchetto, peso, mattoni e i blocchi con la faccia. `sp()` li disegna quando la voce di `KMAP` ha un terzo valore.
+- I pezzi si generano con uno script Python che li disegna casella per casella. Prima di cambiarli, controlla che le molle portino abbastanza in alto: una molla fa salire di circa 4,9 caselle e un salto di circa 2,3.
 
 ## Note
 - Il progetto sta su un disco esterno (`/Volumes/TOSHIBA EXT`). I file `._*` li crea macOS e sono esclusi da git.
