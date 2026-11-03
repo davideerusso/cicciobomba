@@ -59,8 +59,14 @@ const FUMO=new Image();FUMO.src='assets/fumo.webp'; /* 6 fotogrammi da 300x225 *
 function disegnaFumo(c,xRetro,yTerra,alt,verso,e){if(!FUMO.complete||e<0||e>=1)return;const f=Math.min(5,Math.floor(e*6)),w=alt*4/3;c.save();c.translate(xRetro,yTerra);c.scale(-verso,1);c.globalAlpha=(e>.75?(1-e)*4:1)*.5;c.drawImage(FUMO,f*300,0,300,225,0,-alt*.9,w,alt);c.restore();}
 const POLV=new Image();POLV.src='assets/polvere.webp'; /* 10 fotogrammi da 184 */
 function disegnaPolvere(c,x,yTerra,z,e){if(!POLV.complete||e<0||e>=1)return;const f=Math.min(9,Math.floor(e*10));c.save();c.globalAlpha=.45;c.drawImage(POLV,f*184,0,184,184,x-z/2,yTerra-z*.82,z,z);c.restore();}
+const BOMBA=new Image();BOMBA.src='assets/bomba.webp'; /* Matteo carico al massimo: 37 fotogrammi da 160 in righe da 10, corpo di raggio 40 centrato in (80,98) */
 const ESPL=new Image();ESPL.src='assets/esplosione.webp'; /* 8 fotogrammi da 200 */
 function disegnaEspl(c,x,y,raggio,e){if(!ESPL.complete||e<0||e>=1)return;const f=Math.min(7,Math.floor(e*8)),z=raggio*2*100/68;c.drawImage(ESPL,f*200,0,200,200,x-z/2,y-z/2,z,z);}
+/* fotogrammi: 0-8 si gira, 18 lampo scuro, 19-28 cammina, 34 colpito, 35 in fiamme, 36 fermo */
+function disegnaBomba(c,x,yPiedi,r,f,verso,W,ang,rot){
+ if(!BOMBA.complete)return;const R=r*1.1,k=R/40;c.save();c.translate(x,yPiedi);if(ang)c.rotate(ang);c.scale(verso*(1-W*.6),1+W);c.translate(0,-R);if(rot)c.rotate(rot);
+ c.drawImage(BOMBA,f%10*160,Math.floor(f/10)*160,160,160,-80*k,-98*k,160*k,160*k);c.restore();
+}
 function disegnaCamm(c,x,yPiedi,r,col,riga,verso,W,ang){
  if(!FOGLIO2.complete)return;const lato=CELLA2*r*2.55/197;c.save();c.translate(x,yPiedi);if(ang)c.rotate(ang);c.scale(verso*(1-W*.6),1+W);
  c.drawImage(foglioAmico(FOGLIO2),col*CELLA2,riga*CELLA2,CELLA2,CELLA2,-lato/2,-lato*.975,lato,lato);c.restore();
@@ -287,7 +293,7 @@ function colpito2(nx){
  togliCuore();sfx('hurt')||suono(150,.25,'square',.1,70);vibra(60);schizzi2(P2.x,P2.y,12,'#d8432e',5);
 }
 function raccogli(o){
- if(o.tipo==='c'){G.gettoni++;$('gett').textContent=G.gettoni;G.carica=Math.min(1,G.carica+.08);aggBarra();if(G.carica>=.25&&!G.avvisato){G.avvisato=true;avviso('Sei esplosivo: cadi da molto in alto o sbatti forte!',2600);}sfx('coin')||suono(880,.09,'triangle',.08,1320);schizzi2(o.x,o.y,5,'#f6c445',3);}
+ if(o.tipo==='c'){G.gettoni++;$('gett').textContent=G.gettoni;G.carica=Math.min(1,G.carica+.08);aggBarra();if(G.carica>=.25&&!G.avvisato){G.avvisato=true;avviso('Sei esplosivo: cadi da molto in alto o sbatti forte!',2600);}sfx('coin')||suono(880,.09,'triangle',.08,1320);}
  else if(o.tipo==='H'){if(G.cuori<MAXC){G.cuori++;hud();}else{G.gettoni+=5;$('gett').textContent=G.gettoni;}sfx('gem')||suono(520,.3,'sine',.12,1040);avviso('+1 cuore',900);schizzi2(o.x,o.y,12,'#d8432e',4);}
  else if(o.tipo==='U'){G.scudo=true;sfx('magic')||suono(440,.3,'triangle',.1,880);avviso('Scudo: para il prossimo colpo',1400);}
  else if(o.tipo==='Z'){G.carica=Math.min(1,G.carica+.4);aggBarra();sfx('magic')||suono(300,.3,'square',.08,600);avviso('Esplosione più forte',900);}
@@ -371,7 +377,7 @@ function passo2d(h){
  p.px=p.x;p.py=p.y;const vy0=p.vy;
  p.animT+=h;const su0=!!p.ultimoSuolo;
  p.carica=Math.abs(tx)>.3?p.carica+h:0;
- if(!p.rotola&&(p.carica>.15||Math.abs(p.vx)>3||p.scatto>0)){p.rotola=true;p.anim='chiude';p.animT=p.scatto>0?.1:0;p.Wv-=6;schizzi2(p.x,p.y-p.R,5,amico().colore,3);}
+ if(!p.rotola&&(p.carica>.15||Math.abs(p.vx)>3||p.scatto>0)){p.rotola=true;p.anim='chiude';p.animT=p.scatto>0?.1:0;p.Wv-=6;}
  else if(p.rotola&&su0&&Math.abs(p.vx)<1.2&&Math.abs(tx)<.25&&p.scatto<=0){p.rotola=false;p.anim='apre';p.animT=0;p.carica=0;p.Wv+=4;}
  if(p.scatto>0){p.scatto-=h;p.vx=p.verso*(p.vS||11);p.vy=Math.max(p.vy,0);if(p.scatto<=0)p.vx*=.6;
   const q=Math.round(p.x+p.verso*.8),r=Math.round(p.y);if(cel(q,r)==='C')rompiCassa(q,r);}
@@ -406,7 +412,7 @@ function passoOggetti(dt){
  for(let i=M.oggetti.length-1;i>=0;i--){const o=M.oggetti[i];if(Math.abs(o.x-p.x)<.75&&Math.abs(o.y-p.y)<.8){raccogli(o);M.oggetti.splice(i,1);}}
  for(const k in M.spine){const a=M.spine[k];if(a.t==='!'){const on=Math.sin(G.t*1.4+a.fase)>0;a.s=lerp(a.s,on?1:.1,1-Math.exp(-dt*12));}}
 }
-function uccidi2(n){n.vivo=false;G.uccisi++;G.gettoni+=2;$('gett').textContent=G.gettoni;schizzi2(n.x,n.y,16,'#fff4df',6);sfx('bump')||suono(180,.2,'square',.1,60);vibra(25);}
+function uccidi2(n){n.vivo=false;G.uccisi++;G.gettoni+=2;$('gett').textContent=G.gettoni;sfx('bump')||suono(180,.2,'square',.1,60);vibra(25);}
 function passoNemici2(dt){
  const p=P2,forte=p.scatto>0||G.stella>0;
  for(const n of M.nemici){if(!n.vivo||Math.abs(n.x-V.cx)>22)continue;n.fase+=dt;
@@ -519,10 +525,13 @@ function disegna2d(){
  for(const q of M.colpi)sp(c,'fireball',sx(q.x)-ts*.4,sy(q.y)-ts*.4,ts*.8,ts*.8,q.vx>0);
  for(const f of polveri)disegnaPolvere(c,sx(f.x),sy(f.y),ts*1.9,(G.t-f.t)/.45);
  for(const f of fumi)disegnaFumo(c,sx(f.x),sy(f.y),ts*1.2,f.v,(G.t-f.t)/.55);
- if(G.carica>=MIN_BOTTO){const k=.15+G.carica*.45+.08*Math.sin(G.t*12),rg=p.R*ts*2.2,cx=sx(p.x),cy=sy(p.y),gr=c.createRadialGradient(cx,cy,p.R*ts*.5,cx,cy,rg);gr.addColorStop(0,`rgba(255,90,20,${k})`);gr.addColorStop(1,'rgba(255,90,20,0)');c.fillStyle=gr;c.beginPath();c.arc(cx,cy,rg,0,6.3);c.fill();if(G.carica>=1&&Math.random()<.6)schizzi2(p.x,p.y+p.R,1,'#ffd84f',2.5);}
+ if(G.carica>=MIN_BOTTO){const k=.15+G.carica*.45+.08*Math.sin(G.t*12),rg=p.R*ts*2.2,cx=sx(p.x),cy=sy(p.y),gr=c.createRadialGradient(cx,cy,p.R*ts*.5,cx,cy,rg);gr.addColorStop(0,`rgba(255,90,20,${k})`);gr.addColorStop(1,'rgba(255,90,20,0)');c.fillStyle=gr;c.beginPath();c.arc(cx,cy,rg,0,6.3);c.fill();}
  if(!(p.inv>0&&Math.floor(G.t*14)%2===0)){const op={t:G.t,W:p.W,vx:p.vx,vy:p.vy,n:p.ultimoSuolo,stella:G.stella,scudo:G.scudo};
   const n=p.ultimoSuolo,r=p.R*ts*1.02,pie=sy(p.y-p.R),ang=n?Math.atan2(n.x,n.y):0,am=amico();
-  if(p.rotola&&!(p.anim==='chiude'&&p.animT<.2)){
+  if(G.carica>=1){const fr=p.inv>0?34:G.t%1.3<.09?18:p.rotola?0:!n?(p.vy<-7?35:19):Math.abs(p.vx)<.25?(p.fermoT>5?Math.floor((p.fermoT-5)*7)%9:36):19+Math.floor(p.passi)%10;
+   disegnaBomba(c,sx(p.x),pie,r,fr,p.rotola?1:p.verso,p.W,p.rotola?0:ang,p.rotola?-p.rot*2:0);
+   if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),pie-r*1.1,r*1.5,0,6.3);c.stroke();}}
+  else if(p.rotola&&!(p.anim==='chiude'&&p.animT<.2)){
    op.disegno=am.skin==='classica'||!!am.foto;op.foto=am._img;disegnaSlime(c,sx(p.x),sy(p.y),r,-p.rot,op);}
   else{
    if(p.rotola)disegnaPasso(c,sx(p.x),pie,r,Math.min(2,Math.floor(p.animT/.067)),2,p.verso,p.W,ang);
