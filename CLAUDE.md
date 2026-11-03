@@ -25,16 +25,9 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
 - `window.__rotolamici` espone `G`, `P2`, `M` e il resto per le prove da console. Con il pannello del browser nascosto `requestAnimationFrame` si ferma e il gioco non avanza: in quel caso si può usare una copia di `index.html` in `dist/` che sostituisce `requestAnimationFrame` con una coda da far avanzare a mano.
 
 ## Tappa di prova: La Spremiananas
-- Si apre dal pulsante "Prova: Spremiananas" nel menu. Usa i pezzi `carico`, `bilance`, `vasca`, `scivolo` e `pressa` di `PEZZI` e alla fine torna al menu invece di andare al boss (`M.prova`). All'inizio di ogni pezzo compare il suggerimento di `AIUTI`.
-- Caratteri nuovi nei pezzi. Ogni elemento si collega agli altri dello stesso pezzo:
-  - `A` ananas da spingere, `K` cesta, `D` cancello: il cancello si apre per sempre quando l'ananas entra piano nella cesta.
-  - `=` asse a bilanciere (una fila di `=`): si piega dal lato del peso.
-  - `P` pedana, `Q` porta: la porta resta aperta solo finché qualcuno o un ananas sta sulla pedana. Da aperta, nella griglia diventa `q`.
-  - `~` vasca piena di succo, `w` vasca vuota che si riempie quando la pressa schiaccia l'ananas. Nel succo si galleggia e non si salta, e la superficie si inclina col telefono.
-  - `Z` muro di crosta: si rompe solo rotolando sopra velocità 7,5 (lo scatto non basta), con l'ananas veloce o con l'esplosione.
-  - `M` pressa (una fila di `M` in alto): scende ogni 3 secondi, ferisce Matteo e spreme l'ananas.
-- L'ananas rotola con l'inclinazione (`IN.tx`), Matteo lo spinge e l'esplosione lo lancia. Pesa più di Matteo (`AN_M`), quindi non vola via. Se cade, o finisce in una vasca vuota, ricompare dove l'hai trovato senza far perdere cuori. Gli ananas lontani più di 24 caselle da Matteo restano fermi.
-- La fisica sta in `passoAnanas` e `passoMobili`, con le funzioni `urtaAssi`, `urtaPresse`, `galleggia` e `sfonda`.
+- Si apre dal pulsante "Prova: Spremiananas" nel menu. Usa solo il pezzo `carico` di `PEZZI` e alla fine torna al menu invece di andare al boss (`M.prova`).
+- Caratteri nuovi nei pezzi: `A` ananas da spingere, `K` cesta, `D` cancello. Si collegano tra loro se stanno nello stesso pezzo, e il cancello si apre quando l'ananas entra nella cesta.
+- L'ananas rotola con l'inclinazione (`IN.tx`), Matteo lo spinge e l'esplosione lo lancia. Se cade ricompare dove l'hai trovato, senza perdere cuori, e la cesta lo prende solo se arriva piano. Fisica in `passoAnanas`.
 
 ## Note
 - Il progetto sta su un disco esterno (`/Volumes/TOSHIBA EXT`). I file `._*` li crea macOS e sono esclusi da git.
