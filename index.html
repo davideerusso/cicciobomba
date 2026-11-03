@@ -27,6 +27,12 @@ body{font-family:var(--testo);font-size:16px}
 .btn.piccolo{font-size:15px;padding:8px 12px;box-shadow:0 3px 0 var(--inchiostro)}
 .btn[disabled]{opacity:.5;cursor:default}
 :focus-visible{outline:3px solid var(--oro);outline-offset:2px}
+#sGuida{position:fixed;inset:0;box-sizing:border-box;background:var(--legno);color:var(--inchiostro);padding:calc(var(--st) + 10px) max(16px,var(--sr)) calc(var(--sb) + 12px) max(16px,var(--sl));display:flex;flex-direction:column;gap:8px;justify-content:center;overflow:hidden}
+.gTesta{display:flex;justify-content:space-between;align-items:baseline;max-width:960px;width:100%;margin:0 auto}.gTesta h2{margin:0;font:400 clamp(20px,6.5vmin,30px)/1.1 var(--display)}#gNum{font-weight:800;font-variant-numeric:tabular-nums}
+.gCarte{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:960px;width:100%;margin:0 auto;min-height:0}
+.gCarte figure{margin:0;min-width:0;display:flex;flex-direction:column;gap:4px;align-items:center}.gCarte canvas{width:100%;max-height:calc(100vmin - 170px);aspect-ratio:5/3;object-fit:contain;border:3px solid var(--inchiostro);border-radius:12px;box-sizing:border-box;background:#c4e2ff}
+.gCarte figcaption{font-weight:800;font-size:clamp(14px,4.3vmin,18px);line-height:1.15;text-align:center;text-wrap:balance}
+.gPiede{display:flex;justify-content:space-between;align-items:center;gap:12px;max-width:960px;width:100%;margin:0 auto}.gPiede .primo{min-width:170px;padding-block:9px}
 #titolo{position:fixed;top:calc(var(--st) + 18px);left:0;width:50%;text-align:center;pointer-events:none}
 #titolo h1{margin:0;font:400 clamp(30px,5.6vmax,46px)/1 var(--display);color:var(--oro);-webkit-text-stroke:2px var(--inchiostro);paint-order:stroke fill;text-shadow:0 5px 0 var(--inchiostro);letter-spacing:.01em}
 #titolo p{margin:8px 0 0;font-weight:800;font-size:17px;color:var(--inchiostro);text-shadow:0 0 3px #fff,0 0 6px #fff,0 1px 0 #fff}
@@ -100,9 +106,19 @@ input[type=range]{width:100%;accent-color:var(--vernice)}
   <div id="titolo"><h1>CICCIOBOMBA</h1><p><span id="chi">Matteo</span> ha il corpo rotondo e il potere di rotolare</p><p id="record" hidden></p></div>
   <div class="dock">
     <button id="bGioca" class="btn primo">Gioca</button>
-    <div class="riga"><button id="bAmici" class="btn">Amici e skin</button></div>
-    <small id="noteComandi">Tieni il telefono in orizzontale. Una sola corsa. Inclina per rotolare, tocca a destra per saltare e a sinistra per scattare. Mangia per caricarti: cadute alte e schianti ti fanno esplodere.</small>
+    <div class="riga"><button id="bAmici" class="btn">Amici e skin</button><button id="bGuida" class="btn">Come si gioca</button></div>
+    <small id="noteComandi">Tieni il telefono in orizzontale. Una sola corsa: se finisci i cuori riparti da capo.</small>
   </div>
+</section>
+
+<section id="sGuida" hidden>
+  <div class="gTesta"><h2 id="gTit"></h2><span id="gNum"></span></div>
+  <div class="gCarte">
+    <figure><canvas id="gc0" width="600" height="360"></canvas><figcaption id="gt0"></figcaption></figure>
+    <figure><canvas id="gc1" width="600" height="360"></canvas><figcaption id="gt1"></figcaption></figure>
+    <figure><canvas id="gc2" width="600" height="360"></canvas><figcaption id="gt2"></figcaption></figure>
+  </div>
+  <div class="gPiede"><button id="gSalta" class="btn piccolo">Salta</button><button id="gAvanti" class="btn primo">Avanti</button></div>
 </section>
 
 <section id="sAmici" class="tavola" hidden>
@@ -838,8 +854,50 @@ function esplodi(){
  G.carica=0;aggBarra();
 }
 
+/* ---------- GUIDA: tre pagine con scenette animate ---------- */
+const GUIDA=[
+ {t:'Nei livelli',c:['Inclina per rotolare','Tocca a destra: salti','Tocca a sinistra: scatti e travolgi i nemici'],f:[gInclina,gSalto,gScatto]},
+ {t:'La bomba',c:['Mangia: ti carichi','Cadi da molto in alto: BOOM','Schiantati veloce: BOOM'],f:[gCibo,gCaduta,gSchianto]},
+ {t:'I boss, visti dall’alto',c:['Inclina il tavolo, evita i buchi','Fallo sbattere contro il bordo','Stordito? Scattagli addosso'],f:[gTavolo,gCarica,gColpo]}
+];
+const GW=300,GH=180,GS=GH-40,GR=19;
+let gPag=0,gDopo=null;
+function gFondo(c){c.fillStyle='#c4e2ff';c.fillRect(0,0,GW,GH);for(let i=0;i<8;i++){sp(c,'terrain_sand_block_top',i*40,GS,41,41);}}
+function gTelefono(c,x,y,ang,lato,acceso){
+ const w=104,h=50;c.save();c.translate(x,y);c.rotate(ang);c.fillStyle='#2b2b3a';c.beginPath();c.roundRect(-w/2-4,-h/2-4,w+8,h+8,8);c.fill();c.fillStyle='#e8f4ff';c.fillRect(-w/2,-h/2,w,h);
+ if(lato){c.fillStyle=acceso?'#d8432e':'#d8432e55';c.fillRect(lato<0?-w/2:0,-h/2,w/2,h);c.fillStyle='#fff';c.font='800 11px "Baloo 2",sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(lato<0?'SCATTO':'SALTO',lato*w/4,0);}
+ c.restore();
+}
+function gBoom(c,x,y,e,R){if(e<0||e>1)return;c.fillStyle=`rgba(255,177,58,${(1-e)*.75})`;c.beginPath();c.arc(x,y,R*Math.sqrt(e),0,6.3);c.fill();c.strokeStyle=`rgba(216,67,46,${1-e})`;c.lineWidth=4;c.stroke();c.fillStyle='#d8432e';c.font='400 26px "Bowlby One","Arial Black",sans-serif';c.textAlign='center';c.textBaseline='middle';if(e<.7){c.lineWidth=5;c.strokeStyle='#fff';c.strokeText('BOOM',x,y-34);c.fillText('BOOM',x,y-34);}}
+function gBarra(c,v){sp(c,v>=.25?'bomb_active':'bomb',8,6,24,24);c.fillStyle='#fff';c.strokeStyle='#2b2b3a';c.lineWidth=2.5;c.beginPath();c.roundRect(34,12,86,12,6);c.fill();c.stroke();c.fillStyle='#d8432e';c.beginPath();c.roundRect(35,13,84*v,10,5);c.fill();}
+function gInclina(c,t){gFondo(c);const s=Math.sin(t*6.283);gTelefono(c,GW/2,40,s*.3);const x=GW/2+Math.sin(t*6.283-.5)*105;disegnaPalla(c,x,GS-GR,GR,x/GR*.8,0,true);}
+function gSalto(c,t){gFondo(c);const x=30+t*250,o=clamp((x-105)/90,0,1),u=4*o*(1-o);sp(c,'spikes',135,GS-34,34,34);gTelefono(c,GW/2,36,0,1,o>0&&o<.25);
+ const g=o>0&&o<1;disegnaCamm(c,x,GS-u*62,GR,g?(o<.5?1:3):Math.floor(t*40)%10,g?3:1,1,0,0);}
+function gScatto(c,t){gFondo(c);const col=t>.32&&t<.45;gTelefono(c,GW/2,36,0,-1,col);const via=t>.44,e=(t-.44)/.25;
+ if(!via)c.drawImage(ANAN,205,GS-46,48,48);gBoom2(c,229,GS-22,e);
+ if(t<.32)disegnaCamm(c,30+t*150,GS,GR,Math.floor(t*40)%10,1,1,0,0);else{const x=78+Math.min(1,(t-.32)/.2)*170;disegnaPalla(c,x,GS-GR,GR,x*.09,0,true);}}
+function gBoom2(c,x,y,e){if(e<0||e>1)return;c.fillStyle=`rgba(255,255,255,${1-e})`;for(let i=0;i<8;i++){const a=i*.785,r=8+e*30;c.beginPath();c.arc(x+Math.cos(a)*r,y+Math.sin(a)*r,5*(1-e)+1,0,6.3);c.fill();}}
+function gCibo(c,t){gFondo(c);const px=[110,170,230],x=30+t*250;let n=0;px.forEach((q,i)=>{if(x<q)c.drawImage(CIBI[i],q-17,GS-42,34,34);else n++;});gBarra(c,n/3*.9);disegnaCamm(c,x,GS,GR,Math.floor(t*40)%10,1,1,0,0);}
+function gCaduta(c,t){gFondo(c);for(let i=0;i<3;i++)sp(c,'terrain_sand_horizontal_middle',i*34,46,35,35);const pr=t<.25?t/.25:1,fall=clamp((t-.25)/.25,0,1),x=20+pr*90,boom=(t-.5)/.32;gBarra(c,boom>=0?0:.9);
+ const y=t<.25?46-GR:46-GR+(GS-GR-(46-GR))*fall*fall;if(boom<0||boom>.05)disegnaPalla(c,x,boom>=0?GS-GR-Math.sin(clamp(boom,0,1)*3.14)*30:y,GR,x*.08,0,boom>=0);gBoom(c,x,GS-20,boom,70);}
+function gSchianto(c,t){gFondo(c);for(let i=0;i<3;i++)sp(c,'terrain_sand_block_center',GW-40,GS-40*(i+1),41,41);const a=clamp(t/.5,0,1),x=20+a*a*(GW-80),boom=(t-.5)/.32;gBarra(c,boom>=0?0:.9);
+ const bx=boom>=0?GW-60-clamp(boom,0,1)*70:x;disegnaPalla(c,bx,GS-GR,GR,bx*.09,0,true);if(boom<0)for(let i=1;i<4;i++){c.strokeStyle='#2b2b3a66';c.lineWidth=2;c.beginPath();c.moveTo(x-GR-i*9,GS-8-i*8);c.lineTo(x-GR-i*20,GS-8-i*8);c.stroke();}gBoom(c,GW-50,GS-24,boom,66);}
+function gTavola(c,ang,fori){c.fillStyle='#134a5c';c.fillRect(0,0,GW,GH);c.save();c.translate(GW/2,GH/2);c.rotate(ang);c.fillStyle='#d8a24e';c.strokeStyle='#d8432e';c.lineWidth=10;c.beginPath();c.rect(-125,-72,250,144);c.fill();c.stroke();c.fillStyle='#0a0810';(fori||[]).forEach(f=>{c.beginPath();c.arc(f[0],f[1],15,0,6.3);c.fill();});c.restore();}
+function gBoss(c,x,y,st,g){c.save();c.translate(x,y);c.rotate(g);c.fillStyle='#39b86b';c.strokeStyle='#2b2b3a';c.lineWidth=2;for(let i=0;i<7;i++){c.rotate(.9);c.beginPath();c.moveTo(-7,-19);c.lineTo(0,-36);c.lineTo(7,-19);c.closePath();c.fill();c.stroke();}c.fillStyle=st?'#ffe9b0':'#f4bd3c';c.beginPath();c.arc(0,0,23,0,6.3);c.fill();c.lineWidth=3;c.stroke();c.fillStyle='#2b2b3a';c.beginPath();c.arc(-8,-3,3,0,6.3);c.arc(8,-3,3,0,6.3);c.fill();c.restore();
+ if(st){c.fillStyle='#f6c445';c.strokeStyle='#2b2b3a';c.lineWidth=1.5;for(let i=0;i<5;i++){const a=st*6+i*1.257,px=x+Math.cos(a)*32,py=y-22+Math.sin(a)*9;c.beginPath();c.arc(px,py,4.5,0,6.3);c.fill();c.stroke();}}}
+function gTavolo(c,t){const a=t*6.283,s=Math.sin(a);gTavola(c,s*.06,[[-55,-30],[60,32],[20,-40],[-30,42]]);const x=GW/2+Math.cos(a)*95,y=GH/2+Math.sin(a*2)*48;disegnaPalla(c,x,y,15,a*3,0,false);gTelefono(c,GW-46,28,s*.3);}
+function gCarica(c,t){gTavola(c,0);const e=clamp((t-.2)/.28,0,1),bx=120+e*e*116,by=GH/2;if(t<.2){c.strokeStyle='#ff3b2e';c.lineWidth=6;c.setLineDash([12,8]);c.beginPath();c.moveTo(bx,by);c.lineTo(262,by);c.stroke();c.setLineDash([]);}gBoss(c,bx,by,t>.48?t:0,t*20);disegnaPalla(c,62,GH/2+Math.min(44,t*160),15,t*6,0,false);}
+function gColpo(c,t){gTavola(c,0);const e=clamp((t-.22)/.2,0,1),x=48+e*172,hit=t>.42;gBoss(c,240,GH/2,hit?0:t+.5,hit?t*2:.2);if(!hit)gTelefono(c,GW/2,30,0,-1,t>.15&&t<.3);disegnaPalla(c,hit?220-(t-.42)*220:x,GH/2,15,x*.1,0,false);gBoom2(c,222,GH/2,(t-.42)/.3);
+ const q=hit?2:3;c.fillStyle='#d8432e';c.strokeStyle='#2b2b3a';for(let i=0;i<3;i++){c.fillStyle=i<q?'#d8432e':'#ffffff55';c.beginPath();c.roundRect(112+i*28,GH-24,24,10,4);c.fill();c.stroke();}}
+function disegnaGuida(){const r=riduci?.42:null;GUIDA[gPag].f.forEach((f,i)=>{const cv=$('gc'+i),c=cv.getContext('2d');c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,GW,GH);f(c,r===null?((G.t/ (2.8))%1):r);});}
+function apriGuida(dopo){gPag=0;gDopo=dopo;G.guida=true;mostra('sGuida');pagGuida();}
+function pagGuida(){const g=GUIDA[gPag];$('gTit').textContent=g.t;g.c.forEach((x,i)=>$('gt'+i).textContent=x);$('gNum').textContent=(gPag+1)+' / '+GUIDA.length;$('gAvanti').textContent=gPag<GUIDA.length-1?'Avanti':(gDopo?'Gioca':'Ho capito');}
+function chiudiGuida(){G.guida=false;S.guidaVista=true;salva();const d=gDopo;gDopo=null;if(d)d();else mostra('sMenu');}
+$('gAvanti').onclick=()=>{if(gPag<GUIDA.length-1){gPag++;pagGuida();}else chiudiGuida();};
+$('gSalta').onclick=chiudiGuida;
+
 /* ---------- FLUSSO ---------- */
-const sezioni=['sMenu','sAmici','sPausa','sFine'];
+const sezioni=['sMenu','sAmici','sPausa','sFine','sGuida'];
 function mostra(id){sezioni.forEach(s=>$(s).hidden=s!==id);}
 function hud(){const n=Math.max(0,G.cuori);const cu=$('cuori');cu.textContent='';for(let i=0;i<(VITE_INFINITE?1:n);i++){const m=document.createElement('img');m.src=icona('hud_heart');m.alt='';cu.append(m);}if(VITE_INFINITE)cu.append(' ∞');$('icMoneta').src=icona('hud_coin');$('cuori').setAttribute('aria-label',n+' cuori');}
 let tAvv=0;function avviso(t,ms){const a=$('avviso');a.textContent=t;a.hidden=false;clearTimeout(tAvv);tAvv=setTimeout(()=>a.hidden=true,ms||2000);}
@@ -888,7 +946,8 @@ function disegnaAmici(){const a=$('listaAmici');a.textContent='';
  $('saldo').textContent=S.gettoni;$('togliAmico').hidden=S.sel===0;$('fotoTesto').textContent=(f.foto?'Cambia la foto di ':'Metti la foto di ')+f.nome;
 }
 async function bloccaOrizzontale(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();await screen.orientation.lock('landscape');}catch(e){}}
-$('bGioca').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();iniziaRun();};
+$('bGioca').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();if(S.guidaVista)iniziaRun();else apriGuida(iniziaRun);};
+$('bGuida').onclick=()=>{audioOn();apriGuida(null);};
 $('bAmici').onclick=()=>{audioOn();disegnaAmici();mostra('sAmici');};
 $('amiciChiudi').onclick=()=>mostra('sMenu');
 $('nuovoAmico').addEventListener('submit',e=>{e.preventDefault();const n=$('nomeNuovo').value.trim();if(!n)return;S.amici.push({nome:n,colore:COLORI[S.amici.length%COLORI.length],skin:'classica',foto:null});S.sel=S.amici.length-1;$('nomeNuovo').value='';$('nomeNuovo').blur();salva();vestiPalla();disegnaAmici();});
@@ -942,7 +1001,7 @@ function ciclo(ora){
  const dt=Math.min(.033,(ora-ult)/1000||.016);ult=ora;
  if(G.stato==='pausa')return;
  G.t+=dt;
- if(G.modo==='menu'){disegnaMenu(dt);return;}
+ if(G.modo==='menu'){if(G.guida)disegnaGuida();else disegnaMenu(dt);return;}
  leggiInput(dt);
  if(G.stato==='pronti'){G.pronti-=dt;if(G.pronti<=0){G.stato='gioco';$('grande').hidden=true;}}
  if(G.stato==='sconfitto'){G.finT-=dt;if(G.finT<=0){G.stato='velo';dopoBoss();}}
