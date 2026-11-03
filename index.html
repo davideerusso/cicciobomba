@@ -68,7 +68,7 @@ input[type=range]{width:100%;accent-color:var(--vernice)}
 #bossNome{text-align:center;font:400 17px var(--display);color:var(--panna);text-shadow:0 2px 0 var(--inchiostro)}
 .bossbar .barra>div{background:var(--vernice)}
 .area{position:fixed;bottom:calc(var(--sb) + 16px);width:76px;height:76px;border-radius:50%;border:3px dashed #fff4df88;display:grid;place-items:center;font-weight:800;font-size:14px;color:var(--panna);pointer-events:none;background:#00000026;text-shadow:0 1px 0 var(--ombra)}
-#carica{position:fixed;left:max(14px,var(--sl));bottom:calc(var(--sb) + 98px);width:100px;display:flex;align-items:center;gap:3px;pointer-events:none}#carica .barra{flex:1;height:12px;background:#fff8}#caricaB{background:var(--vernice)!important}#carica.piena .barra{animation:lampeggia .25s infinite alternate}@keyframes lampeggia{to{background:var(--oro)}}
+#hud .dx{display:flex;align-items:center;gap:10px}#carica{width:150px;display:flex;align-items:center;gap:3px;pointer-events:none}#carica .barra{flex:1;height:12px;background:#fff8}#caricaB{background:var(--vernice)!important}#carica.piena .barra{animation:lampeggia .25s infinite alternate}@keyframes lampeggia{to{background:var(--oro)}}
 #lampo{position:fixed;inset:0;background:#ffb13a;opacity:0;pointer-events:none;transition:opacity .4s}#lampo.on{opacity:.75;transition:none}
 #aSin.bomba{background:#d8432eaa;border:3px solid var(--oro)}
 #aSin{left:max(18px,var(--sl))}#aDes{right:max(18px,var(--sr))}
@@ -90,12 +90,10 @@ input[type=range]{width:100%;accent-color:var(--vernice)}
     <div id="cuori" class="cuori" aria-label="Vite"></div>
     <div id="nomeTappa"></div>
     <div class="gettoni"><span id="gett">0</span> <img id="icMoneta" alt="" width="32" height="32" style="vertical-align:-9px"></div>
-    <button id="pausa" class="btn piccolo" aria-label="Pausa">II</button>
+    <div class="dx"><div id="carica" aria-label="Carica della bomba"><img id="icBomba" alt="" width="30" height="30"><div class="barra"><div id="caricaB"></div></div></div><button id="pausa" class="btn piccolo" aria-label="Pausa">II</button></div>
   </div>
-  <div id="barraCorsa" class="barra"><div id="corsa"></div></div>
   <div id="bossBox" class="bossbar" hidden><div id="bossNome"></div><div class="barra"><div id="bossHp"></div></div></div>
 </div>
-<div id="carica" hidden><img id="icBomba" alt="" width="26" height="26"><div class="barra"><div id="caricaB"></div></div></div>
 <div id="aSin" class="area" hidden>SCATTO</div>
 <div id="aDes" class="area" hidden>SALTO</div>
 <div id="stick" hidden><i id="stickP"></i></div>
@@ -901,21 +899,21 @@ const sezioni=['sMenu','sAmici','sPausa','sFine','sGuida'];
 function mostra(id){sezioni.forEach(s=>$(s).hidden=s!==id);}
 function hud(){const n=Math.max(0,G.cuori);const cu=$('cuori');cu.textContent='';for(let i=0;i<(VITE_INFINITE?1:n);i++){const m=document.createElement('img');m.src=icona('hud_heart');m.alt='';cu.append(m);}if(VITE_INFINITE)cu.append(' ∞');$('icMoneta').src=icona('hud_coin');$('cuori').setAttribute('aria-label',n+' cuori');}
 let tAvv=0;function avviso(t,ms){const a=$('avviso');a.textContent=t;a.hidden=false;clearTimeout(tAvv);tAvv=setTimeout(()=>a.hidden=true,ms||2000);}
-function giocoUI(on){['hud','tocchi','aSin','aDes','carica'].forEach(i=>$(i).hidden=!on);}
+function giocoUI(on){['hud','tocchi','aSin','aDes'].forEach(i=>$(i).hidden=!on);}
 function dissolvi(fn){G.stato='velo';$('velo').classList.add('on');setTimeout(()=>{fn();$('velo').classList.remove('on');},380);}
 function banner(t){$('grande').textContent=t;$('grande').hidden=false;$('avviso').hidden=true;G.pronti=1.4;G.stato='pronti';}
 function iniziaRun(){Object.assign(G,{carica:0,avvisato:false,base:0,cuori:5,gettoni:0,uccisi:0,tempo:0,scudo:false,stella:0,avanz:0,scossa:0,jelly:0,visti:G.visti||0});mostra('');giocoUI(true);hud();aggBarra();$('gett').textContent='0';entraCorsa(0);sveglia();}
 function entraCorsa(i){
  G.modo='2d';G.mondo=i;$('gioco').hidden=true;$('d2').hidden=false;M=costruisci(i);goo.length=0;
  Object.assign(P2,{x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
- V.dir=1;V.la=2;V.attesa=0;V.py=P2.y;V.zoom=1;V.ts=V.ts0;V.cx=P2.x+2;V.cy=centroY();$('barraCorsa').hidden=false;$('bossBox').hidden=true;$('nomeTappa').textContent=amico().nome+' · Mondo '+(i+1);$('aSin').classList.add('pronto');
+ V.dir=1;V.la=2;V.attesa=0;V.py=P2.y;V.zoom=1;V.ts=V.ts0;V.cx=P2.x+2;V.cy=centroY();$('bossBox').hidden=true;$('nomeTappa').textContent=amico().nome+' · Mondo '+(i+1);$('aSin').classList.add('pronto');
  banner(MONDI[i].nome);
  if(i===0)setTimeout(()=>{if(G.modo==='2d'&&G.stato==='gioco'&&G.mondo===0)avviso('Mangia per caricare l\u2019esplosione. Le casse si rompono con lo scatto.',3400);},2200);
 }
 function entraBoss(i){
  G.modo='boss';$('d2').hidden=true;$('gioco').hidden=false;caricaArena(i);
  Object.assign(B,{x:L.spawn.x,z:L.spawn.z,y:RAGGIO,vx:0,vy:0,vz:0,aTerra:true,cade:false,coyote:0,bufSalto:0,scatto:0,cd:0,inv:0});
- $('barraCorsa').hidden=true;$('bossBox').hidden=false;$('bossNome').textContent=BOSS[i].nome;$('bossHp').style.width='100%';$('nomeTappa').textContent='Boss '+(i+1);
+ $('bossBox').hidden=false;$('bossNome').textContent=BOSS[i].nome;$('bossHp').style.width='100%';$('nomeTappa').textContent='Boss '+(i+1);
  impostaCamera();banner(BOSS[i].nome);
  if(i===0)setTimeout(()=>{if(G.modo==='boss'&&G.stato==='gioco')avviso('Fallo sbattere contro il bordo, poi rotolagli addosso con lo scatto',3400);},1700);
 }
@@ -1010,7 +1008,7 @@ function ciclo(ora){
  if(G.modo==='2d'){
   if(G.stato==='gioco'){const ps=5;for(let i=0;i<ps&&G.stato==='gioco';i++)passo2d(dt/ps);
    const pr=P2.x;if(pr>(G.max||0))G.max=pr;passoOggetti(dt);passoNemici2(dt);G.stella=Math.max(0,G.stella-dt);
-   G.avanz=(G.base||0)+Math.max(0,P2.x-M.start.x);$('corsa').style.width=clamp((P2.x-M.start.x)/(M.fine-M.start.x),0,1)*100+'%';}
+   G.avanz=(G.base||0)+Math.max(0,P2.x-M.start.x);}
   telecamera2d(dt);disegna2d();
  }else{
   if(G.stato==='gioco')logicaBoss(dt);
