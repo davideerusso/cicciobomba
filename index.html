@@ -677,9 +677,11 @@ function passo2d(h){
  const vx0=p.vx;p.urtoX=0;urta(p,p.R);
  if(p.urtoX&&Math.abs(vx0)>=7&&Math.abs(p.vx)<Math.abs(vx0)*.5)botto();
  if(p.suolo&&!p.ultimoSuolo&&vy0<-12)botto();
- if(p.suolo&&!p.ultimoSuolo&&vy0<-4)p.atterra=.14;p.atterra=Math.max(0,p.atterra-h);p.fermoT=p.suolo&&Math.abs(p.vx)<.25&&!p.rotola?p.fermoT+h:0;if(p.fermoT>6.3)p.fermoT=0;
+ if(p.suolo&&!p.ultimoSuolo&&vy0<-4)p.atterra=.2;p.atterra=Math.max(0,p.atterra-h);p.fermoT=p.suolo&&Math.abs(p.vx)<.25&&!p.rotola?p.fermoT+h:0;if(p.fermoT>6.3)p.fermoT=0;
  if(p.suolo){if(vy0<-7&&!p.ultimoSuolo){p.Wv-=Math.min(14,-vy0*.9);schizzi2(p.x,p.y-p.R,6,amico().colore,3.5);suono(120,.08,'sine',.08);}p.coyote=.1;
   const q=Math.round(p.x),r=Math.round(p.y-p.R-.3);if(p.suolo.y>.9&&pieno(cel(q,r))&&pieno(cel(q-1,r))&&pieno(cel(q+1,r))){p.sx=q;p.sy=r+1.2;}}
+ /* cadendo da un punto più alto fa un rimbalzino */
+ if(p.suolo&&!p.ultimoSuolo&&vy0<-10.5&&p.vy<=0){p.vy=Math.min(-vy0*.22,3);p.y+=.02;p.suolo=null;}
  p.ultimoSuolo=p.suolo;
  if(p.buf>0&&p.coyote>0){p.vy=9.6;p.coyote=0;p.buf=0;p.ultimoSuolo=null;p.Wv+=7;sfx('jump')||suono(330,.14,'triangle',.11,660);schizzi2(p.x,p.y-p.R,4,amico().colore,2.5);}
  const bq=Math.round(p.x),br=Math.round(p.y-p.R+.1);
@@ -791,8 +793,8 @@ function disegna2d(){
   else{
    if(p.rotola)disegnaPasso(c,sx(p.x),pie,r,Math.min(2,Math.floor(p.animT/.067)),2,p.verso,p.W,ang);
    else if(p.anim==='apre'&&p.animT<.2)disegnaPasso(c,sx(p.x),pie,r,p.animT<.1?2:1,2,p.verso,p.W,ang);
-   else if(!n)disegnaCamm(c,sx(p.x),pie,r,p.vy>2.5?1:p.vy<-2.5?3:2,3,p.verso,p.W,0);
    else if(p.atterra>0)disegnaCamm(c,sx(p.x),pie,r,4,3,p.verso,p.W,ang);
+   else if(!n)disegnaCamm(c,sx(p.x),pie,r,p.vy>2.5?1:p.vy<-2.5?3:2,3,p.verso,p.W,0);
    else if(Math.abs(p.vx)<.25){const col=p.fermoT>5?Math.floor((p.fermoT-5)*8)%10:[0,1,2,1][Math.floor(G.t*1.5)%4];disegnaCamm(c,sx(p.x),pie,r,col,0,p.verso,p.W+Math.sin(G.t*3)*.01,ang);}
    else disegnaCamm(c,sx(p.x),pie,r,Math.floor(p.passi)%10,Math.abs(p.vx)>2.3?2:1,p.verso,p.W,ang);
    if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.5,0,6.3);c.stroke();}
