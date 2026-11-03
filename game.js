@@ -338,16 +338,17 @@ function passo2d(h){
  if(p.scatto>0){p.scatto-=h;p.vx=p.verso*(p.vS||11);p.vy=Math.max(p.vy,0);if(p.scatto<=0)p.vx*=.6;
   const q=Math.round(p.x+p.verso*.8),r=Math.round(p.y);if(cel(q,r)==='C')rompiCassa(q,r);}
  else{
-  const su=su0;p.vx+=tx*(!p.rotola?16:su?30:15)*h;
-  const k=Math.exp(-(Math.abs(tx)<.1&&su?3.2:su?1.4:.2)*h);p.vx*=k;const tetto=p.rotola?5.5+Math.max(0,Math.abs(tx)-.5)*12:3.4;if(Math.abs(p.vx)>tetto)p.vx=lerp(p.vx,Math.sign(p.vx)*tetto,1-Math.exp(-h*8));
-  p.vy-=(p.ultimoSuolo&&p.ultimoSuolo.y<.95?5:20)*h;
+  /* in pendenza accelera la gravità: inclinare in discesa aggiunge poco, in salita aiuta a salire */
+  const su=su0,n=p.ultimoSuolo,pend=su&&n.y<.95,giu=pend?Math.sign(n.x):0;p.vx+=tx*(!p.rotola?16:pend?(Math.sign(tx)===giu?6:24):su?30:15)*h;
+  const k=Math.exp(-(pend?.6:Math.abs(tx)<.1&&su?3.2:su?1.4:.2)*h);p.vx*=k;const tetto=p.rotola?5.5+Math.max(0,Math.abs(tx)-.5)*12:3.4;if(Math.abs(p.vx)>tetto)p.vx=lerp(p.vx,Math.sign(p.vx)*tetto,1-Math.exp(-h*8));
+  p.vy-=(pend?14:20)*h;
  }
  p.x+=p.vx*h;p.y+=p.vy*h;p.x=Math.max(p.R,p.x);
  const n0=p.ultimoSuolo;if(n0&&n0.y<.95&&Math.sign(n0.x)===Math.sign(p.vx)&&Math.abs(p.vx)>6&&p.rotola)p.slancio=1.1;else if(p.slancio>0)p.slancio=Math.abs(p.vx)<4?0:p.slancio-h;
  if(p.slancio>0){const q=Math.round(p.x+Math.sign(p.vx)*.8),r=Math.round(p.y);if(cel(q,r)==='C')rompiCassa(q,r);}
  const vx0=p.vx;p.urtoX=0;urta(p,p.R);
  /* in discesa resta attaccato alla rampa invece di decollare */
- if(!p.suolo&&p.ultimoSuolo&&p.vy<=1&&p.scatto<=0){const y0=p.y,vy=p.vy;p.y-=.45;urta(p,p.R);if(p.suolo&&p.suolo.y<.99||p.suolo&&Math.abs(p.vx)>4)p.vy=Math.min(vy,p.vy);else{p.y=y0;p.vy=vy;p.suolo=null;}}
+ if(!p.suolo&&p.ultimoSuolo&&p.vy<=1&&p.scatto<=0)for(let d=.04;d<=.45;d+=.04){const q={x:p.x,y:p.y-d,px:p.x,py:p.py,vx:0,vy:0};urta(q,p.R);if(q.suolo){const n=q.suolo,v=Math.hypot(p.vx,p.vy),dir=Math.sign(p.vx*n.y-p.vy*n.x)||1;p.y=q.y;p.suolo=n;p.vx=n.y*v*dir;p.vy=-n.x*v*dir;break;}}
  if(M.pesi)passoPesi(h);if(p.suolo&&M.crolli)calpesta(p.x,p.y-p.R);
  if(p.urtoX&&Math.abs(vx0)>=7&&Math.abs(p.vx)<Math.abs(vx0)*.5)botto();
  if(p.suolo&&!p.ultimoSuolo&&vy0<-12)botto();
