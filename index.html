@@ -231,10 +231,12 @@ function disegnaPasso(c,x,yPiedi,r,col,riga,verso,W,ang){
  if(!FOGLIO.complete)return;const lato=CELLA*r*2/PALLA_L;c.save();c.translate(x,yPiedi);if(ang)c.rotate(ang);c.scale(verso*(1-W*.6),1+W);
  c.drawImage(foglioAmico(),col*CELLA,riga*CELLA,CELLA,CELLA,-lato/2,-lato*.97,lato,lato);c.restore();
 }
-function disegnaPalla(c,x,y,r,rot,W,aTerra){
- if(!FOGLIO.complete)return;const lato=CELLA*r*2/PALLA_L,sq=aTerra?.04:0,giro=((rot%6.2832)+6.2832)%6.2832,q=Math.floor(giro/1.5708)%4,cy=(CELLA*.97-PALLA_H[q]/2)/CELLA*lato;
+function disegnaPalla(c,x,y,r,rot,W,aTerra,foto){
+ if(!FOGLIO.complete)return;const lato=CELLA*r*2/PALLA_L,sq=aTerra?.04:0,giro=((rot%6.2832)+6.2832)%6.2832,q=foto?3:Math.floor(giro/1.5708)%4,cy=(CELLA*.97-PALLA_H[q]/2)/CELLA*lato;
  c.save();c.translate(x,y+sq*r);c.scale(1+sq-W*.6,1-sq+W);c.rotate(rot);
- c.drawImage(foglioAmico(),(3+q)*CELLA,2*CELLA,CELLA,CELLA,-lato/2,-cy,lato,lato);c.restore();
+ c.drawImage(foglioAmico(),(3+q)*CELLA,2*CELLA,CELLA,CELLA,-lato/2,-cy,lato,lato);
+ if(foto){const m=Math.min(foto.width,foto.height),g=r*.74;c.save();c.beginPath();c.arc(0,0,g,0,6.3);c.clip();c.drawImage(foto,(foto.width-m)/2,(foto.height-m)/2,m,m,-g,-g,g*2,g*2);c.restore();c.lineWidth=Math.max(2,r*.08);c.strokeStyle='#14100c';c.beginPath();c.arc(0,0,g,0,6.3);c.stroke();}
+ c.restore();
 }
 /* ---------- SKIN ---------- */
 const SKIN=[
@@ -572,7 +574,7 @@ function disegna2d(){
  if(!(p.inv>0&&Math.floor(G.t*14)%2===0)){const op={t:G.t,W:p.W,vx:p.vx,vy:p.vy,n:p.ultimoSuolo,stella:G.stella,scudo:G.scudo};
   const n=p.ultimoSuolo,r=p.R*ts*1.02,pie=sy(p.y-p.R),ang=n?Math.atan2(n.x,n.y):0,am=amico();
   if(p.rotola&&!(p.anim==='chiude'&&p.animT<.2)){
-   if(am.foto||am.skin!=='classica')disegnaSlime(c,sx(p.x),sy(p.y),r,p.rot,op);else disegnaPalla(c,sx(p.x),sy(p.y),r,-p.rot,p.W,!!n);}
+   if(am.skin!=='classica'&&!am.foto)disegnaSlime(c,sx(p.x),sy(p.y),r,p.rot,op);else disegnaPalla(c,sx(p.x),sy(p.y),r,-p.rot,p.W,!!n,am._img);}
   else{
    if(p.rotola)disegnaPasso(c,sx(p.x),pie,r,Math.min(2,Math.floor(p.animT/.067)),2,p.verso,p.W,ang);
    else if(p.anim==='apre'&&p.animT<.2)disegnaPasso(c,sx(p.x),pie,r,p.animT<.1?2:1,2,p.verso,p.W,ang);
