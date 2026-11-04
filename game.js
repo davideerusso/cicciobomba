@@ -313,7 +313,7 @@ const fumi=[];function sbuffo(){const p=P2;fumi.push({x:p.x-p.verso*p.R*.6,y:p.y
 /* il fiato: lo scatto lo consuma, si ricarica da solo e con la pizza; a secco Matteo si ferma a riposare */
 const FIATO_SCATTO=.3,FIATO_LANCIO=.2;
 function aggFiato(){const f=$('fiatoB');if(f){f.style.width=(G.fiato*100)+'%';$('fiato').classList.toggle('basso',G.fiato<FIATO_SCATTO);}}
-function usaFiato(q){if(P2.stanco>0)return false;if(G.fiato<q){senzaFiato();return false;}G.fiato-=q;G.fiatoT=2;aggFiato();return true;}
+function usaFiato(q){if(P2.stanco>0)return false;if(G.carica>=1)return true; /* da bomba non si stanca */if(G.fiato<q){senzaFiato();return false;}G.fiato-=q;G.fiatoT=2;aggFiato();return true;}
 function senzaFiato(){const p=P2;p.stanco=2;p.rotola=false;p.vx=0;p.carica=0;p.scatto=0;p.buf=0;suono(260,.5,'sine',.08,140);vibra(40);if(!G.dettoFiato){G.dettoFiato=true;avviso('Senza fiato! Matteo è grasso: riposa 2 secondi. Mangia la pizza per riprendere fiato',2600);}}
 function scatta2(){if(P2.cd>0||!usaFiato(FIATO_SCATTO))return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.catena=Math.abs(P2.vx)>=6?2:1;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;if(P2.ultimoSuolo)sbuffo();sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('aSin').classList.remove('pronto');}
 function colpito2(nx){
