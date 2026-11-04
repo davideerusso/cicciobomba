@@ -38,7 +38,8 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
   - `X` muro crepato: si apre solo con l'esplosione.
   - **Pareti finte** (rettangoli in `FINTI`): si disegnano come terra sopra quello che c'è dietro, si attraversano e sbiadiscono quando Matteo ci entra. Dietro c'è una grotta: sfondo di terra scura; il pavimento è la casella di terra con il bordo in cima, il soffitto la stessa casella capovolta.
 - Valide in tutto il gioco:
-  - **Scatto:** quando colpisce il primo nemico elimina tutti quelli nel suo blocco (entro una casella più in là); se è partito slanciato (sopra velocità 8, `p.catena=2`) quelli entro due blocchi. Poi si ferma e Matteo rimbalza indietro (all'utente piace). `forte` si ricalcola per ogni nemico.
+  - **Scatto:** quando colpisce il primo nemico elimina tutti quelli nel suo blocco (entro una casella più in là); se è partito slanciato (sopra velocità 8, `p.catena=2`) quelli entro due blocchi. Poi Matteo va avanti senza fermarsi né rimbalzare (prima rimbalzava, l'utente ha cambiato idea). `forte` si ricalcola per ogni nemico.
+  - **Salto in testa:** cadendo sopra un nemico che cammina (`e`) o vola (`f`) lo uccide e rimbalza. Quelli con le spine (`r`) e i blocchi che sparano (`g`) fanno male anche dall'alto.
   - **Slancio:** rotolando giù per una rampa a più di 6 di velocità, Matteo travolge nemici e casse per circa un secondo, e ogni colpo lo rinnova (`p.slancio`). Finché dura non viene frenato e può superare la velocità massima, così basta poca inclinazione.
   - **Combo:** nemici e casse travolti di fila valgono bocconi in più e mostrano "x2", "x3"… (`combo`).
   - **Pendenze:** in pendenza accelera la gravità; inclinare in discesa aggiunge poco, in salita aiuta. In discesa Matteo resta attaccato alla rampa invece di decollare.

@@ -444,15 +444,16 @@ function passoNemici2(dt){
   else if(n.tipo==='g'){n.t-=dt;if(n.t<=0&&Math.abs(n.x-p.x)<10){n.t=3;const d=Math.sign(p.x-n.x)||-1;M.colpi.push({x:n.x+d*.6,y:n.y,vx:d*4.5,v:3.6});suono(300,.12,'square',.05,120);}}
   const d=Math.hypot(p.x-n.x,p.y-n.y),rn=n.tipo==='r'?.45:.42;
   if(d<p.R+rn){
-   /* si ricontrolla per ogni nemico: se lo scatto si è appena fermato sul primo, gli altri non muoiono */
+   /* si ricontrolla per ogni nemico: lo scatto può essere finito su quello prima */
    const forte=p.scatto>0||G.stella>0||p.slancio>0;
    if(G.stella<=0&&p.inv<=0&&bombaLanciata()){esplodi();p.inv=Math.max(p.inv,1);}
    else if(forte){const colpo=p.scatto>0&&G.stella<=0;uccidi2(n);
-    /* lo scatto elimina tutti i nemici nel blocco del primo (due blocchi se slanciato), poi Matteo rimbalza indietro */
+    /* lo scatto elimina tutti i nemici nel blocco del primo (due blocchi se slanciato) e Matteo va avanti senza fermarsi */
     if(colpo){const v=Math.sign(p.vx)||p.verso,raggio=p.catena||1;p.cd=Math.min(p.cd,.3);
      for(const o of M.nemici)if(o.vivo&&Math.abs(o.y-n.y)<1.2&&(o.x-n.x)*v>-.6&&(o.x-n.x)*v<raggio+.5)uccidi2(o);
-     p.scatto=0;p.vx=-v*2.5;p.vy=Math.max(p.vy,3.5);p.ultimoSuolo=null;p.inv=Math.max(p.inv,.25);}}
-   else if(n.tipo==='e'&&p.vy<0&&p.y>n.y+.35){p.vy=7;p.Wv+=7;}
+     p.inv=Math.max(p.inv,.25);}}
+   /* saltandogli in testa muore, tranne i nemici con le spine (r) e i blocchi che sparano (g) */
+   else if((n.tipo==='e'||n.tipo==='f')&&p.vy<0&&p.y>n.y+.35){uccidi2(n);p.vy=7;p.Wv+=7;p.ultimoSuolo=null;}
    else colpito2(Math.sign(p.x-n.x)||1);
   }
  }
