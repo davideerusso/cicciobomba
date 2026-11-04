@@ -61,7 +61,7 @@ const VITE_INFINITE=false; /* per le prove: true per non perdere mai cuori */
 const FOGLIO=new Image();FOGLIO.src='assets/personaggio.webp';
 const FOGLIO2=new Image();FOGLIO2.src='assets/personaggio2.webp'; /* riga 0 girata, 1 camminata, 2 corsa, 3 salto (0-4) e mazza (5-7) */
 const CELLA2=200;
-const FOGLIO3=new Image();FOGLIO3.src='assets/personaggio3.webp'; /* Matteo stanco, celle come FOGLIO2: mentre riposa si usa solo la riga 0, colonna 7 (in piedi, sudato) */
+const FOGLIO3=new Image();FOGLIO3.src='assets/personaggio3.webp'; /* Matteo stanco, celle come FOGLIO2: riga 0 fermo che suda (0,1,7), 1 cammina, 2 corre, 3 riposa (3 si asciuga, 4-5 in ginocchio) */
 let stancoVis=false;
 const CELLA=270,PALLA_L=185,PALLA_H=[174,178,164,162],TINTE={};
 function foglioAmico(im){
@@ -82,7 +82,7 @@ function disegnaBomba(c,x,yPiedi,r,f,verso,W,ang,rot){
  c.drawImage(BOMBA,f%10*160,Math.floor(f/10)*160,160,160,-80*k,-98*k,160*k,160*k);c.restore();
 }
 function disegnaCamm(c,x,yPiedi,r,col,riga,verso,W,ang){
- const st=FOGLIO3.complete&&stancoVis,im=st?FOGLIO3:FOGLIO2;if(!im.complete)return;if(st){col=7;riga=0;}const lato=CELLA2*r*2.55/197;c.save();c.translate(x,yPiedi);if(ang)c.rotate(ang);c.scale(verso*(1-W*.6),1+W);
+ const st=FOGLIO3.complete&&(stancoVis===2&&riga===3||stancoVis&&riga<=2),im=st?FOGLIO3:FOGLIO2;if(!im.complete)return;if(st&&riga<3)col=riga===0?[0,1,0,7][col%4]:col%8;const lato=CELLA2*r*2.55/197;c.save();c.translate(x,yPiedi);if(ang)c.rotate(ang);c.scale(verso*(1-W*.6),1+W);
  c.drawImage(foglioAmico(im),col*CELLA2,riga*CELLA2,CELLA2,CELLA2,-lato/2,-lato*.975,lato,lato);c.restore();
 }
 function disegnaPasso(c,x,yPiedi,r,col,riga,verso,W,ang){
@@ -520,8 +520,8 @@ function disegna2d(){
  if(G.carica>=MIN_BOTTO){const k=.15+G.carica*.45+.08*Math.sin(G.t*12),rg=p.R*ts*2.2,cx=sx(p.x),cy=sy(p.y),gr=c.createRadialGradient(cx,cy,p.R*ts*.5,cx,cy,rg);gr.addColorStop(0,`rgba(255,90,20,${k})`);gr.addColorStop(1,'rgba(255,90,20,0)');c.fillStyle=gr;c.beginPath();c.arc(cx,cy,rg,0,6.3);c.fill();}
  if(!(p.inv>0&&Math.floor(G.t*14)%2===0)){const op={t:G.t,W:p.W,vx:p.vx,vy:p.vy,n:p.ultimoSuolo,stella:G.stella,scudo:G.scudo};
   const n=p.ultimoSuolo,r=p.R*ts*1.02,pie=sy(p.y-p.R),ang=n?Math.atan2(n.x,n.y):0,am=amico();
-  stancoVis=p.stanco>0&&G.carica<1;
-  if(stancoVis)disegnaCamm(c,sx(p.x),pie,r,7,0,p.verso,0,ang);
+  stancoVis=G.carica>=1?0:p.stanco>0?2:G.fiato<FIATO_SCATTO?1:0;
+  if(stancoVis===2)disegnaCamm(c,sx(p.x),pie,r,p.stanco<.35?3:4+Math.floor(G.t*3)%2,3,p.verso,0,ang);
   else if(G.carica>=1){const fr=p.inv>0?34:G.t%1.3<.09?18:p.rotola?0:!n?(p.vy<-7?35:19):Math.abs(p.vx)<.25?(p.fermoT>5?Math.floor((p.fermoT-5)*7)%9:36):19+Math.floor(p.passi)%10;
    disegnaBomba(c,sx(p.x),pie,r,fr,p.rotola?1:p.verso,p.W,p.rotola?0:ang,p.rotola?-p.rot*2:0);
    if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),pie-r*1.1,r*1.5,0,6.3);c.stroke();}}
