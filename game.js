@@ -553,6 +553,9 @@ const ARENE=[
  ["############################","#                          #","#   c                  c   #","#-------      c     -------#","#         ----------       #","#                          #","#      B            B      #","#-------            -------#","#         ----------       #","#             c            #","#                          #","#   B  c            c  B   #","###########      ###########","###########      ###########"],
  ["############################","#                          #","#            c             #","#      --------------      #","#  c                    c  #","#-----                -----#","#        B        B        #","#     --------------       #","#                          #","#---                    ---#","#                          #","#  c     B         B    c  #","######   ##########   ######","######   ##########   ######"]
 ];
+/* Ananassone disegnato: 32 fotogrammi da 192x204 in righe da 8, guarda a destra. 0-7 si gira, 8-15 cammina, 16-23 corre, 25 arrabbiato, 29-30 mazza alzata */
+const ANAS=new Image();ANAS.src='assets/boss_ananas.webp';
+function disegnaAnanas(c,f,z,verso){if(!ANAS.complete)return false;const k=z/185;c.save();if(verso<0)c.scale(-1,1);c.drawImage(ANAS,f%8*192,Math.floor(f/8)*204,192,204,-96*k,-118*k,192*k,204*k);c.restore();return true;}
 const BOSPR=[0,1,2].map(n=>{const k=document.createElement('canvas');k.width=k.height=240;const c=k.getContext('2d'),o='#2b2b3a';c.lineWidth=10;c.lineJoin='round';c.strokeStyle=o;
  if(n===0)c.drawImage(ANAN,0,0,240,240);
  else if(n===1){c.fillStyle='#7d4bc9';c.beginPath();c.moveTo(30,92);c.lineTo(210,92);c.lineTo(120,232);c.closePath();c.fill();c.stroke();c.save();c.clip();c.strokeStyle='#b58cf0';c.lineWidth=10;for(let i=0;i<6;i++){c.beginPath();c.moveTo(0,100+i*28);c.lineTo(240,130+i*28);c.stroke();}c.restore();c.fillStyle='#fff4df';c.beginPath();c.ellipse(120,86,96,20,0,0,6.3);c.fill();c.stroke();c.fillStyle='#7d4bc9';c.fillRect(108,16,24,56);c.strokeRect(108,16,24,56);}
@@ -603,9 +606,14 @@ function disegnaBoss(c,sx,sy,ts){
  const b=M.boss;if(!b||b.vita<=0)return;const a=sx(b.x),q=sy(b.y),z=b.r*ts*2.9;
  if(b.stato==='mira'){c.strokeStyle='#ff3b2e';c.lineWidth=Math.max(4,ts*.3);c.setLineDash([ts*.6,ts*.4]);c.globalAlpha=.7;c.beginPath();c.moveTo(a,q);c.lineTo(sx(b.x+b.dx*b.lung),sy(b.y+b.dy*b.lung));c.stroke();c.setLineDash([]);c.globalAlpha=1;}
  c.save();c.translate(a+(b.stato==='mira'?rnd(-2,2):0),q);
+ if(M.i===0&&ANAS.complete){const p=P2,v=b.stato==='carica'||b.stato==='mira'?Math.sign(b.dx)||1:Math.sign(p.x-b.x)||1;
+  const f=b.stato==='carica'?16+Math.floor(G.t*18)%8:b.stato==='mira'?(b.t>.75?25:b.t>.6?29:30):b.stato==='stordito'?Math.floor(G.t*7)%8:8+Math.floor(G.t*8)%8;
+  if(b.stato==='fermo')c.translate(0,Math.sin(G.t*3)*ts*.06);if(b.lampo>0&&Math.floor(G.t*24)%2)c.globalAlpha=.35;if(b.stato==='stordito')c.filter='saturate(.6) brightness(1.1)';
+  disegnaAnanas(c,f,z,v);c.restore();}
+ else{
  if(b.stato==='carica')c.rotate(Math.sin(G.t*30)*.25);else if(b.stato==='stordito')c.rotate(.28*Math.sin(G.t*7));else c.translate(0,Math.sin(G.t*3)*ts*.1);
  if(b.lampo>0&&Math.floor(G.t*24)%2)c.globalAlpha=.35;if(b.stato==='stordito')c.filter='saturate(.45) brightness(1.15)';
- c.drawImage(b.sp,-z/2,-z/2,z,z);c.restore();
+ c.drawImage(b.sp,-z/2,-z/2,z,z);c.restore();}
  if(b.stato==='stordito'){c.fillStyle='#f6c445';c.strokeStyle='#2b2b3a';c.lineWidth=2;for(let i=0;i<5;i++){const u=G.t*5+i*1.257,px=a+Math.cos(u)*ts*1.2,py=q-z*.42+Math.sin(u)*ts*.3;c.beginPath();c.arc(px,py,ts*.17,0,6.3);c.fill();c.stroke();}}
 }
 
@@ -654,7 +662,7 @@ function gCaduta(c,t){gFondo(c);for(let i=0;i<3;i++)sp(c,'terrain_sand_horizonta
 function gSchianto(c,t){gFondo(c);for(let i=0;i<3;i++)sp(c,'terrain_sand_block_center',GW-40,GS-40*(i+1),41,41);const a=clamp(t/.5,0,1),x=20+a*a*(GW-80),boom=(t-.5)/.32;gBarra(c,boom>=0?0:.9);
  const bx=boom>=0?GW-60-clamp(boom,0,1)*70:x;disegnaPalla(c,bx,GS-GR,GR,bx*.09,0,true);if(boom<0)for(let i=1;i<4;i++){c.strokeStyle='#2b2b3a66';c.lineWidth=2;c.beginPath();c.moveTo(x-GR-i*9,GS-8-i*8);c.lineTo(x-GR-i*20,GS-8-i*8);c.stroke();}gBoom(c,GW-50,GS-24,boom,66);}
 function gStanza(c){gFondo(c);for(let i=0;i<5;i++)sp(c,'terrain_sand_cloud_middle',20+i*34,62,35,35);for(let i=0;i<5;i++)sp(c,'block_exclamation',GW-22,GS-22*(i+1),23,23);}
-function gBossS(c,x,y,st,t){const z=70;c.save();c.translate(x,y);if(st)c.rotate(.25*Math.sin(t*30));c.drawImage(BOSPR[0],-z/2,-z/2,z,z);c.restore();if(st){c.fillStyle='#f6c445';c.strokeStyle='#2b2b3a';c.lineWidth=1.5;for(let i=0;i<5;i++){const a=t*20+i*1.257;c.beginPath();c.arc(x+Math.cos(a)*30,y-30+Math.sin(a)*8,4.5,0,6.3);c.fill();c.stroke();}}}
+function gBossS(c,x,y,st,t){const z=70;c.save();c.translate(x,y);if(!disegnaAnanas(c,st?Math.floor(t*20)%8:16+Math.floor(t*16)%8,z,1)){if(st)c.rotate(.25*Math.sin(t*30));c.drawImage(BOSPR[0],-z/2,-z/2,z,z);}c.restore();if(st){c.fillStyle='#f6c445';c.strokeStyle='#2b2b3a';c.lineWidth=1.5;for(let i=0;i<5;i++){const a=t*20+i*1.257;c.beginPath();c.arc(x+Math.cos(a)*30,y-30+Math.sin(a)*8,4.5,0,6.3);c.fill();c.stroke();}}}
 function gLancio(c,t){gStanza(c);const e=clamp((t-.3)/.3,0,1),x=60+e*180,y=40+e*(GS-70),mz=t<.3;if(mz){c.strokeStyle='#ff3b2e';c.lineWidth=5;c.setLineDash([12,8]);c.beginPath();c.moveTo(60,40);c.lineTo(240,GS-30);c.stroke();c.setLineDash([]);}gBossS(c,x+(mz?rnd(-1,1):0),y,false,t);const j=clamp((t-.22)/.3,0,1);disegnaCamm(c,190-j*90,GS-Math.sin(j*3.14)*46,GR,j>0&&j<1?2:0,3,-1,0,0);}
 function gSbatte(c,t){gStanza(c);const e=clamp(t/.3,0,1),x=70+e*165,hit=t>.3,y=hit?Math.min(GS-34,80+(t-.3)*400):80;gBossS(c,x,y,hit,t);gBoom2(c,GW-34,80,(t-.3)/.3);disegnaCamm(c,50,GS,GR,0,0,1,0,0);}
 function gColpo(c,t){gStanza(c);const e=clamp((t-.25)/.2,0,1),x=30+e*165,hit=t>.45;gBossS(c,235,GS-34,hit?0:t+.5,t);if(!hit)gTelefono(c,GW/2,30,0,-1,t>.15&&t<.3);disegnaPalla(c,hit?195-(t-.45)*120:x,GS-GR,GR,x*.09,0,true);gBoom2(c,212,GS-30,(t-.45)/.3);
