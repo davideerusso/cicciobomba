@@ -40,16 +40,21 @@ const FONDI={};[['clouds','assets/fondi/clouds.webp'],['color_hills','assets/fon
 const SUONI={"magic":'assets/suoni/magic.mp3',"coin":'assets/suoni/coin.mp3',"jump":'assets/suoni/jump.mp3',"hurt":'assets/suoni/hurt.mp3',"disappear":'assets/suoni/disappear.mp3',"bump":'assets/suoni/bump.mp3',"throw":'assets/suoni/throw.mp3',"jump-high":'assets/suoni/jump-high.mp3',"gem":'assets/suoni/gem.mp3'};
 const KIT2=new Image();KIT2.src='assets/kit2.webp'; /* altri pezzi del kit: pulsante, lucchetto, peso, mattoni, blocco che crolla */
 Object.assign(KMAP,{"switch_blue":[2,2,2],"switch_blue_pressed":[102,2,2],"lock_blue":[202,2,2],"weight":[302,2,2],"bricks_brown":[402,2,2],"block_idle":[502,2,2],"block_fall":[602,2,2],"block_rest":[702,2,2]});
-/* l'erba del mondo 1 viene dal Pixel Platformer e la terra della grotta dal kit farm: caselle da 18 */
+/* la terra della grotta dal kit Farm Expansion: caselle da 18 */
 const PIXEL=new Image();PIXEL.src='assets/pixel.webp';
-const PIX={block:0,horizontal_left:1,horizontal_middle:2,horizontal_right:3,vertical_top:4,vertical_middle:5,vertical_bottom:6,block_top_left:7,block_top:8,block_top_right:9,block_left:10,block_center:11,block_right:12,block_bottom_left:13,block_bottom:14,block_bottom_right:15,cloud_left:1,cloud_middle:2,cloud_right:3};
 const PX_PAV=16,PX_FONDO=17;
 function px(c,i,x,y,w,h,capo,meta){if(!PIXEL.complete)return;const s=c.imageSmoothingEnabled;c.imageSmoothingEnabled=false;
  if(capo){c.save();c.translate(x,y+h);c.scale(1,-1);c.drawImage(PIXEL,i*18,0,18,meta?9:18,0,0,w,meta?h/2:h);c.restore();}else c.drawImage(PIXEL,i*18,0,18,18,x,y,w,h);c.imageSmoothingEnabled=s;}
 /* le rampe non ci sono nel kit: terra ritagliata a triangolo con il bordo d'erba */
-function rampaPixel(c,x,y,w,h,sale){const A=sale?[x,y+h]:[x,y],B=sale?[x+w,y]:[x+w,y+h];c.save();c.beginPath();c.moveTo(A[0],A[1]);c.lineTo(B[0],B[1]);c.lineTo(sale?x+w:x,y+h);c.closePath();c.clip();px(c,PIX.block_center,x,y,w,h);c.restore();
- c.save();c.lineCap='round';const l=(col,lw,o)=>{c.strokeStyle=col;c.lineWidth=lw;c.beginPath();c.moveTo(A[0],A[1]+o);c.lineTo(B[0],B[1]+o);c.stroke();};l('#2eb082',w*.36,w*.18);l('#36e377',w*.12,w*.06);l('#434a5f',w*.1,0);c.restore();}
-function sp(c,n,x,y,w,h,flip){if(n.startsWith('terrain_sand_')&&PIXEL.complete){const t=n.slice(13);if(t==='ramp_short_b'){rampaPixel(c,x,y,w,h,flip);return;}if(t in PIX){px(c,PIX[t],x,y,w,h);return;}}
+/* terreno del mondo 1 dal foglio "Pineapple Tiles" (CC0): 0 cima con l'erba, 1-2 terra a rombi, 3 piattaforma sottile; caselle da 32 */
+const TERRA=new Image();TERRA.src='assets/terra_ananas.webp';const BORDO_TERRA='#42291d';
+/* lati scoperti di ogni casella: [sopra, destra, sotto, sinistra] */
+const LATI={block:[1,1,1,1],horizontal_left:[1,0,1,1],horizontal_middle:[1,0,1,0],horizontal_right:[1,1,1,0],vertical_top:[1,1,0,1],vertical_middle:[0,1,0,1],vertical_bottom:[0,1,1,1],block_top_left:[1,0,0,1],block_top:[1,0,0,0],block_top_right:[1,1,0,0],block_left:[0,0,0,1],block_center:[0,0,0,0],block_right:[0,1,0,0],block_bottom_left:[0,0,1,1],block_bottom:[0,0,1,0],block_bottom_right:[0,1,1,0],cloud_left:[1,0,1,1],cloud_middle:[1,0,1,0],cloud_right:[1,1,1,0]};
+function terraAnanas(c,t,x,y,w,h){const L=LATI[t];if(!L||!TERRA.complete)return false;const i=t.startsWith('cloud')?3:L[0]?0:1,s=c.imageSmoothingEnabled;c.imageSmoothingEnabled=false;c.drawImage(TERRA,i*32,0,32,32,x,y,w,h);c.imageSmoothingEnabled=s;
+ const b=Math.max(2,w*.08);c.fillStyle=BORDO_TERRA;if(L[0])c.fillRect(x,y,w,b);if(L[1])c.fillRect(x+w-b,y,b,h);if(L[2])c.fillRect(x,y+h-b,w,b);if(L[3])c.fillRect(x,y,b,h);return true;}
+function rampaPixel(c,x,y,w,h,sale){const A=sale?[x,y+h]:[x,y],B=sale?[x+w,y]:[x+w,y+h];c.save();c.beginPath();c.moveTo(A[0],A[1]);c.lineTo(B[0],B[1]);c.lineTo(sale?x+w:x,y+h);c.closePath();c.clip();if(TERRA.complete){const s=c.imageSmoothingEnabled;c.imageSmoothingEnabled=false;c.drawImage(TERRA,32,0,32,32,x,y,w,h);c.imageSmoothingEnabled=s;}c.restore();
+ c.save();c.lineCap='round';const l=(col,lw,o)=>{c.strokeStyle=col;c.lineWidth=lw;c.beginPath();c.moveTo(A[0],A[1]+o);c.lineTo(B[0],B[1]+o);c.stroke();};l('#b0c063',w*.36,w*.18);l('#dae87f',w*.12,w*.06);l(BORDO_TERRA,w*.1,0);c.restore();}
+function sp(c,n,x,y,w,h,flip){if(n.startsWith('terrain_sand_')){const t=n.slice(13);if(t==='ramp_short_b'){rampaPixel(c,x,y,w,h,flip);return;}if(terraAnanas(c,t,x,y,w,h))return;}
  const q=KMAP[n],im=q&&q[2]?KIT2:KIT;if(!q||!im.complete)return;if(flip){c.save();c.translate(x+w,y);c.scale(-1,1);c.drawImage(im,q[0],q[1],96,96,0,0,w,h);c.restore();}else c.drawImage(im,q[0],q[1],96,96,x,y,w,h);}
 const ANAN=document.createElement('canvas');ANAN.width=ANAN.height=96;(function(){const c=ANAN.getContext('2d'),o='#2b2b3a';c.lineWidth=6;c.lineJoin='round';c.strokeStyle=o;c.fillStyle='#39b86b';
  [-2,-1,0,1,2].forEach(f=>{c.beginPath();c.moveTo(38,36);c.lineTo(48+f*13,6+Math.abs(f)*8);c.lineTo(58,36);c.closePath();c.stroke();c.fill();});
@@ -519,8 +524,7 @@ function disegna2d(){
   else sp(c,o.tipo==='H'?'heart':o.tipo==='U'?'gem_blue':o.tipo==='Z'?'bomb':'star',a,b,ts,ts);}
  for(const n of M.nemici){if(!n.vivo||n.x<c0-1||n.x>c1+1)continue;const a=sx(n.x),b=sy(n.y),z=ts*1.1,pas=Math.floor(G.t*7+n.fase)%2?'_a':'_b';
   if(n.tipo==='e'){const pie=sy(Math.round(n.y+.1)-.5),q=Math.sin(G.t*12+n.fase),dv=n.vx>0?1:-1;
-   if(m.nemico==='ananas'){c.fillStyle='#2b2b3a';[-1,1].forEach(j=>c.fillRect(a+j*ts*.2-ts*.07,pie-ts*.2+(j*q>0?-ts*.05:0),ts*.14,ts*.2));c.drawImage(ANAN,a-z/2,pie-z-ts*.08,z,z);
-    c.fillStyle='#fff';c.strokeStyle='#2b2b3a';c.lineWidth=2;[-1,1].forEach(j=>{c.beginPath();c.arc(a+j*ts*.13+dv*ts*.05,pie-ts*.5,ts*.1,0,6.3);c.fill();c.stroke();});c.fillStyle='#2b2b3a';[-1,1].forEach(j=>{c.beginPath();c.arc(a+j*ts*.13+dv*ts*.09,pie-ts*.49,ts*.045,0,6.3);c.fill();});}
+   if(m.nemico==='ananas'&&NEMICO.complete){const hh=ts*1.3,ww=hh*NEMICO.width/NEMICO.height,sal=Math.abs(q)*ts*.08,s=c.imageSmoothingEnabled;c.save();c.translate(a,pie-sal);c.rotate(q*.08);if(dv>0)c.scale(-1,1);c.imageSmoothingEnabled=false;c.drawImage(NEMICO,-ww/2,-hh,ww,hh);c.imageSmoothingEnabled=s;c.restore();}
    else sp(c,m.nemico+'_walk'+pas,a-z/2,pie-z,z,z,dv>0);}
   else if(n.tipo==='r')sp(c,'slime_spike_walk'+pas,a-z/2,b+ts*.45-z,z,z,n.vx>0);
   else if(n.tipo==='f')sp(c,m.volo+pas,a-z/2,b-z/2,z,z,Math.cos(n.fase*.8)>0);
@@ -581,6 +585,7 @@ const ARENE=[
  ["############################","#                          #","#            c             #","#      --------------      #","#  c                    c  #","#-----                -----#","#        B        B        #","#     --------------       #","#                          #","#---                    ---#","#                          #","#  c     B         B    c  #","######   ##########   ######","######   ##########   ######"]
 ];
 /* Ananassone disegnato: fotogrammi da 192x204 in righe da 8, guarda a destra. 0-7 si gira, 8-15 cammina, 16-23 corre, 25 arrabbiato, 29-30 mazza alzata, 31 mazza calata nel lancio, 32-34 stordito */
+const NEMICO=new Image();NEMICO.src='assets/nemico_ananas.webp'; /* l'ananas arrabbiato del foglio Pineapple Tiles, nemico del mondo 1 */
 const ANAS=new Image();ANAS.src='assets/boss_ananas.webp';
 function disegnaAnanas(c,f,z,verso,piedi){if(!ANAS.complete)return false;const k=z/185,oy=piedi?195:118;c.save();if(verso<0)c.scale(-1,1);c.drawImage(ANAS,f%8*192,Math.floor(f/8)*204,192,204,-96*k,-oy*k,192*k,204*k);c.restore();return true;}
 const BOSPR=[0,1,2].map(n=>{const k=document.createElement('canvas');k.width=k.height=240;const c=k.getContext('2d'),o='#2b2b3a';c.lineWidth=10;c.lineJoin='round';c.strokeStyle=o;
@@ -687,7 +692,7 @@ function gInclina(c,t){gFondo(c);const s=Math.sin(t*6.283);gTelefono(c,GW/2,40,s
 function gSalto(c,t){gFondo(c);const x=30+t*250,o=clamp((x-105)/90,0,1),u=4*o*(1-o);sp(c,'spikes',135,GS-34,34,34);gTelefono(c,GW/2,36,0,1,o>0&&o<.25);
  const g=o>0&&o<1;disegnaPolvere(c,105,GS,70,o/.5);disegnaCamm(c,x,GS-u*62,GR,g?(o<.5?1:3):Math.floor(t*40)%10,g?3:1,1,0,0);}
 function gScatto(c,t){gFondo(c);const col=t>.32&&t<.45;gTelefono(c,GW/2,36,0,-1,col);const via=t>.44,e=(t-.44)/.25;
- if(!via)c.drawImage(ANAN,205,GS-46,48,48);gBoom2(c,229,GS-22,e);
+ if(!via){if(NEMICO.complete)c.drawImage(NEMICO,229-15,GS-52,30,52);else c.drawImage(ANAN,205,GS-46,48,48);}gBoom2(c,229,GS-22,e);
  disegnaFumo(c,84,GS,38,1,(t-.32)/.5);if(t<.32)disegnaCamm(c,30+t*150,GS,GR,Math.floor(t*40)%10,1,1,0,0);else{const x=78+Math.min(1,(t-.32)/.2)*170;disegnaPalla(c,x,GS-GR,GR,x*.09,0,true);}}
 function gBoom2(c,x,y,e){if(e<0||e>1)return;c.fillStyle=`rgba(255,255,255,${1-e})`;for(let i=0;i<8;i++){const a=i*.785,r=8+e*30;c.beginPath();c.arc(x+Math.cos(a)*r,y+Math.sin(a)*r,5*(1-e)+1,0,6.3);c.fill();}}
 function gCibo(c,t){gFondo(c);const px=[110,170,230],x=30+t*250;let n=0;px.forEach((q,i)=>{if(x<q)c.drawImage(PIZZA,q-17,GS-42,34,34);else n++;});gBarra(c,n/3*.9);disegnaCamm(c,x,GS,GR,Math.floor(t*40)%10,1,1,0,0);}
