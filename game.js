@@ -89,6 +89,9 @@ function disegnaPasso(c,x,yPiedi,r,col,riga,verso,W,ang){
  if(!FOGLIO.complete)return;const lato=CELLA*r*2/PALLA_L;c.save();c.translate(x,yPiedi);if(ang)c.rotate(ang);c.scale(verso*(1-W*.6),1+W);
  c.drawImage(foglioAmico(),col*CELLA,riga*CELLA,CELLA,CELLA,-lato/2,-lato*.97,lato,lato);c.restore();
 }
+/* bolla di sapone iridescente: e è la trasparenza, ts la misura di una casella per lo spessore del bordo */
+function bollaSapone(c,bx,by,rb,e,ts){c.save();c.globalAlpha=e;const g=c.createRadialGradient(bx-rb*.3,by-rb*.35,rb*.1,bx,by,rb);g.addColorStop(0,'rgba(255,255,255,.28)');g.addColorStop(.7,'rgba(170,225,255,.10)');g.addColorStop(1,'rgba(200,170,255,.25)');c.fillStyle=g;c.beginPath();c.arc(bx,by,rb,0,6.3);c.fill();
+ c.lineWidth=Math.max(2,ts*.07);c.strokeStyle=`hsla(${G.t*240%360},85%,72%,.75)`;c.stroke();c.strokeStyle='rgba(255,255,255,.8)';c.lineWidth=Math.max(2,ts*.06);c.beginPath();c.arc(bx,by,rb*.78,3.6,4.4);c.stroke();c.restore();}
 function disegnaPalla(c,x,y,r,rot,W,aTerra,foto){
  if(!FOGLIO.complete)return;const lato=CELLA*r*2/PALLA_L,sq=aTerra?.04:0,giro=((rot%6.2832)+6.2832)%6.2832,q=foto?3:Math.floor(giro/1.5708)%4,cy=(CELLA*.97-PALLA_H[q]/2)/CELLA*lato;
  c.save();c.translate(x,y+sq*r);c.scale(1+sq-W*.6,1-sq+W);c.rotate(rot);
@@ -561,8 +564,7 @@ function disegna2d(){
    if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.5,0,6.3);c.stroke();}
    if(G.stella>0){c.strokeStyle=`hsl(${G.t*400%360},95%,62%)`;c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.3,0,6.3);c.stroke();}}}
  stancoVis=0;c.restore();
- if(p.bolla>0){const e=Math.min(1,p.bolla/.25),bx=sx(p.x),by=sy(p.y),rb=p.R*ts*(1.75+.06*Math.sin(G.t*9));c.save();c.globalAlpha=e;const g=c.createRadialGradient(bx-rb*.3,by-rb*.35,rb*.1,bx,by,rb);g.addColorStop(0,'rgba(255,255,255,.28)');g.addColorStop(.7,'rgba(170,225,255,.10)');g.addColorStop(1,'rgba(200,170,255,.25)');c.fillStyle=g;c.beginPath();c.arc(bx,by,rb,0,6.3);c.fill();
-  c.lineWidth=Math.max(2,ts*.07);c.strokeStyle=`hsla(${G.t*240%360},85%,72%,.75)`;c.stroke();c.strokeStyle='rgba(255,255,255,.8)';c.lineWidth=Math.max(2,ts*.06);c.beginPath();c.arc(bx,by,rb*.78,3.6,4.4);c.stroke();c.restore();}
+ if(p.bolla>0)bollaSapone(c,sx(p.x),sy(p.y),p.R*ts*(1.75+.06*Math.sin(G.t*9)),Math.min(1,p.bolla/.25),ts);
  if(G.boom){const e=(G.t-G.boom.t)/.55;if(e<1)disegnaEspl(c,sx(G.boom.x),sy(G.boom.y),G.boom.r*ts,e);else G.boom=null;}
  for(const f of M.finti||[]){if(f[2]<c0||f[0]>c1)continue;const dentro=p.x>f[0]-.7&&p.x<f[2]+.7&&p.y>f[1]-.7&&p.y<f[3]+.7;f.a=lerp(f.a===undefined?1:f.a,dentro?.05:1,.15);
   const g=clamp((1-f.a)/.7,0,1);if(g>.01){c.globalAlpha=g;for(let x=f[0];x<=f[2];x++){if(pieno(cel(x,f[1]-1)))px(c,PX_PAV,sx(x)-ts/2,sy(f[1]-1)-ts/2,mz,mz);if(pieno(cel(x,f[3]+1)))px(c,PX_PAV,sx(x)-ts/2,sy(f[3]+1)-ts/2,mz,mz,true,true);}}
@@ -678,9 +680,10 @@ function esplodi(){
  G.carica=0;aggBarra();
 }
 
-/* ---------- GUIDA: tre pagine con scenette animate ---------- */
+/* ---------- GUIDA: quattro pagine con scenette animate ---------- */
 const GUIDA=[
  {t:'Nei livelli',c:['Inclina per rotolare','Tocca a destra: salti','Tocca a sinistra: scatti e travolgi i nemici'],f:[gInclina,gSalto,gScatto]},
+ {t:'Muovi il telefono',c:['Scuoti il telefono: galleggi in una bolla','Colpo secco di lato: lanci Matteo','Salto e bolla: arrivi più in alto'],f:[gBolla,gSpinta,gAlto]},
  {t:'La bomba',c:['Mangia: ti carichi','Cadi da molto in alto: BOOM','Schiantati veloce: BOOM'],f:[gCibo,gCaduta,gSchianto]},
  {t:'I boss',c:['Si lancia su di te: schivalo','Se sbatte resta stordito','Scattagli addosso'],f:[gLancio,gSbatte,gColpo]}
 ];
@@ -700,6 +703,19 @@ function gSalto(c,t){gFondo(c);const x=30+t*250,o=clamp((x-105)/90,0,1),u=4*o*(1
 function gScatto(c,t){gFondo(c);const col=t>.32&&t<.45;gTelefono(c,GW/2,36,0,-1,col);const via=t>.44,e=(t-.44)/.25;
  if(!via){if(NEMICO.complete)c.drawImage(NEMICO,229-15,GS-52,30,52);else c.drawImage(ANAN,205,GS-46,48,48);}gBoom2(c,229,GS-22,e);
  disegnaFumo(c,84,GS,38,1,(t-.32)/.5);if(t<.32)disegnaCamm(c,30+t*150,GS,GR,Math.floor(t*40)%10,1,1,0,0);else{const x=78+Math.min(1,(t-.32)/.2)*170;disegnaPalla(c,x,GS-GR,GR,x*.09,0,true);}}
+function gBolla(c,t){gFondo(c);const sc=t>.08&&t<.42;gTelefono(c,72+(sc?Math.sin(t*160)*7:0),36,sc?Math.sin(t*130)*.08:0);
+ const su=clamp((t-.2)/.45,0,1),giu=clamp((t-.75)/.2,0,1),y=GS-Math.sin(su*1.5708)*62*(1-giu*giu),dent=t>.2&&t<.75,j=dent?Math.sin(t*90)*1.5:0;
+ disegnaCamm(c,205+j,y,GR,dent?2:0,dent?3:0,1,0,0);if(dent)bollaSapone(c,205,y-GR,GR*1.75,Math.min(1,(.75-t)/.08),12);}
+/* il telefono scatta di lato e Matteo vola da quella parte */
+function gSpinta(c,t){gFondo(c);const e=t<.15?0:t<.22?(t-.15)/.07:Math.max(0,1-(t-.22)/.15);gTelefono(c,64+e*26,36,e*.12);
+ const u=clamp((t-.22)/.45,0,1),x=60+u*190,vola=u>0&&u<1,y=GS-GR-4*u*(1-u)*52;
+ if(vola)for(let i=1;i<4;i++){c.strokeStyle='#2b2b3a55';c.lineWidth=2;c.beginPath();c.moveTo(x-GR-i*8,y-6+i*5);c.lineTo(x-GR-i*8-14,y-6+i*5);c.stroke();}
+ disegnaPalla(c,x,y,GR,x*.09,0,!vola);}
+/* salto e poi bolla: arriva su un ripiano che col salto da solo non prende */
+function gAlto(c,t){gFondo(c);const ty=58;sp(c,'terrain_sand_horizontal_left',185,ty,35,35);sp(c,'terrain_sand_horizontal_middle',220,ty,35,35);sp(c,'terrain_sand_horizontal_right',255,ty,35,35);
+ const u=clamp((t-.08)/.62,0,1),x=60+u*170,y=GS-(GS-ty)*Math.sin(u*1.5708),bol=u>.35&&u<.97;
+ disegnaCamm(c,x,y,GR,u>0&&u<1?2:0,u>0&&u<1?3:0,1,0,0);if(bol)bollaSapone(c,x,y-GR,GR*1.75,Math.min(1,(.97-u)/.08),12);
+ c.fillStyle='#2b2b3a';c.font='800 11px "Baloo 2",sans-serif';c.textAlign='right';c.textBaseline='middle';if(u>0&&u<=.35)c.fillText('salto',x-GR*1.3,y-GR);else if(bol)c.fillText('bolla',x-GR*2,y-GR);}
 function gBoom2(c,x,y,e){if(e<0||e>1)return;c.fillStyle=`rgba(255,255,255,${1-e})`;for(let i=0;i<8;i++){const a=i*.785,r=8+e*30;c.beginPath();c.arc(x+Math.cos(a)*r,y+Math.sin(a)*r,5*(1-e)+1,0,6.3);c.fill();}}
 function gCibo(c,t){gFondo(c);const px=[110,170,230],x=30+t*250;let n=0;px.forEach((q,i)=>{if(x<q)c.drawImage(PIZZA,q-17,GS-42,34,34);else n++;});gBarra(c,n/3*.9);disegnaCamm(c,x,GS,GR,Math.floor(t*40)%10,1,1,0,0);}
 function gCaduta(c,t){gFondo(c);for(let i=0;i<3;i++)sp(c,'terrain_sand_horizontal_middle',i*34,46,35,35);const pr=t<.25?t/.25:1,fall=clamp((t-.25)/.25,0,1),x=20+pr*90,boom=(t-.5)/.32;gBarra(c,boom>=0?0:.9);
@@ -715,7 +731,7 @@ function gColpo(c,t){gStanza(c);const e=clamp((t-.25)/.2,0,1),x=30+e*165,hit=t>.
 function disegnaGuida(){const r=riduci?.42:null;GUIDA[gPag].f.forEach((f,i)=>{const cv=$('gc'+i),c=cv.getContext('2d');c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,GW,GH);f(c,r===null?((G.t/ (2.8))%1):r);});}
 function apriGuida(dopo){gPag=0;gDopo=dopo;G.guida=true;mostra('sGuida');pagGuida();}
 function pagGuida(){const g=GUIDA[gPag];$('gTit').textContent=g.t;g.c.forEach((x,i)=>$('gt'+i).textContent=x);$('gNum').textContent=(gPag+1)+' / '+GUIDA.length;$('gAvanti').textContent=gPag<GUIDA.length-1?'Avanti':(gDopo?'Gioca':'Ho capito');}
-function chiudiGuida(){G.guida=false;S.guidaVista=true;salva();const d=gDopo;gDopo=null;if(d)d();else mostra('sMenu');}
+function chiudiGuida(){G.guida=false;S.guidaVista=2;salva();const d=gDopo;gDopo=null;if(d)d();else mostra('sMenu');}
 $('gAvanti').onclick=()=>{if(gPag<GUIDA.length-1){gPag++;pagGuida();}else chiudiGuida();};
 $('gSalta').onclick=chiudiGuida;
 
@@ -770,7 +786,7 @@ function disegnaAmici(){const a=$('listaAmici');a.textContent='';
  $('saldo').textContent=S.gettoni;$('togliAmico').hidden=S.sel===0;$('togliFoto').hidden=!f.foto;$('togliFoto').textContent='Togli la foto di '+f.nome;$('fotoTesto').textContent=(f.foto?'Cambia la foto di ':'Metti la foto di ')+f.nome;
 }
 async function bloccaOrizzontale(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();await screen.orientation.lock('landscape');}catch(e){}}
-$('bGioca').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();if(S.guidaVista)iniziaRun();else apriGuida(iniziaRun);};
+$('bGioca').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();if((S.guidaVista|0)>=2)iniziaRun();else apriGuida(iniziaRun);};
 $('bGuida').onclick=()=>{audioOn();apriGuida(null);};
 $('bAmici').onclick=()=>{audioOn();disegnaAmici();mostra('sAmici');};
 $('amiciChiudi').onclick=()=>mostra('sMenu');
