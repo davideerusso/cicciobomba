@@ -46,10 +46,10 @@ const PIX={block:0,horizontal_left:1,horizontal_middle:2,horizontal_right:3,vert
 const PX_PAV=16,PX_FONDO=17;
 function px(c,i,x,y,w,h,capo,meta){if(!PIXEL.complete)return;const s=c.imageSmoothingEnabled;c.imageSmoothingEnabled=false;
  if(capo){c.save();c.translate(x,y+h);c.scale(1,-1);c.drawImage(PIXEL,i*18,0,18,meta?9:18,0,0,w,meta?h/2:h);c.restore();}else c.drawImage(PIXEL,i*18,0,18,18,x,y,w,h);c.imageSmoothingEnabled=s;}
-/* le rampe non ci sono nel kit: terra ritagliata a triangolo con il bordo d'erba */
-function rampaPixel(c,x,y,w,h,sale){const A=sale?[x,y+h]:[x,y],B=sale?[x+w,y]:[x+w,y+h];c.save();c.beginPath();c.moveTo(A[0],A[1]);c.lineTo(B[0],B[1]);c.lineTo(sale?x+w:x,y+h);c.closePath();c.clip();px(c,PIX.block_center,x,y,w,h);c.restore();
- c.save();c.lineCap='round';const l=(col,lw,o)=>{c.strokeStyle=col;c.lineWidth=lw;c.beginPath();c.moveTo(A[0],A[1]+o);c.lineTo(B[0],B[1]+o);c.stroke();};l('#2eb082',w*.36,w*.18);l('#36e377',w*.12,w*.06);l('#434a5f',w*.1,0);c.restore();}
-function sp(c,n,x,y,w,h,flip){if(n.startsWith('terrain_sand_')&&PIXEL.complete){const t=n.slice(13);if(t==='ramp_short_b'){rampaPixel(c,x,y,w,h,flip);return;}if(t in PIX){px(c,PIX[t],x,y,w,h);return;}}
+/* il terreno del mondo 1 è il paesaggio ananas dell'utente: caselle da 68 nello stesso ordine di PIX, l'ultima è la rampa che scende */
+const PAES=new Image();PAES.src='assets/paesaggio.webp';const PAES_RAMPA=16;
+function paes(c,i,x,y,w,h,flip){const s=c.imageSmoothingEnabled;c.imageSmoothingEnabled=false;if(flip){c.save();c.translate(x+w,y);c.scale(-1,1);c.drawImage(PAES,i*68,0,68,68,0,0,w,h);c.restore();}else c.drawImage(PAES,i*68,0,68,68,x,y,w,h);c.imageSmoothingEnabled=s;}
+function sp(c,n,x,y,w,h,flip){if(n.startsWith('terrain_sand_')&&PAES.complete){const t=n.slice(13);if(t==='ramp_short_b'){paes(c,PAES_RAMPA,x,y,w,h,flip);return;}if(t in PIX){paes(c,PIX[t],x,y,w,h);return;}}
  const q=KMAP[n],im=q&&q[2]?KIT2:KIT;if(!q||!im.complete)return;if(flip){c.save();c.translate(x+w,y);c.scale(-1,1);c.drawImage(im,q[0],q[1],96,96,0,0,w,h);c.restore();}else c.drawImage(im,q[0],q[1],96,96,x,y,w,h);}
 const ANAN=document.createElement('canvas');ANAN.width=ANAN.height=96;(function(){const c=ANAN.getContext('2d'),o='#2b2b3a';c.lineWidth=6;c.lineJoin='round';c.strokeStyle=o;c.fillStyle='#39b86b';
  [-2,-1,0,1,2].forEach(f=>{c.beginPath();c.moveTo(38,36);c.lineTo(48+f*13,6+Math.abs(f)*8);c.lineTo(58,36);c.closePath();c.stroke();c.fill();});
