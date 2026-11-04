@@ -46,7 +46,6 @@ P.blocco(13, 2, 13, 3)
 P.blocco(14, 2, 44, 5)
 P.blocco(16, 3, 44, 4, ' ')                             # il tunnel...
 P.finto(16, 3, 44, 4)                                   # ...coperto da terra finta, e si esce dal lato destro
-P.fila(5, 21, 22, 'y'); P.fila(5, 33, 34, 'y')                    # due botole nel pavimento dell'altopiano
 P.fila(3, 22, 28, 'c'); P.put(3, 31, 'H'); P.fila(3, 36, 40, 'c'); P.put(4, 38, 'c')
 P.put(6, 19, 'e'); P.put(6, 27, 'e'); P.put(6, 37, 'e')
 P.fila(6, 30, 31, '^')
@@ -61,8 +60,7 @@ P = Pezzo('magazzino', 62, 17)
 P.fila(2, 0, 61, '#')
 P.put(3, 3, 'B')
 P.fila(6, 5, 36, '#')                                   # piano di sopra
-P.put(7, 13, '/'); P.put(7, 14, '%')                    # gobba
-P.put(7, 10, 'O')
+P.put(7, 10, 'O'); P.put(7, 9, 'C'); P.put(7, 11, 'C')   # il peso è chiuso tra due casse da rompere
 P.fila(6, 18, 27, 'x')                                  # assi che crollano: il peso, se va piano, cade di sotto
 P.put(6, 32, ' '); P.put(6, 33, ' ')                    # buco sopra il pulsante
 P.put(3, 32, 'P'); P.put(3, 33, 'P')
@@ -128,6 +126,26 @@ P.put(7, 42, 'B')                                       # seconda molla sulla me
 P.fila(10, 40, 46, '-'); P.put(11, 43, 'T'); P.fila(11, 41, 42, 'c'); P.fila(11, 44, 45, 'c')
 for x in (3, 15, 25, 46, 50): P.put(3, x, 'e')
 P.fila(5, 9, 10, 'c'); P.fila(8, 21, 22, 'c'); P.fila(6, 34, 35, 'c')
+P.fine()
+
+# 6. VALANGA: su con le molle, giù per i gradoni travolgendo tutto; in fondo il muro crepato
+P = Pezzo('valanga', 70, 16)
+P.fila(2, 0, 69, '#')
+P.put(3, 2, 'B'); P.put(3, 5, 'e')
+P.blocco(4, 3, 9, 6); P.put(7, 8, 'B')
+P.blocco(10, 3, 15, 10); P.put(11, 13, 'c')
+scendi(P, 16, 10, 4)
+P.blocco(20, 3, 23, 6); P.put(7, 21, 'e'); P.put(7, 23, 'C'); P.put(8, 20, 'c')
+scendi(P, 24, 6, 2)
+P.blocco(26, 3, 28, 4); P.put(5, 27, 'e'); P.put(5, 28, 'C')
+scendi(P, 29, 4, 2)
+for x in (33, 37, 40, 44, 47, 51): P.put(3, x, 'e')
+for x in (35, 42, 49): P.put(3, x, 'C')
+for x in (34, 39, 46): P.put(5, x, 'c')
+P.col(58, 3, 7, 'X'); P.fila(8, 58, 62, '#'); P.col(62, 3, 7, '#')
+P.put(3, 59, 'H'); P.put(3, 61, 'T'); P.fila(5, 59, 61, 'c')
+P.fila(4, 52, 53, '-'); P.fila(6, 55, 56, '-')
+P.put(3, 66, 'e')
 P.fine()
 
 if __name__ == '__main__':

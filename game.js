@@ -146,19 +146,32 @@ function suOrient(e){
  if(an===90){x=b;y=-g;}else if(an===-90||an===270){x=-b;y=g;}else if(an===180){x=-g;y=-b;}
   const zm=v=>Math.abs(v)<.8?0:v-Math.sign(v)*.8;IN.tiltX=clamp(zm(x)/8,-1,1);IN.tiltZ=clamp(zm(-y)/8,-1,1); /* assoluto: telefono in piano = piano dritto */
 }
+/* il lancio: un colpo secco del telefono verso un lato lancia Matteo da quella parte */
+const SC_LANCIO=15;let gLento=null,ultLancio=0;
+function suMoto(e){
+ let a=e.acceleration;if(!a||a.x==null){const r=e.accelerationIncludingGravity;if(!r||r.x==null)return;gLento=gLento?{x:gLento.x*.9+r.x*.1,y:gLento.y*.9+r.y*.1}:{x:r.x,y:r.y};a={x:r.x-gLento.x,y:r.y-gLento.y};}
+ const an=SC.rot?90:(screen.orientation&&screen.orientation.angle)||window.orientation||0;
+ const lato=an===90?-a.y:an===-90||an===270?a.y:an===180?-a.x:a.x; /* accelerazione verso destra dello schermo */
+ const ora=performance.now();if(Math.abs(lato)>SC_LANCIO&&ora-ultLancio>700){ultLancio=ora;lancio(Math.sign(lato));}
+}
+function lancio(d){
+ const p=P2;if(G.stato!=='gioco'||!(p.coyote>0||p.ultimoSuolo))return;
+ p.vy=12;p.vx=d*10;p.lancio=.9;p.verso=d;p.rotola=true;p.coyote=0;p.ultimoSuolo=null;p.y+=.05;p.Wv+=10;polvere();sfx('jump-high')||suono(260,.3,'square',.08,900);vibra(30);
+ if(!G.lanciato){G.lanciato=true;avviso('Lancio!',900);}
+}
 let provato=false;
 async function chiediSensori(){
  if(provato)return;provato=true;
- try{if(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==='function'){const r=await DeviceOrientationEvent.requestPermission();if(r!=='granted')return note();}}catch(e){return note();}
+ try{if(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==='function'){const dm=window.DeviceMotionEvent&&typeof DeviceMotionEvent.requestPermission==='function'?DeviceMotionEvent.requestPermission().catch(()=>'no'):null;const r=await DeviceOrientationEvent.requestPermission();if(dm)await dm;if(r!=='granted')return note();}}catch(e){return note();}
  if(!window.DeviceOrientationEvent)return note();
- addEventListener('deviceorientation',suOrient);
+ addEventListener('deviceorientation',suOrient);addEventListener('devicemotion',suMoto);
  setTimeout(()=>{if(IN.ricevuto){IN.tiltOn=true;aggComandi();}else note();},900);
 }
 function note(){IN.tiltOn=false;aggComandi();}
 function aggComandi(){
  $('aSin').textContent='SCATTO';
  if(!IN.tiltOn&&provato)$('noteComandi').textContent='Sensori non disponibili qui: trascina il dito per inclinare il piano, tocca a destra per saltare e a sinistra per scattare.';
- else if(IN.tiltOn)$('noteComandi').textContent='Inclinazione attiva. Tocca a destra per saltare, a sinistra per scattare.';
+ else if(IN.tiltOn)$('noteComandi').textContent='Inclinazione attiva. Tocca a destra per saltare, a sinistra per scattare. Dai un colpo secco al telefono verso un lato per lanciare Matteo.';
 }
 function azione(lato){if(G.stato!=='gioco')return;if(lato<0)scatta2();else P2.buf=.13;}
 const tocchi=$('tocchi');
@@ -177,6 +190,7 @@ function suFine(e){const p=puntatori.get(e.pointerId);if(!p)return;puntatori.del
 tocchi.addEventListener('pointerup',suFine);tocchi.addEventListener('pointercancel',suFine);
 addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT')return;tasti[e.code]=true;
  if(e.code==='Space'){e.preventDefault();if(!e.repeat)azione(1);}
+ if((e.code==='KeyQ'||e.code==='KeyE')&&!e.repeat)lancio(e.code==='KeyE'?1:-1);
  if((e.code==='ShiftLeft'||e.code==='ShiftRight'||e.code==='KeyX')&&!e.repeat)azione(-1);
  if(e.code==='Escape'&&G.stato==='gioco')pausa();
 });
@@ -209,17 +223,18 @@ const PEZZI={
  ricci:["       c    c           ","      -------           ","                        ","   r          r         ","###########   ##########"],
  sciame:["    f       f      f    ","                        ","  c    c  H    c    c   ","  ------- ---- -------  ","                        ","     e        ^^^       ","########################"],
 intreccio:["                                                    ","                                        D           ","                                        D           ","                                        D           ","                       cccccc           D           ","                      --------          D           ","                                        D           ","                                        D           ","           O  /%          B             D           ","     ##############xxxxx######  ###     D           ","                                        D           ","                                        D           ","   B    c   c   e    c   ce   PP        D  cccc  e  ","####################################################"],
- approdo:["                                                          ","                                                          ","                                                          ","                                                          ","                       ccc             ccc                ","                                                          ","                   e       e  ^^     e                    ","              #######yy##########yy##########       cc    ","              ##                      c                   ","    ccc      ###      ccccccc  H    ccccc        ^^  r !! ","##########   #############################################"],
- magazzino:["                                                              ","                                                              ","                                          D                   ","     #########                            D                   ","     #                                    D                   ","     # cccc                               D                   ","     #  Tccc            ccccccc           D                   ","     #########------------------          D                   ","         f            f                   D                   ","                                          D                   ","          O  /%               B           D                   ","     #############xxxxxxxxxx####  ###     D                   ","                                          D                   ","                                          D                   ","   B    e       e   ^^  e   r   PP        D  ccccc  e   e !!  ","##############################################################"],
+ approdo:["                                                          ","                                                          ","                                                          ","                                                          ","                       ccc             ccc                ","                                                          ","                   e       e  ^^     e                    ","              ###############################       cc    ","              ##                      c                   ","    ccc      ###      ccccccc  H    ccccc        ^^  r !! ","##########   #############################################"],
+ magazzino:["                                                              ","                                                              ","                                          D                   ","     #########                            D                   ","     #                                    D                   ","     # cccc                               D                   ","     #  Tccc            ccccccc           D                   ","     #########------------------          D                   ","         f            f                   D                   ","                                          D                   ","         COC                  B           D                   ","     #############xxxxxxxxxx####  ###     D                   ","                                          D                   ","                                          D                   ","   B    e       e   ^^  e   r   PP        D  ccccc  e   e !!  ","##############################################################"],
  crollo:["                                                            ","                                                            ","                                                            ","                                                            ","                                             ccecc          ","                                         --#########        ","                                           X       #        ","              f           f            --- X       #        ","                                           X ccccc #        ","                                    ---    X       #        ","         c c c c c   c c c c c c           X H U T #  !!! e ","########xxxxxxxxxxx  xxxxxxxxxxxx###########################"],
  scalata:["                                            ","                                            ","                                            ","####                        ccccc cccc      ","####                       -------####      ","####                              ####      ","####                  ----        ####      ","# c               cc              ####      ","#Hc              xxxx             ####      ","####-----                         ####      ","####        ----                  ####      ","####     f       cc               ####      ","####            xxxx              ####      ","                                  ####      ","           ----                   ####      ","       cc                         ####      ","      ----                        ####      ","              e         r   ^^^   ####  ^^ e","############################################"],
  artiglieria:["                                                      ","                                                      ","                                                      ","                                                      ","                                                      ","                                         ccTcc        ","                                        -------       ","                                                      ","                     cc                               ","                      g                cccBcc         ","                C   ####          cc  --------        ","       g cc   ----- ####        g                     ","      ###   C       ####       ###  C      #          ","   e  ###  CC  e    #### er ^^ ### CCC   B #  e   e   ","######################################################"],
+ valanga:["                                                                      ","                                                                      ","                                                                      ","                                                                      ","                                                                      ","             c                                                        ","          ######%                                                     ","          #######%                                                    ","          ########% c                                     #####       ","        B #########% e C                                  X   #       ","    ####################%                              -- X   #       ","    #####################% eC     c    c      c           Xccc#       ","    #########################%                      --    X   #       ","  B ##########################%  e C e  e C e  e C e      XH T#   e   ","######################################################################"],
  gradini:["                 c c    ","               #####    ","            ###         ","    c   ###       f     ","     ###                ","  ###            ^^     ","########################"]
 };
 /* pareti finte: rettangoli [x0,y0,x1,y1] in caselle del pezzo; sembrano terra ma si attraversano */
 const FINTI={"approdo":[[16,3,44,4]],"magazzino":[[6,11,13,13]],"scalata":[[1,12,3,13]],"artiglieria":[[40,3,43,4]]};
 const CORSE=[
- ['approdo','magazzino','crollo','scalata','artiglieria'],
+ ['approdo','magazzino','crollo','scalata','artiglieria','valanga'],
  ['duePiani','tempo','ricci','torre','fosso','casse','cannoni','gradini','buca','tempo','duePiani','sciame','isole'],
  ['cannoni','ricci','isole','tempo','fosso','sciame','gradini','cannoni','torre','ricci','tempo','duePiani','isole','fosso']
 ];
@@ -331,7 +346,7 @@ function passoCrolli(dt){
 function rompiCrepa(x,y){M.g[y][x]=' ';schizzi2(x,y,10,'#b0643a',6);if(!M.dettaCrepa){M.dettaCrepa=true;avviso('Muro aperto: dentro c’è una stanza segreta!',2200);}}
 /* combo: nemici e casse travolti uno dopo l'altro valgono di più */
 function combo(){if(P2.slancio>0)P2.slancio=Math.max(P2.slancio,.8);G.combo=G.comboT>0?(G.combo||0)+1:1;G.comboT=1.5;if(G.combo>=2){G.gettoni+=G.combo;$('gett').textContent=G.gettoni;G.comboV={n:G.combo,t:G.t};suono(400+G.combo*90,.12,'triangle',.09,800+G.combo*120);}}
-const AIUTI={magazzino:'Inclina per far scivolare il peso: se cade sul pulsante, la porta si apre',crollo:'Il ponte crolla appena ci sali: non fermarti!'};
+const AIUTI={magazzino:'Il peso apre la porta se cade sul pulsante: rompi le casse con lo scatto per liberarlo',crollo:'Il ponte crolla appena ci sali: non fermarti!',valanga:'Lanciati giù per la discesa: a tutta velocità travolgi nemici e casse'};
 function passo2d(h){
  const p=P2;p.cd=Math.max(0,p.cd-h);if(p.cd===0)$('aSin').classList.add('pronto');p.inv=Math.max(0,p.inv-h);p.buf=Math.max(0,p.buf-h);p.coyote=Math.max(0,p.coyote-h);
  const tx=IN.tx;if(Math.abs(tx)>.08)p.verso=Math.sign(tx);
@@ -346,10 +361,11 @@ function passo2d(h){
   /* in pendenza accelera la gravità: inclinare in discesa aggiunge poco, in salita aiuta a salire */
   const su=su0,n=p.ultimoSuolo,pend=su&&n.y<.95,giu=pend?Math.sign(n.x):0;p.vx+=tx*(!p.rotola?16:pend?(Math.sign(tx)===giu?6:24):su?30:15)*h;
   /* lanciato da una discesa conserva la velocità: niente freno né tetto finché dura lo slancio */
-  const k=Math.exp(-(p.slancio>0?.15:pend?.6:Math.abs(tx)<.1&&su?3.2:su?1.4:.2)*h);p.vx*=k;const tetto=p.rotola?5.5+Math.max(0,Math.abs(tx)-.5)*12:3.4;if(Math.abs(p.vx)>tetto&&!(p.slancio>0))p.vx=lerp(p.vx,Math.sign(p.vx)*tetto,1-Math.exp(-h*8));
+  const k=Math.exp(-(p.slancio>0||p.lancio>0?.15:pend?.6:Math.abs(tx)<.1&&su?3.2:su?1.4:.2)*h);p.vx*=k;const tetto=p.rotola?5.5+Math.max(0,Math.abs(tx)-.5)*12:3.4;if(Math.abs(p.vx)>tetto&&!(p.slancio>0)&&!(p.lancio>0))p.vx=lerp(p.vx,Math.sign(p.vx)*tetto,1-Math.exp(-h*8));
   p.vy-=(pend?14:20)*h;
  }
  p.x+=p.vx*h;p.y+=p.vy*h;p.x=Math.max(p.R,p.x);
+ p.lancio=Math.max(0,(p.lancio||0)-h);
  const n0=p.ultimoSuolo;if(n0&&n0.y<.95&&Math.sign(n0.x)===Math.sign(p.vx)&&Math.abs(p.vx)>6&&p.rotola)p.slancio=1.1;else if(p.slancio>0)p.slancio=Math.abs(p.vx)<4?0:p.slancio-h;
  if(p.slancio>0){const q=Math.round(p.x+Math.sign(p.vx)*.8),r=Math.round(p.y);if(cel(q,r)==='C')rompiCassa(q,r);}
  const vx0=p.vx;p.urtoX=0;urta(p,p.R);
@@ -742,5 +758,5 @@ misure2d();vestiPalla();vaiMenu();
 FOGLIO.addEventListener('load',()=>{vestiPalla();});KIT.addEventListener('load',hud);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(vestiPalla);
 requestAnimationFrame(ciclo);
-window.__rotolamici={suOrient,G,P2,V,get M(){return M},iniziaRun,entraBoss,entraCorsa,IN,PEZZI,ARENE};
+window.__rotolamici={suOrient,suMoto,G,P2,V,get M(){return M},iniziaRun,entraBoss,entraCorsa,IN,PEZZI,ARENE};
 })();

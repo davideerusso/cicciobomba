@@ -21,25 +21,26 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
   `python3 -m http.server 8765` nella cartella, poi `http://localhost:8765`.
 - I sensori di inclinazione funzionano solo su HTTPS (GitHub Pages) o aprendo il file unico sul telefono. Su `http://` in rete locale si gioca trascinando il dito.
 - Dopo ogni modifica: aprire il menu, partire con Gioca, controllare che la console non dia errori, e poi rifare il file unico con `python3 tools/build.py`.
-- Comandi da tastiera nel browser: frecce per muoversi, spazio per saltare, Shift o X per scattare, Esc per la pausa. Sul telefono si inclina per rotolare e si tocca a destra/sinistra per saltare/scattare.
-- `window.__rotolamici` espone `G`, `P2`, `M` e il resto per le prove da console. Con il pannello del browser nascosto `requestAnimationFrame` si ferma e il gioco non avanza: in quel caso si può usare una copia di `index.html` in `dist/` che sostituisce `requestAnimationFrame` con una coda da far avanzare a mano.
+- Comandi da tastiera nel browser: frecce per muoversi, spazio per saltare, Shift o X per scattare, Q/E per il lancio, Esc per la pausa. Sul telefono si inclina per rotolare e si tocca a destra/sinistra per saltare/scattare.
+- `window.__rotolamici` espone `G`, `P2`, `M`, `suOrient`, `suMoto` e il resto per le prove da console. Il browser dell'app rifiuta il permesso dei sensori: per provarli si chiamano `suOrient`/`suMoto` con eventi finti. Con il pannello del browser nascosto `requestAnimationFrame` si ferma e il gioco non avanza: in quel caso si può usare una copia di `index.html` in `dist/` che sostituisce `requestAnimationFrame` con una coda da far avanzare a mano.
 
 ## Livello 1 (Isola degli Ananas)
-- È la prima corsa, `CORSE[0]`: cinque pezzi, `approdo`, `magazzino`, `crollo`, `scalata` e `artiglieria`, poi il boss Ananassone. La discesa "valanga" è stata tolta perché non piaceva. Gli altri mondi usano ancora i pezzi vecchi; attenzione a non riusarne i nomi (`torre`, `cannoni`… ci sono già).
+- È la prima corsa, `CORSE[0]`: sei pezzi, `approdo`, `magazzino`, `crollo`, `scalata`, `artiglieria` e `valanga`, poi il boss Ananassone. Gli altri mondi usano ancora i pezzi vecchi; attenzione a non riusarne i nomi (`torre`, `cannoni`… ci sono già).
 - I pezzi e `FINTI` si generano con `tools/livello1.py`. Lo si cambia lì e poi si lancia `python3 tools/livello1.py --scrivi`; senza argomenti disegna i pezzi a schermo.
 - Il livello ha dei segreti che l'utente vuole scoprire da solo: non elencarli e non descriverne la posizione nelle risposte.
 - Difficoltà alta voluta: 3 cuori in tutto (`MAXC=3`), niente vite infinite. Se finisci i cuori riparti dall'inizio.
 - Caratteri nei pezzi:
-  - `O` peso: pesante. Scivola piano dove inclini il telefono e Matteo lo spinge; su una gobba lo porta solo spingendo. Se cade fuori torna al suo posto.
+  - `O` peso: pesante. Scivola piano dove inclini il telefono e Matteo lo spinge; su una gobba lo porta solo spingendo. Se cade fuori torna al suo posto. Nel magazzino è chiuso tra due casse da rompere.
   - `P` pulsante, `D` porta: quando il peso cade sul pulsante, le porte dello stesso pezzo si aprono per sempre. Matteo da solo non lo preme.
   - `x` blocco che crolla: mezzo secondo dopo che ci sali cade, e torna dopo 4 secondi.
-  - `y` botola: sembra terra, ma se ti fermi sopra crolla dopo 0,8 secondi.
+  - `y` botola: sembra terra, ma se ti fermi sopra crolla dopo 0,8 secondi. Per ora nel livello 1 non ce ne sono: l'utente non le voleva dove c'erano.
   - `X` muro crepato: si apre solo con l'esplosione.
   - **Pareti finte** (rettangoli in `FINTI`): si disegnano come terra sopra quello che c'è dietro, si attraversano e sbiadiscono quando Matteo ci entra.
 - Valide in tutto il gioco:
   - **Slancio:** rotolando giù per una rampa a più di 6 di velocità, Matteo travolge nemici e casse per circa un secondo, e ogni colpo lo rinnova (`p.slancio`). Finché dura non viene frenato e può superare la velocità massima, così basta poca inclinazione.
   - **Combo:** nemici e casse travolti di fila valgono bocconi in più e mostrano "x2", "x3"… (`combo`).
   - **Pendenze:** in pendenza accelera la gravità; inclinare in discesa aggiunge poco, in salita aiuta. In discesa Matteo resta attaccato alla rampa invece di decollare.
+  - **Lancio:** un colpo secco del telefono verso un lato (più di 15 m/s² sull'asse orizzontale dello schermo, da `devicemotion`) lancia Matteo da quella parte, se è a terra: salta più in alto del salto normale e vola di lato senza freno per un attimo (`lancio`, `p.lancio`). Da tastiera: Q a sinistra, E a destra.
   - **Ripartenza:** dopo una caduta si riparte solo da terra vera (`#`), mai da un blocco che crolla.
 - Gli sprite nuovi vengono dal New Platformer Pack e stanno in `assets/kit2.webp`: pulsante, lucchetto, peso, mattoni e i blocchi con la faccia. `sp()` li disegna quando la voce di `KMAP` ha un terzo valore.
 - Misure per disegnare i pezzi: una molla fa salire di circa 4,9 caselle e un salto di circa 2,3; per atterrare su una piattaforma il centro di Matteo deve superarne la cima di 0,46. Ogni salto difficile va provato nel browser.
