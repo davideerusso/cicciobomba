@@ -44,7 +44,7 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
   - **Ripartenza:** dopo una caduta si riparte solo da terra vera (`#`), mai da un blocco che crolla.
 - Gli sprite nuovi vengono dal New Platformer Pack e stanno in `assets/kit2.webp`: pulsante, lucchetto, peso, mattoni e i blocchi con la faccia. `sp()` li disegna quando la voce di `KMAP` ha un terzo valore.
 - Misure per disegnare i pezzi: una molla fa salire di circa 4,9 caselle e un salto di circa 2,3; per atterrare su una piattaforma il centro di Matteo deve superarne la cima di 0,46. Ogni salto difficile va provato nel browser.
-- L'arena del boss è un `M` senza i campi dei livelli (`nomi`, `pesi`, `crolli`…): ogni uso di quei campi va protetto. Il boss ha raggio 0,85.
+- L'arena del boss è un `M` senza i campi dei livelli (`nomi`, `pesi`, `crolli`…): ogni uso di quei campi va protetto. Il boss ha raggio 0,95.
 - Per provare dei pezzi a parte da console: `__rotolamici.iniziaRun(['nome',...])` (alla fine torna al menu). La Spremiananas è stata tolta perché non piaceva: non rimetterla.
 
 ## Note

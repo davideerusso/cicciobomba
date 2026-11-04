@@ -564,7 +564,7 @@ function costruisciArena(i){
  const m={i,g,w:W,alto:H,oggetti:[],nemici:[],colpi:[],spine:{},fine:Infinity,decor:[],posti:[],start:{x:3,y:2.97}};
  for(let q=0;q<H;q++)for(let x=0;x<W;x++){const y=H-1-q,t=r[q][x]||' ';if(t==='c'){m.oggetti.push({tipo:'c',x,y,fase:x});g[y][x]=' ';}else g[y][x]=t;}
  for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++)if(g[y][x]===' '&&(g[y-1][x]==='#'||g[y-1][x]==='-'))m.posti.push({x,y});
- const c=BOSS[i];m.boss={cfg:c,sp:BOSPR[i],x:W/2,y:9,r:.85,vita:c.vita,stato:'fermo',t:2,dx:1,dy:0,vy:0,lampo:0,colpi:0,lung:0};
+ const c=BOSS[i];m.boss={cfg:c,sp:BOSPR[i],x:W/2,y:9,r:.95,vita:c.vita,stato:'fermo',t:2,dx:1,dy:0,vy:0,lampo:0,colpi:0,lung:0};
  return m;
 }
 function colpisciBoss(b){
