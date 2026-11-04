@@ -37,7 +37,7 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
   - `X` muro crepato: si apre solo con l'esplosione.
   - **Pareti finte** (rettangoli in `FINTI`): si disegnano come terra sopra quello che c'è dietro, si attraversano e sbiadiscono quando Matteo ci entra.
 - Valide in tutto il gioco:
-  - **Slancio:** rotolando giù per una rampa a più di 6 di velocità, Matteo travolge nemici e casse per circa un secondo, e ogni colpo lo rinnova (`p.slancio`).
+  - **Slancio:** rotolando giù per una rampa a più di 6 di velocità, Matteo travolge nemici e casse per circa un secondo, e ogni colpo lo rinnova (`p.slancio`). Finché dura non viene frenato e può superare la velocità massima, così basta poca inclinazione.
   - **Combo:** nemici e casse travolti di fila valgono bocconi in più e mostrano "x2", "x3"… (`combo`).
   - **Pendenze:** in pendenza accelera la gravità; inclinare in discesa aggiunge poco, in salita aiuta. In discesa Matteo resta attaccato alla rampa invece di decollare.
   - **Ripartenza:** dopo una caduta si riparte solo da terra vera (`#`), mai da un blocco che crolla.

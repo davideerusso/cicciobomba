@@ -345,7 +345,8 @@ function passo2d(h){
  else{
   /* in pendenza accelera la gravità: inclinare in discesa aggiunge poco, in salita aiuta a salire */
   const su=su0,n=p.ultimoSuolo,pend=su&&n.y<.95,giu=pend?Math.sign(n.x):0;p.vx+=tx*(!p.rotola?16:pend?(Math.sign(tx)===giu?6:24):su?30:15)*h;
-  const k=Math.exp(-(pend?.6:Math.abs(tx)<.1&&su?3.2:su?1.4:.2)*h);p.vx*=k;const tetto=p.rotola?5.5+Math.max(0,Math.abs(tx)-.5)*12:3.4;if(Math.abs(p.vx)>tetto)p.vx=lerp(p.vx,Math.sign(p.vx)*tetto,1-Math.exp(-h*8));
+  /* lanciato da una discesa conserva la velocità: niente freno né tetto finché dura lo slancio */
+  const k=Math.exp(-(p.slancio>0?.15:pend?.6:Math.abs(tx)<.1&&su?3.2:su?1.4:.2)*h);p.vx*=k;const tetto=p.rotola?5.5+Math.max(0,Math.abs(tx)-.5)*12:3.4;if(Math.abs(p.vx)>tetto&&!(p.slancio>0))p.vx=lerp(p.vx,Math.sign(p.vx)*tetto,1-Math.exp(-h*8));
   p.vy-=(pend?14:20)*h;
  }
  p.x+=p.vx*h;p.y+=p.vy*h;p.x=Math.max(p.R,p.x);
