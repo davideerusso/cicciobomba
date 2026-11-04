@@ -566,7 +566,7 @@ const ARENE=[
 ];
 /* Ananassone disegnato: fotogrammi da 192x204 in righe da 8, guarda a destra. 0-7 si gira, 8-15 cammina, 16-23 corre, 25 arrabbiato, 29-30 mazza alzata, 31 mazza calata nel lancio, 32-34 stordito */
 const ANAS=new Image();ANAS.src='assets/boss_ananas.webp';
-function disegnaAnanas(c,f,z,verso){if(!ANAS.complete)return false;const k=z/185;c.save();if(verso<0)c.scale(-1,1);c.drawImage(ANAS,f%8*192,Math.floor(f/8)*204,192,204,-96*k,-118*k,192*k,204*k);c.restore();return true;}
+function disegnaAnanas(c,f,z,verso,piedi){if(!ANAS.complete)return false;const k=z/185,oy=piedi?195:118;c.save();if(verso<0)c.scale(-1,1);c.drawImage(ANAS,f%8*192,Math.floor(f/8)*204,192,204,-96*k,-oy*k,192*k,204*k);c.restore();return true;}
 const BOSPR=[0,1,2].map(n=>{const k=document.createElement('canvas');k.width=k.height=240;const c=k.getContext('2d'),o='#2b2b3a';c.lineWidth=10;c.lineJoin='round';c.strokeStyle=o;
  if(n===0)c.drawImage(ANAN,0,0,240,240);
  else if(n===1){c.fillStyle='#7d4bc9';c.beginPath();c.moveTo(30,92);c.lineTo(210,92);c.lineTo(120,232);c.closePath();c.fill();c.stroke();c.save();c.clip();c.strokeStyle='#b58cf0';c.lineWidth=10;for(let i=0;i<6;i++){c.beginPath();c.moveTo(0,100+i*28);c.lineTo(240,130+i*28);c.stroke();}c.restore();c.fillStyle='#fff4df';c.beginPath();c.ellipse(120,86,96,20,0,0,6.3);c.fill();c.stroke();c.fillStyle='#7d4bc9';c.fillRect(108,16,24,56);c.strokeRect(108,16,24,56);}
@@ -596,18 +596,22 @@ function dopoStordito(b){
 /* dove si fermerà il lancio: stessi controlli dell'urto in passoBoss */
 function arrivoBoss(b){let x=b.x,y=b.y;for(let i=0;i<400;i++){if(pieno(cel(Math.round(x+b.dx*b.r),Math.round(y+b.dy*b.r)))||pieno(cel(Math.round(x+b.dx*b.r),Math.round(y)))||pieno(cel(Math.round(x),Math.round(y+b.dy*b.r)))||y<b.r+1.5)break;x+=b.dx*.08;y+=b.dy*.08;}return{x:x+b.dx*b.r,y:Math.max(y,b.r+1.5)+b.dy*b.r};}
 function raggioBoss(b){let l=1;while(l<40&&!pieno(cel(Math.round(b.x+b.dx*l),Math.round(b.y+b.dy*l))))l+=.25;return l;}
+/* il boss sta sempre su un piano: cade finché non tocca terra o un'asse */
+function cadeBoss(b,dt){b.vy-=20*dt;const ny=b.y+b.vy*dt,gx=Math.round(b.x),py=Math.round(ny-b.r),t=cel(gx,py);b.aTerra=false;
+ if((t==='#'||t==='-')&&b.vy<=0&&b.y-b.r>=py+.3){b.y=py+.5+b.r;b.vy=0;b.aTerra=true;}else b.y=ny;
+ if(b.y<b.r+1.5){b.y=b.r+1.5;b.vy=0;b.aTerra=true;}}
 function passoBoss(dt){
  const b=M.boss,p=P2;if(!b||b.vita<=0)return;b.t-=dt;b.lampo=Math.max(0,b.lampo-dt);
  const dx=p.x-b.x,dy=p.y-b.y,d=Math.hypot(dx,dy)||1;
- if(b.stato==='fermo'){b.x=clamp(b.x+dx/d*1.2*dt,2.5,M.w-3.5);b.y=clamp(b.y+dy/d*1.2*dt,3.2,M.alto-3.2);if(b.t<=0){b.stato='mira';b.t=1.1;}}
- else if(b.stato==='mira'){if(b.t>.25){b.dx=dx/d;b.dy=dy/d;}b.lung=raggioBoss(b);b.arrivo=arrivoBoss(b);if(b.t<=0){b.stato='carica';b.tc=G.t;sfx('throw')||suono(110,.4,'sawtooth',.1,330);}}
+ if(b.stato==='fermo'){cadeBoss(b,dt);const v=Math.abs(dx)>.6?Math.sign(dx):0;b.cammina=0;
+  if(b.aTerra&&v&&!pieno(cel(Math.round(b.x+v*(b.r+.15)),Math.round(b.y)))){b.x=clamp(b.x+v*1.4*dt,1.5+b.r,M.w-1.5-b.r);b.cammina=v;}
+  if(b.t<=0&&b.aTerra){b.stato='mira';b.t=1.1;}}
+ else if(b.stato==='mira'){cadeBoss(b,dt);if(b.t>.25){b.dx=dx/d;b.dy=dy/d;}b.lung=raggioBoss(b);b.arrivo=arrivoBoss(b);if(b.t<=0){b.stato='carica';b.tc=G.t;sfx('throw')||suono(110,.4,'sawtooth',.1,330);}}
  else if(b.stato==='carica'){b.x+=b.dx*b.cfg.scatto*dt;b.y+=b.dy*b.cfg.scatto*dt;
   const qx=Math.round(b.x+b.dx*b.r),qy=Math.round(b.y+b.dy*b.r);
   if(pieno(cel(qx,qy))||pieno(cel(Math.round(b.x+b.dx*b.r),Math.round(b.y)))||pieno(cel(Math.round(b.x),Math.round(b.y+b.dy*b.r)))||b.y<b.r+1.5){b.stato='stordito';b.t=b.cfg.stordito;b.vy=0;b.x-=b.dx*.3;b.y=Math.max(b.y-b.dy*.3,b.r+1.5);schizzi2(b.x,b.y,20,'#f6c445',6);suono(90,.35,'square',.13,50);vibra(70);G.scossa=riduci?0:.45;avviso('Stordito: scattagli addosso!',1300);}}
  else if(b.stato==='stordito'){ /* cade sul piano sotto, così lo raggiungi */
-  b.vy-=20*dt;const ny=b.y+b.vy*dt,gx=Math.round(b.x),py=Math.round(ny-b.r),t=cel(gx,py);
-  if((t==='#'||t==='-')&&b.vy<=0&&b.y-b.r>=py+.3){b.y=py+.5+b.r;b.vy=0;}else b.y=ny;
-  if(b.y<b.r+1.5){b.y=b.r+1.5;b.vy=0;}
+  cadeBoss(b,dt);
   if(b.t<=0){b.stato='fermo';b.t=rnd(1,1.7);dopoStordito(b);}}
  if(G.stato==='gioco'&&d<p.R+b.r){const nx=Math.sign(dx)||1;
   if(b.stato==='stordito'){if(p.scatto>0){p.scatto=0;p.vx=nx*7;p.vy=5;p.ultimoSuolo=null;p.cd=.25;colpisciBoss(b);}}
@@ -621,9 +625,9 @@ function disegnaBoss(c,sx,sy,ts){
  if(b.stato==='mira'&&b.arrivo){const gx=sx(b.arrivo.x),gy=sy(b.arrivo.y),rr=ts*(.5+.06*Math.sin(G.t*12));c.save();c.globalAlpha=.5;c.strokeStyle='#ff3b2e';c.lineWidth=Math.max(2,ts*.1);c.beginPath();c.arc(gx,gy,rr,0,6.3);c.stroke();c.globalAlpha=.18;c.fillStyle='#ff3b2e';c.fill();c.restore();}
  c.save();c.translate(a+(b.stato==='mira'?rnd(-2,2):0),q);
  if(M.i===0&&ANAS.complete){const p=P2,v=b.stato==='carica'||b.stato==='mira'?Math.sign(b.dx)||1:Math.sign(p.x-b.x)||1;
-  const f=b.stato==='carica'?(G.t-(b.tc||0)<.08?30:31):b.stato==='mira'?(b.t>.75?25:b.t>.6?29:30):b.stato==='stordito'?32+Math.floor(G.t*5)%3:8+Math.floor(G.t*8)%8;
-  if(b.stato==='fermo')c.translate(0,Math.sin(G.t*3)*ts*.06);if(b.lampo>0&&Math.floor(G.t*24)%2)c.globalAlpha=.35;
-  disegnaAnanas(c,f,z,v);c.restore();}
+  const f=b.stato==='carica'?(G.t-(b.tc||0)<.08?30:31):b.stato==='mira'?(b.t>.75?25:b.t>.6?29:30):b.stato==='stordito'?32+Math.floor(G.t*5)%3:b.cammina?8+Math.floor(G.t*8)%8:24;
+  c.translate(0,b.r*ts);if(b.lampo>0&&Math.floor(G.t*24)%2)c.globalAlpha=.35;
+  disegnaAnanas(c,f,z,v,true);c.restore();}
  else{
  if(b.stato==='carica')c.rotate(Math.sin(G.t*30)*.25);else if(b.stato==='stordito')c.rotate(.28*Math.sin(G.t*7));else c.translate(0,Math.sin(G.t*3)*ts*.1);
  if(b.lampo>0&&Math.floor(G.t*24)%2)c.globalAlpha=.35;if(b.stato==='stordito')c.filter='saturate(.45) brightness(1.15)';
