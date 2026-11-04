@@ -24,7 +24,7 @@ function salva(){try{localStorage.setItem(CHIAVE,JSON.stringify(S));}catch(e){}}
 
 /* ---------- MONDI E TAPPE ---------- */
 const MONDI=[
- {nome:'Isola degli Ananas',cielo:['#ffe382','#27a39b'],legno:'#f4bd3c',vena:'#a96c10',bordo:'#3f9e3a',nebbia:'#1f8f7d',tema:'ananas',kit:'sand',fondo:'color_hills',liquido:'water',decor:['ananas','bush','grass','ananas','rock'],nemico:'ananas',volo:'bee'},
+ {nome:'Isola degli Ananas',cielo:['#ffe382','#27a39b'],legno:'#f4bd3c',vena:'#a96c10',bordo:'#3f9e3a',nebbia:'#1f8f7d',tema:'ananas',kit:'sand',fondo:'color_hills',liquido:'water',decor:['bush','grass','rock'],nemico:'ananas',volo:'bee'},
  {nome:'Bosco dei Funghi',cielo:['#9a7bdc','#2b2360'],legno:'#b07a47',vena:'#83522b',bordo:'#f0b429',nebbia:'#5c4a9a',kit:'purple',fondo:'color_mushrooms',liquido:'water',decor:['mushroom_red','mushroom_brown','grass_purple','bush'],nemico:'slime_normal',volo:'fly'},
  {nome:'Fornace di Pietra',cielo:['#ff9a55','#5a1330'],legno:'#6a4c42',vena:'#46302a',bordo:'#37c4b8',nebbia:'#a23a3a',kit:'stone',fondo:'color_desert',liquido:'lava',decor:['rock','cactus','fence'],nemico:'slime_fire',volo:'fly'}
 ];
@@ -61,7 +61,7 @@ const VITE_INFINITE=false; /* per le prove: true per non perdere mai cuori */
 const FOGLIO=new Image();FOGLIO.src='assets/personaggio.webp';
 const FOGLIO2=new Image();FOGLIO2.src='assets/personaggio2.webp'; /* riga 0 girata, 1 camminata, 2 corsa, 3 salto (0-4) e mazza (5-7) */
 const CELLA2=200;
-const FOGLIO3=new Image();FOGLIO3.src='assets/personaggio3.webp'; /* Matteo stanco, celle come FOGLIO2: riga 0 fermo che suda (0,1,7), 1 cammina, 2 corre, 3 riposa (0 piegato, 3 si asciuga, 4-5 in ginocchio) */
+const FOGLIO3=new Image();FOGLIO3.src='assets/personaggio3.webp'; /* Matteo stanco, celle come FOGLIO2: mentre riposa si usa solo la riga 0, colonna 7 (in piedi, sudato) */
 let stancoVis=false;
 const CELLA=270,PALLA_L=185,PALLA_H=[174,178,164,162],TINTE={};
 function foglioAmico(im){
@@ -82,7 +82,7 @@ function disegnaBomba(c,x,yPiedi,r,f,verso,W,ang,rot){
  c.drawImage(BOMBA,f%10*160,Math.floor(f/10)*160,160,160,-80*k,-98*k,160*k,160*k);c.restore();
 }
 function disegnaCamm(c,x,yPiedi,r,col,riga,verso,W,ang){
- const st=FOGLIO3.complete&&(stancoVis===2&&riga===3||stancoVis&&riga<=2),im=st?FOGLIO3:FOGLIO2;if(!im.complete)return;if(st&&riga<3)col=riga===0?[0,1,0,7][col%4]:col%8;const lato=CELLA2*r*2.55/197;c.save();c.translate(x,yPiedi);if(ang)c.rotate(ang);c.scale(verso*(1-W*.6),1+W);
+ const st=FOGLIO3.complete&&stancoVis,im=st?FOGLIO3:FOGLIO2;if(!im.complete)return;if(st){col=7;riga=0;}const lato=CELLA2*r*2.55/197;c.save();c.translate(x,yPiedi);if(ang)c.rotate(ang);c.scale(verso*(1-W*.6),1+W);
  c.drawImage(foglioAmico(im),col*CELLA2,riga*CELLA2,CELLA2,CELLA2,-lato/2,-lato*.975,lato,lato);c.restore();
 }
 function disegnaPasso(c,x,yPiedi,r,col,riga,verso,W,ang){
@@ -314,7 +314,7 @@ const fumi=[];function sbuffo(){const p=P2;fumi.push({x:p.x-p.verso*p.R*.6,y:p.y
 const FIATO_SCATTO=.3,FIATO_LANCIO=.2;
 function aggFiato(){const f=$('fiatoB');if(f){f.style.width=(G.fiato*100)+'%';$('fiato').classList.toggle('basso',G.fiato<FIATO_SCATTO);}}
 function usaFiato(q){if(P2.stanco>0)return false;if(G.fiato<q){senzaFiato();return false;}G.fiato-=q;G.fiatoT=2;aggFiato();return true;}
-function senzaFiato(){const p=P2;p.stanco=2;p.rotola=false;p.carica=0;p.scatto=0;p.buf=0;suono(260,.5,'sine',.08,140);vibra(40);if(!G.dettoFiato){G.dettoFiato=true;avviso('Senza fiato! Matteo è grasso: riposa 2 secondi. Mangia la pizza per riprendere fiato',2600);}}
+function senzaFiato(){const p=P2;p.stanco=2;p.rotola=false;p.vx=0;p.carica=0;p.scatto=0;p.buf=0;suono(260,.5,'sine',.08,140);vibra(40);if(!G.dettoFiato){G.dettoFiato=true;avviso('Senza fiato! Matteo è grasso: riposa 2 secondi. Mangia la pizza per riprendere fiato',2600);}}
 function scatta2(){if(P2.cd>0||!usaFiato(FIATO_SCATTO))return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.catena=Math.abs(P2.vx)>=6?2:1;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;if(P2.ultimoSuolo)sbuffo();sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('aSin').classList.remove('pronto');}
 function colpito2(nx){
  if(P2.inv>0||G.stella>0||G.stato!=='gioco')return;P2.inv=1.5;P2.vx=nx*6;P2.vy=6;P2.Wv+=8;
@@ -366,7 +366,7 @@ function combo(){if(P2.slancio>0)P2.slancio=Math.max(P2.slancio,.8);G.combo=G.co
 const AIUTI={magazzino:'Il peso apre la porta se cade sul pulsante: rompi le casse con lo scatto per liberarlo',crollo:'Il ponte crolla appena ci sali: non fermarti!',valanga:'Lanciati giù per la discesa: a tutta velocità travolgi nemici e casse'};
 function passo2d(h){
  const p=P2;p.cd=Math.max(0,p.cd-h);if(p.cd===0)$('aSin').classList.add('pronto');p.inv=Math.max(0,p.inv-h);p.buf=Math.max(0,p.buf-h);p.coyote=Math.max(0,p.coyote-h);
- if(p.stanco>0){p.stanco-=h;p.rotola=false;p.carica=0;p.vx*=Math.exp(-5*h);if(p.stanco<=0){p.stanco=0;G.fiato=Math.max(G.fiato,.4);}}else{G.fiatoT=Math.max(0,(G.fiatoT||0)-h);if(G.fiatoT<=0)G.fiato=Math.min(1,(G.fiato||0)+.07*h);} /* Matteo è grasso: riprende fiato piano, solo dopo 2 secondi senza scatti */
+ if(p.stanco>0){p.stanco-=h;p.rotola=false;p.carica=0;p.vx=0;if(p.stanco<=0){p.stanco=0;G.fiato=Math.max(G.fiato,.4);}}else{G.fiatoT=Math.max(0,(G.fiatoT||0)-h);if(G.fiatoT<=0)G.fiato=Math.min(1,(G.fiato||0)+.07*h);} /* Matteo è grasso: riprende fiato piano, solo dopo 2 secondi senza scatti */
  const tx=p.stanco>0?0:IN.tx;if(Math.abs(tx)>.08)p.verso=Math.sign(tx);
  p.px=p.x;p.py=p.y;const vy0=p.vy;
  p.animT+=h;const su0=!!p.ultimoSuolo;
@@ -520,8 +520,8 @@ function disegna2d(){
  if(G.carica>=MIN_BOTTO){const k=.15+G.carica*.45+.08*Math.sin(G.t*12),rg=p.R*ts*2.2,cx=sx(p.x),cy=sy(p.y),gr=c.createRadialGradient(cx,cy,p.R*ts*.5,cx,cy,rg);gr.addColorStop(0,`rgba(255,90,20,${k})`);gr.addColorStop(1,'rgba(255,90,20,0)');c.fillStyle=gr;c.beginPath();c.arc(cx,cy,rg,0,6.3);c.fill();}
  if(!(p.inv>0&&Math.floor(G.t*14)%2===0)){const op={t:G.t,W:p.W,vx:p.vx,vy:p.vy,n:p.ultimoSuolo,stella:G.stella,scudo:G.scudo};
   const n=p.ultimoSuolo,r=p.R*ts*1.02,pie=sy(p.y-p.R),ang=n?Math.atan2(n.x,n.y):0,am=amico();
-  stancoVis=p.stanco>0?2:G.fiato<FIATO_SCATTO?1:0;
-  if(p.stanco>0&&G.carica<1)disegnaCamm(c,sx(p.x),pie,r,p.stanco<.35?3:4+Math.floor(G.t*3)%2,3,p.verso,p.W,ang);
+  stancoVis=p.stanco>0&&G.carica<1;
+  if(stancoVis)disegnaCamm(c,sx(p.x),pie,r,7,0,p.verso,0,ang);
   else if(G.carica>=1){const fr=p.inv>0?34:G.t%1.3<.09?18:p.rotola?0:!n?(p.vy<-7?35:19):Math.abs(p.vx)<.25?(p.fermoT>5?Math.floor((p.fermoT-5)*7)%9:36):19+Math.floor(p.passi)%10;
    disegnaBomba(c,sx(p.x),pie,r,fr,p.rotola?1:p.verso,p.W,p.rotola?0:ang,p.rotola?-p.rot*2:0);
    if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),pie-r*1.1,r*1.5,0,6.3);c.stroke();}}
