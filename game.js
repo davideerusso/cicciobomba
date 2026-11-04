@@ -335,12 +335,10 @@ function aggFiato(){const f=$('fiatoB');if(f){f.style.width=(G.fiato*100)+'%';$(
 function usaFiato(q){if(P2.stanco>0)return false;if(G.carica>=1)return true; /* da bomba non si stanca */if(G.fiato<q){senzaFiato();return false;}G.fiato-=q;G.fiatoT=2;aggFiato();return true;}
 function senzaFiato(){const p=P2;p.stanco=2;p.rotola=false;p.vx=0;p.carica=0;p.scatto=0;p.buf=0;suono(260,.5,'sine',.08,140);vibra(40);if(!G.dettoFiato){G.dettoFiato=true;avviso('Senza fiato! Matteo è grasso: riposa 2 secondi. Mangia la pizza per riprendere fiato',2600);}}
 function scatta2(){if(P2.cd>0||!usaFiato(FIATO_SCATTO))return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.catena=Math.abs(P2.vx)>=8?2:1;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.vyS=Math.max(P2.vy,0);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;if(P2.ultimoSuolo)sbuffo();sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('aSin').classList.remove('pronto');}
-/* da bomba esplode contro un nemico solo se ci arriva veloce o in scatto */
-function bombaLanciata(){return G.carica>=1&&(Math.abs(P2.vx)>=6.5||P2.scatto>0);}
 function colpito2(nx,spina){
  if(P2.inv>0||G.stella>0||G.stato!=='gioco')return;
- /* se è una bomba le spine la fanno sempre esplodere, i nemici solo se ci arriva lanciata: niente cuore perso */
- if(G.carica>=1&&(spina||bombaLanciata())){esplodi();P2.inv=Math.max(P2.inv,1);return;}
+ /* se è una bomba, le spine e i nemici con le spine la fanno esplodere: niente cuore perso */
+ if(G.carica>=1&&spina){esplodi();P2.inv=Math.max(P2.inv,1);return;}
  P2.inv=1.5;P2.vx=nx*6;P2.vy=6;P2.Wv+=8;
  if(G.scudo){G.scudo=false;suono(900,.25,'triangle',.1,300);schizzi2(P2.x,P2.y,16,'#7fe0ff',5);avviso('Scudo rotto',900);return;}
  togliCuore();sfx('hurt')||suono(150,.25,'square',.1,70);vibra(60);schizzi2(P2.x,P2.y,12,'#d8432e',5);
@@ -453,15 +451,14 @@ function passoNemici2(dt){
   if(d<p.R+rn){
    /* si ricontrolla per ogni nemico: lo scatto può essere finito su quello prima */
    const forte=p.scatto>0||G.stella>0||p.slancio>0;
-   if(G.stella<=0&&p.inv<=0&&bombaLanciata()){esplodi();p.inv=Math.max(p.inv,1);}
-   else if(forte){const colpo=p.scatto>0&&G.stella<=0;uccidi2(n);
+   if(forte){const colpo=p.scatto>0&&G.stella<=0;uccidi2(n);
     /* lo scatto elimina tutti i nemici nel blocco del primo (due blocchi se slanciato): slanciato va avanti, lento rimbalza indietro */
     if(colpo){const v=Math.sign(p.vx)||p.verso,raggio=p.catena||1;p.cd=Math.min(p.cd,.3);
      for(const o of M.nemici)if(o.vivo&&Math.abs(o.y-n.y)<1.2&&(o.x-n.x)*v>-.6&&(o.x-n.x)*v<raggio+.5)uccidi2(o);
      if(raggio<2){p.scatto=0;p.vx=-v*2.5;p.vy=Math.max(p.vy,3.5);p.ultimoSuolo=null;}p.inv=Math.max(p.inv,.25);}}
    /* saltandogli in testa muore, tranne i nemici con le spine (r) e i blocchi che sparano (g) */
    else if((n.tipo==='e'||n.tipo==='f')&&p.vy<0&&p.y>n.y+.35){uccidi2(n);p.vy=7;p.Wv+=7;p.ultimoSuolo=null;}
-   else colpito2(Math.sign(p.x-n.x)||1);
+   else colpito2(Math.sign(p.x-n.x)||1,n.tipo==='r');
   }
  }
  for(let i=M.colpi.length-1;i>=0;i--){const c=M.colpi[i];c.x+=c.vx*dt;c.y+=(c.vy||0)*dt;c.v-=dt;if(c.v<0||pieno(cel(Math.round(c.x),Math.round(c.y)))){M.colpi.splice(i,1);continue;}if(Math.abs(c.x-p.x)<.55&&Math.abs(c.y-p.y)<.5&&p.scatto<=0)colpito2(Math.sign(c.vx)||1);}
@@ -648,7 +645,7 @@ function passoBoss(dt){
   if(b.t<=0){b.stato='fermo';b.t=rnd(1,1.7);dopoStordito(b);}}
  if(G.stato==='gioco'&&d<p.R+b.r){const nx=Math.sign(dx)||1;
   if(b.stato==='stordito'){if(p.scatto>0){p.scatto=0;p.vx=nx*7;p.vy=5;p.ultimoSuolo=null;p.cd=.25;colpisciBoss(b);}}
-  else if(Math.abs(p.vx)>=6.5&&G.carica>=MIN_BOTTO||bombaLanciata())esplodi();
+  else if(Math.abs(p.vx)>=6.5&&G.carica>=MIN_BOTTO)esplodi();
   else if(p.scatto>0){p.scatto=0;p.vx=nx*7;p.vy=4;p.ultimoSuolo=null;sfx('bump')||suono(1200,.12,'square',.08,800);avviso('Corazza dura! Aspetta che si stordisca',1500);}
   else colpito2(nx);}
 }
