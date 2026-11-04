@@ -50,6 +50,7 @@ P.fila(3, 22, 28, 'c'); P.put(3, 31, 'H'); P.fila(3, 36, 40, 'c'); P.put(4, 38, 
 P.put(6, 19, 'e'); P.put(6, 27, 'e'); P.put(6, 37, 'e')
 P.fila(6, 30, 31, '^')
 P.fila(8, 23, 25, 'c'); P.fila(8, 39, 41, 'c')
+P.fila(9, 27, 30, '-'); P.fila(10, 27, 30, 'c'); P.put(10, 29, 'U')     # in alto: salto e bolla
 P.fila(2, 45, 57, '#')
 P.fila(3, 49, 50, '^'); P.put(3, 53, 'r'); P.fila(5, 52, 53, 'c')
 P.fila(3, 55, 56, '!')
@@ -90,6 +91,7 @@ P.col(43, 3, 7, 'X'); P.fila(8, 43, 51, '#'); P.col(51, 3, 7, '#')
 P.put(3, 45, 'H'); P.put(3, 47, 'U'); P.fila(5, 45, 49, 'c'); P.put(3, 49, 'T')
 P.fila(9, 45, 49, 'c'); P.put(9, 47, 'e')
 P.fila(3, 54, 56, '!'); P.put(3, 58, 'e')
+P.fila(6, 2, 5, '-'); P.put(7, 3, 'H'); P.fila(7, 4, 5, 'c')          # in alto: ci si arriva solo con salto e bolla
 P.fine()
 
 # 4. TORRE: si sale a zigzag tra assi e blocchi che crollano; in cima si va a destra
@@ -116,6 +118,7 @@ P.blocco(6, 3, 8, 4); P.put(5, 7, 'g')
 P.put(3, 11, 'C'); P.put(3, 12, 'C'); P.put(4, 12, 'C')
 P.fila(5, 14, 18, '-'); P.put(6, 16, 'C')
 P.blocco(20, 3, 23, 6); P.put(7, 22, 'g')
+P.fila(10, 19, 24, '-'); P.put(11, 21, 'T'); P.fila(11, 22, 23, 'c')    # in alto: salto e bolla
 P.put(3, 26, 'r'); P.fila(3, 28, 29, '^')
 P.blocco(31, 3, 33, 4); P.put(5, 32, 'g')
 P.fila(3, 35, 37, 'C'); P.fila(4, 36, 36, 'C')
