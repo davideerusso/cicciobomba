@@ -181,9 +181,11 @@ function bolla(){
  p.bolla=.85;p.bollaUsata=true;p.rotola=true;p.ultimoSuolo=null;p.coyote=0;p.vy=Math.max(p.vy,2.3);p.y+=.04;vibra([15,25,15,25,15]);suono(700,.35,'sine',.07,1100);suono(950,.25,'triangle',.04,1500);
  if(!G.dettaBolla){G.dettaBolla=true;avviso('Bolla! Scuotendo il telefono Matteo galleggia per un attimo',2200);}
 }
+/* il lancio è una cannonata: deve passare fossi dove salto, scatto e bolla insieme non arrivano */
+const LANCIO_VX=15,LANCIO_VY=16.5,LANCIO_T=1.6;
 function lancio(d){
  const p=P2;if(G.stato!=='gioco'||!(p.coyote>0||p.ultimoSuolo)||!usaFiato(FIATO_LANCIO))return;
- p.vy=12;p.vx=d*10;p.lancio=.9;p.verso=d;p.rotola=true;p.coyote=0;p.ultimoSuolo=null;p.y+=.05;p.Wv+=10;polvere();sfx('jump-high')||suono(260,.3,'square',.08,900);vibra(30);
+ p.vy=LANCIO_VY;p.vx=d*LANCIO_VX;p.lancio=LANCIO_T;p.verso=d;p.rotola=true;p.coyote=0;p.ultimoSuolo=null;p.y+=.05;p.Wv+=10;polvere();sfx('jump-high')||suono(260,.3,'square',.08,900);vibra(30);
  if(!G.lanciato){G.lanciato=true;avviso('Lancio!',900);}
 }
 let provato=false;
@@ -232,7 +234,7 @@ function leggiInput(dt){
 }
 
 /* ---------- CUORI ---------- */
-const MAXC=3;
+const MAXC=3; /* cuori alla partenza: quelli raccolti si sommano, senza tetto */
 function togliCuore(){if(VITE_INFINITE)return;G.cuori--;hud();if(G.cuori<=0)fine(false);}
 
 /* ---------- CORSA 2D ---------- */
@@ -254,15 +256,16 @@ intreccio:["                                                    ","             
  approdo:["                                                          ","                                                          ","                           ccUc                           ","                           ----                           ","                       ccc             ccc                ","                                                          ","                   e       e  ^^     e                    ","              ###############################       cc    ","              ##                      c                   ","    ccc      ###      ccccccc  H    ccccc        ^^  r !! ","##########   #############################################"],
  magazzino:["                                                              ","                                                              ","                                          D                   ","     #########                            D                   ","     #                                    D                   ","     # cccc                               D                   ","     #  Tccc            ccccccc           D                   ","     #########------------------          D                   ","         f            f                   D                   ","                                          D                   ","         COC                  B           D                   ","     #############xxxxxxxxxx####  ###     D                   ","                                          D                   ","                                          D                   ","   B    e       e   ^^  e   r   PP        D  ccccc  e   e !!  ","##############################################################"],
  crollo:["                                                            ","                                                            ","                                                            ","                                                            ","                                             ccecc          ","                                         --#########        ","   Hcc                                     X       #        ","  ----        f           f            --- X       #        ","                                           X ccccc #        ","                                    ---    X       #        ","         c c c c c   c c c c c c           X H U T #  !!! e ","########xxxxxxxxxxx  xxxxxxxxxxxx###########################"],
+ burrone:["                                               ","                                               ","                                               ","                                               ","                                               ","                           ccccccc  e          ","                         ################%     ","                         #################%    ","                         ##################%   ","                         ###################%  ","                         ####################% ","     ccc                 #####################%","#############            ######################"],
  scalata:["                                            ","                                            ","                                            ","####                        ccccc cccc      ","####                       -------####      ","####                              ####      ","####                  ----        ####      ","# c               cc              ####      ","#Hc              xxxx             ####      ","####-----                         ####      ","####        ----                  ####      ","####     f       cc               ####      ","####            xxxx              ####      ","                                  ####      ","           ----                   ####      ","       cc                         ####      ","      ----                        ####      ","              e         r   ^^^   ####  ^^ e","############################################"],
- artiglieria:["                                                      ","                                                      ","                                                      ","                                                      ","                                                      ","                     Tcc                 ccTcc        ","                   ------               -------       ","                                                      ","                     cc                               ","                      g                cccBcc         ","                C   ####          cc  --------        ","       g cc   ----- ####        g                     ","      ###   C       ####       ###  C      #          ","   e  ###  CC  e    #### er ^^ ### CCC   B #  e   e   ","######################################################"],
+ artiglieria:["                                                      ","                                                      ","                                                      ","                                                      ","                                                      ","                     Tcc                 ccTcc        ","                   ------               -------       ","                                                      ","                     cc                         ##  ##","                      g                cccBcc   ##H ##","                C   ####          cc  --------        ","       g cc   ----- ####        g                     ","      ###   C       ####       ###  C      #          ","   e  ###  CC  e    #### er ^^ ### CCC   B #  e   e   ","######################################################"],
  valanga:["                                                                      ","                                                                      ","                                                                      ","                                                                      ","                                                                      ","             c                                                        ","          ######%                                                     ","          #######%                                                    ","          ########% c                                     #####       ","        B #########% e C                                  X   #       ","    ####################%                              -- X   #       ","    #####################% eC     c    c      c           Xccc#       ","    #########################%                      --    X   #       ","  B ##########################%  e C e  e C e  e C e      XH T#   e   ","######################################################################"],
  gradini:["                 c c    ","               #####    ","            ###         ","    c   ###       f     ","     ###                ","  ###            ^^     ","########################"]
 };
 /* pareti finte: rettangoli [x0,y0,x1,y1] in caselle del pezzo; sembrano terra ma si attraversano */
-const FINTI={"approdo":[[16,3,44,4]],"magazzino":[[6,11,13,13]],"scalata":[[1,12,3,13]],"artiglieria":[[40,3,43,4]]};
+const FINTI={"approdo":[[16,3,44,4]],"magazzino":[[6,11,13,13]],"scalata":[[1,12,3,13]],"artiglieria":[[40,3,43,4],[50,7,51,8]]};
 const CORSE=[
- ['approdo','magazzino','crollo','scalata','artiglieria','valanga'],
+ ['approdo','magazzino','crollo','burrone','scalata','artiglieria','valanga'],
  ['duePiani','tempo','ricci','torre','fosso','casse','cannoni','gradini','buca','tempo','duePiani','sciame','isole'],
  ['cannoni','ricci','isole','tempo','fosso','sciame','gradini','cannoni','torre','ricci','tempo','duePiani','isole','fosso']
 ];
@@ -331,7 +334,7 @@ const FIATO_SCATTO=.3,FIATO_LANCIO=.2;
 function aggFiato(){const f=$('fiatoB');if(f){f.style.width=(G.fiato*100)+'%';$('fiato').classList.toggle('basso',G.fiato<FIATO_SCATTO);}}
 function usaFiato(q){if(P2.stanco>0)return false;if(G.carica>=1)return true; /* da bomba non si stanca */if(G.fiato<q){senzaFiato();return false;}G.fiato-=q;G.fiatoT=2;aggFiato();return true;}
 function senzaFiato(){const p=P2;p.stanco=2;p.rotola=false;p.vx=0;p.carica=0;p.scatto=0;p.buf=0;suono(260,.5,'sine',.08,140);vibra(40);if(!G.dettoFiato){G.dettoFiato=true;avviso('Senza fiato! Matteo è grasso: riposa 2 secondi. Mangia la pizza per riprendere fiato',2600);}}
-function scatta2(){if(P2.cd>0||!usaFiato(FIATO_SCATTO))return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.catena=Math.abs(P2.vx)>=8?2:1;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;if(P2.ultimoSuolo)sbuffo();sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('aSin').classList.remove('pronto');}
+function scatta2(){if(P2.cd>0||!usaFiato(FIATO_SCATTO))return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.catena=Math.abs(P2.vx)>=8?2:1;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.vyS=Math.max(P2.vy,0);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;if(P2.ultimoSuolo)sbuffo();sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('aSin').classList.remove('pronto');}
 /* da bomba esplode contro un nemico solo se ci arriva veloce o in scatto */
 function bombaLanciata(){return G.carica>=1&&(Math.abs(P2.vx)>=6.5||P2.scatto>0);}
 function colpito2(nx,spina){
@@ -344,7 +347,7 @@ function colpito2(nx,spina){
 }
 function raccogli(o){
  if(o.tipo==='c'){G.gettoni++;$('gett').textContent=G.gettoni;G.fiato=Math.min(1,(G.fiato||0)+.25);G.carica=Math.min(1,G.carica+.08);aggBarra();if(G.carica>=.25&&!G.avvisato){G.avvisato=true;avviso('Sei esplosivo: cadi da molto in alto o sbatti forte!',2600);}sfx('coin')||suono(880,.09,'triangle',.08,1320);}
- else if(o.tipo==='H'){if(G.cuori<MAXC){G.cuori++;hud();}else{G.gettoni+=5;$('gett').textContent=G.gettoni;}sfx('gem')||suono(520,.3,'sine',.12,1040);avviso('+1 cuore',900);schizzi2(o.x,o.y,12,'#d8432e',4);}
+ else if(o.tipo==='H'){G.cuori++;hud();sfx('gem')||suono(520,.3,'sine',.12,1040);avviso('+1 cuore',900);schizzi2(o.x,o.y,12,'#d8432e',4);}
  else if(o.tipo==='U'){G.scudo=true;sfx('magic')||suono(440,.3,'triangle',.1,880);avviso('Scudo: para il prossimo colpo',1400);}
  else if(o.tipo==='Z'){G.carica=Math.min(1,G.carica+.4);aggBarra();sfx('magic')||suono(300,.3,'square',.08,600);avviso('Esplosione più forte',900);}
  else if(o.tipo==='T'){G.stella=7;sfx('magic')||suono(660,.5,'square',.08,1320);avviso('Stella: travolgi tutto per 7 secondi',1600);}
@@ -384,7 +387,7 @@ function passoCrolli(dt){
 function rompiCrepa(x,y){M.g[y][x]=' ';schizzi2(x,y,10,'#b0643a',6);if(!M.dettaCrepa){M.dettaCrepa=true;avviso('Muro aperto: dentro c’è una stanza segreta!',2200);}}
 /* combo: nemici e casse travolti uno dopo l'altro valgono di più */
 function combo(){if(P2.slancio>0)P2.slancio=Math.max(P2.slancio,.8);G.combo=G.comboT>0?(G.combo||0)+1:1;G.comboT=1.5;if(G.combo>=2){G.gettoni+=G.combo;$('gett').textContent=G.gettoni;G.comboV={n:G.combo,t:G.t};suono(400+G.combo*90,.12,'triangle',.09,800+G.combo*120);}}
-const AIUTI={magazzino:'Il peso apre la porta se cade sul pulsante: rompi le casse con lo scatto per liberarlo',crollo:'Il ponte crolla appena ci sali: non fermarti!',valanga:'Lanciati giù per la discesa: a tutta velocità travolgi nemici e casse'};
+const AIUTI={burrone:'Fosso troppo largo e sponda troppo alta: dai un colpo secco al telefono verso destra per lanciare Matteo',magazzino:'Il peso apre la porta se cade sul pulsante: rompi le casse con lo scatto per liberarlo',crollo:'Il ponte crolla appena ci sali: non fermarti!',valanga:'Lanciati giù per la discesa: a tutta velocità travolgi nemici e casse'};
 function passo2d(h){
  const p=P2;p.cd=Math.max(0,p.cd-h);if(p.cd===0)$('aSin').classList.add('pronto');p.inv=Math.max(0,p.inv-h);p.buf=Math.max(0,p.buf-h);p.coyote=Math.max(0,p.coyote-h);
  if(p.stanco>0){p.stanco-=h;p.rotola=false;p.carica=0;p.vx=0;if(p.stanco<=0){p.stanco=0;G.fiato=Math.max(G.fiato,.4);}}else{G.fiatoT=Math.max(0,(G.fiatoT||0)-h);if(G.fiatoT<=0)G.fiato=Math.min(1,(G.fiato||0)+.07*h);} /* Matteo è grasso: riprende fiato piano, solo dopo 2 secondi senza scatti */
@@ -394,7 +397,8 @@ function passo2d(h){
  p.carica=Math.abs(tx)>.3?p.carica+h:0;
  if(!p.rotola&&!(p.stanco>0)&&(p.carica>.15||Math.abs(p.vx)>3||p.scatto>0)){p.rotola=true;p.anim='chiude';p.animT=p.scatto>0?.1:0;p.Wv-=6;}
  else if(p.rotola&&su0&&Math.abs(p.vx)<1.2&&Math.abs(tx)<.25&&p.scatto<=0){p.rotola=false;p.anim='apre';p.animT=0;p.carica=0;p.Wv+=4;}
- if(p.scatto>0){p.scatto-=h;p.vx=p.verso*(p.vS||11);p.vy=Math.max(p.vy,0);if(p.scatto<=0)p.vx*=.6;
+ /* durante lo scatto non cade, ma la salita frena come sempre e gli urti non la aumentano: niente salti più alti né arrampicate sugli spigoli */
+ if(p.scatto>0){p.scatto-=h;p.vx=p.verso*(p.vS||11);p.vyS=Math.max(0,Math.min(p.vy,p.vyS||0)-20*h);p.vy=p.vyS;if(p.scatto<=0)p.vx*=.6;
   const q=Math.round(p.x+p.verso*.8),r=Math.round(p.y);if(cel(q,r)==='C')rompiCassa(q,r);}
  else{
   /* in pendenza accelera la gravità: inclinare in discesa aggiunge poco, in salita aiuta a salire */
@@ -414,7 +418,7 @@ function passo2d(h){
  if(p.urtoX&&Math.abs(vx0)>=7&&Math.abs(p.vx)<Math.abs(vx0)*.5)botto();
  if(p.suolo&&!p.ultimoSuolo&&vy0<-12)botto();
  if(p.suolo&&!p.ultimoSuolo&&vy0<-4)p.atterra=.2;p.atterra=Math.max(0,p.atterra-h);p.fermoT=p.suolo&&Math.abs(p.vx)<.25&&!p.rotola?p.fermoT+h:0;if(p.fermoT>6.3)p.fermoT=0;
- if(p.suolo){p.bollaUsata=false;if(p.bolla>0&&p.suolo.y>.5&&p.vy<=0)p.bolla=0;if(vy0<-7&&!p.ultimoSuolo){p.Wv-=Math.min(14,-vy0*.9);suono(120,.08,'sine',.08);}p.coyote=.1;
+ if(p.suolo){p.bollaUsata=false;if(p.lancio<LANCIO_T-.15)p.lancio=0;if(p.bolla>0&&p.suolo.y>.5&&p.vy<=0)p.bolla=0;if(vy0<-7&&!p.ultimoSuolo){p.Wv-=Math.min(14,-vy0*.9);suono(120,.08,'sine',.08);}p.coyote=.1;
   const q=Math.round(p.x),r=Math.round(p.y-p.R-.3);if(p.suolo.y>.9&&cel(q,r)==='#'&&cel(q-1,r)==='#'&&cel(q+1,r)==='#'){p.sx=q;p.sy=r+1.2;}}
  /* cadendo da un punto più alto fa un rimbalzino */
  if(p.suolo&&!p.ultimoSuolo&&vy0<-10.5&&p.vy<=0){p.vy=Math.min(-vy0*.22,3);p.y+=.02;p.suolo=null;}
@@ -743,7 +747,7 @@ let tAvv=0;function avviso(t,ms){const a=$('avviso');a.textContent=t;a.hidden=fa
 function giocoUI(on){['hud','tocchi','aSin','aDes'].forEach(i=>$(i).hidden=!on);}
 function dissolvi(fn){G.stato='velo';$('velo').classList.add('on');setTimeout(()=>{fn();$('velo').classList.remove('on');},380);}
 function banner(t){$('grande').textContent=t;$('grande').hidden=false;$('avviso').hidden=true;G.pronti=1.4;G.stato='pronti';}
-function iniziaRun(prova){Object.assign(G,{fiato:1,dettoFiato:false,carica:0,avvisato:false,base:0,cuori:3,gettoni:0,uccisi:0,tempo:0,scudo:false,stella:0,avanz:0,scossa:0,jelly:0,visti:G.visti||0});mostra('');giocoUI(true);hud();aggBarra();$('gett').textContent='0';entraCorsa(0,Array.isArray(prova)?prova:null);sveglia();}
+function iniziaRun(prova){Object.assign(G,{fiato:1,dettoFiato:false,carica:0,avvisato:false,base:0,cuori:MAXC,gettoni:0,uccisi:0,tempo:0,scudo:false,stella:0,avanz:0,scossa:0,jelly:0,visti:G.visti||0});mostra('');giocoUI(true);hud();aggBarra();$('gett').textContent='0';entraCorsa(0,Array.isArray(prova)?prova:null);sveglia();}
 function entraCorsa(i,prova){
  G.modo='2d';G.mondo=i;M=costruisci(i,prova);M.prova=!!prova;goo.length=0;fumi.length=0;polveri.length=0;G.combo=0;G.comboT=0;
  G.fiato=1;Object.assign(P2,{stanco:0,slancio:0,x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
@@ -759,7 +763,7 @@ function entraBoss(i){
  banner(BOSS[i].nome);
  if(i===0)setTimeout(()=>{if(M.boss&&G.stato==='gioco')avviso('Schiva il lancio: quando sbatte è stordito. Le molle portano ai piani alti.',3800);},1700);
 }
-function dopoBoss(){const i=G.mondo;G.base=G.avanz;if(G.cuori<MAXC){G.cuori++;hud();}if(i>=MONDI.length-1){fine(true);return;}dissolvi(()=>entraCorsa(i+1));}
+function dopoBoss(){const i=G.mondo;G.base=G.avanz;G.cuori++;hud();if(i>=MONDI.length-1){fine(true);return;}dissolvi(()=>entraCorsa(i+1));}
 let lucchetto=null;async function sveglia(){try{if(navigator.wakeLock&&!lucchetto){lucchetto=await navigator.wakeLock.request('screen');lucchetto.addEventListener('release',()=>lucchetto=null);}}catch(e){}}
 function metri(){return Math.round(G.avanz);}
 function incassa(){S.gettoni+=G.gettoni;G.gettoni=0;if(metri()>S.record)S.record=metri();salva();}

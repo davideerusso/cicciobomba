@@ -94,6 +94,14 @@ P.fila(3, 54, 56, '!'); P.put(3, 58, 'e')
 P.fila(6, 2, 5, '-'); P.put(7, 3, 'H'); P.fila(7, 4, 5, 'c')          # in alto: ci si arriva solo con salto e bolla
 P.fine()
 
+# 3b. BURRONE: fosso largo con l'altra sponda alta; salto, scatto e bolla non bastano, serve il lancio
+P = Pezzo('burrone', 47, 14)
+P.fila(2, 0, 12, '#'); P.fila(3, 5, 7, 'c')             # pizza per il fiato del lancio
+P.blocco(25, 2, 40, 8)                                  # sponda alta 6 caselle oltre 12 di vuoto
+scendi(P, 41, 8, 6)
+P.fila(9, 27, 33, 'c'); P.put(9, 36, 'e')
+P.fine()
+
 # 4. TORRE: si sale a zigzag tra assi e blocchi che crollano; in cima si va a destra
 P = Pezzo('scalata', 44, 20)
 P.fila(2, 0, 43, '#')
@@ -128,6 +136,7 @@ P.fila(6, 38, 45, '-'); P.fila(7, 39, 44, 'c')
 P.put(7, 42, 'B')                                       # seconda molla sulla mensola
 P.fila(10, 40, 46, '-'); P.put(11, 43, 'T'); P.fila(11, 41, 42, 'c'); P.fila(11, 44, 45, 'c')
 for x in (3, 15, 25, 46, 50): P.put(3, x, 'e')
+P.blocco(48, 7, 53, 8); P.blocco(50, 7, 51, 8, ' '); P.finto(50, 7, 51, 8); P.put(7, 50, 'H')
 P.fila(5, 9, 10, 'c'); P.fila(8, 21, 22, 'c'); P.fila(6, 34, 35, 'c')
 P.fine()
 
