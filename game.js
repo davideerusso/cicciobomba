@@ -313,8 +313,8 @@ const fumi=[];function sbuffo(){const p=P2;fumi.push({x:p.x-p.verso*p.R*.6,y:p.y
 /* il fiato: lo scatto lo consuma, si ricarica da solo e con la pizza; a secco Matteo si ferma a riposare */
 const FIATO_SCATTO=.3,FIATO_LANCIO=.2;
 function aggFiato(){const f=$('fiatoB');if(f){f.style.width=(G.fiato*100)+'%';$('fiato').classList.toggle('basso',G.fiato<FIATO_SCATTO);}}
-function usaFiato(q){if(P2.stanco>0)return false;if(G.fiato<q){senzaFiato();return false;}G.fiato-=q;G.fiatoT=1.5;aggFiato();return true;}
-function senzaFiato(){const p=P2;p.stanco=2;p.rotola=false;p.carica=0;p.scatto=0;p.buf=0;suono(260,.5,'sine',.08,140);vibra(40);if(!G.dettoFiato){G.dettoFiato=true;avviso('Senza fiato! Matteo riposa 2 secondi. La pizza ridà fiato',2600);}}
+function usaFiato(q){if(P2.stanco>0)return false;if(G.fiato<q){senzaFiato();return false;}G.fiato-=q;G.fiatoT=2;aggFiato();return true;}
+function senzaFiato(){const p=P2;p.stanco=2;p.rotola=false;p.carica=0;p.scatto=0;p.buf=0;suono(260,.5,'sine',.08,140);vibra(40);if(!G.dettoFiato){G.dettoFiato=true;avviso('Senza fiato! Matteo è grasso: riposa 2 secondi. Mangia la pizza per riprendere fiato',2600);}}
 function scatta2(){if(P2.cd>0||!usaFiato(FIATO_SCATTO))return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.catena=Math.abs(P2.vx)>=6?2:1;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;if(P2.ultimoSuolo)sbuffo();sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('aSin').classList.remove('pronto');}
 function colpito2(nx){
  if(P2.inv>0||G.stella>0||G.stato!=='gioco')return;P2.inv=1.5;P2.vx=nx*6;P2.vy=6;P2.Wv+=8;
@@ -322,7 +322,7 @@ function colpito2(nx){
  togliCuore();sfx('hurt')||suono(150,.25,'square',.1,70);vibra(60);schizzi2(P2.x,P2.y,12,'#d8432e',5);
 }
 function raccogli(o){
- if(o.tipo==='c'){G.gettoni++;$('gett').textContent=G.gettoni;G.fiato=Math.min(1,(G.fiato||0)+.2);G.carica=Math.min(1,G.carica+.08);aggBarra();if(G.carica>=.25&&!G.avvisato){G.avvisato=true;avviso('Sei esplosivo: cadi da molto in alto o sbatti forte!',2600);}sfx('coin')||suono(880,.09,'triangle',.08,1320);}
+ if(o.tipo==='c'){G.gettoni++;$('gett').textContent=G.gettoni;G.fiato=Math.min(1,(G.fiato||0)+.25);G.carica=Math.min(1,G.carica+.08);aggBarra();if(G.carica>=.25&&!G.avvisato){G.avvisato=true;avviso('Sei esplosivo: cadi da molto in alto o sbatti forte!',2600);}sfx('coin')||suono(880,.09,'triangle',.08,1320);}
  else if(o.tipo==='H'){if(G.cuori<MAXC){G.cuori++;hud();}else{G.gettoni+=5;$('gett').textContent=G.gettoni;}sfx('gem')||suono(520,.3,'sine',.12,1040);avviso('+1 cuore',900);schizzi2(o.x,o.y,12,'#d8432e',4);}
  else if(o.tipo==='U'){G.scudo=true;sfx('magic')||suono(440,.3,'triangle',.1,880);avviso('Scudo: para il prossimo colpo',1400);}
  else if(o.tipo==='Z'){G.carica=Math.min(1,G.carica+.4);aggBarra();sfx('magic')||suono(300,.3,'square',.08,600);avviso('Esplosione più forte',900);}
@@ -366,7 +366,7 @@ function combo(){if(P2.slancio>0)P2.slancio=Math.max(P2.slancio,.8);G.combo=G.co
 const AIUTI={magazzino:'Il peso apre la porta se cade sul pulsante: rompi le casse con lo scatto per liberarlo',crollo:'Il ponte crolla appena ci sali: non fermarti!',valanga:'Lanciati giù per la discesa: a tutta velocità travolgi nemici e casse'};
 function passo2d(h){
  const p=P2;p.cd=Math.max(0,p.cd-h);if(p.cd===0)$('aSin').classList.add('pronto');p.inv=Math.max(0,p.inv-h);p.buf=Math.max(0,p.buf-h);p.coyote=Math.max(0,p.coyote-h);
- if(p.stanco>0){p.stanco-=h;p.rotola=false;p.carica=0;if(p.stanco<=0){p.stanco=0;G.fiato=Math.max(G.fiato,.5);}}else{G.fiatoT=Math.max(0,(G.fiatoT||0)-h);if(G.fiatoT<=0)G.fiato=Math.min(1,(G.fiato||0)+.2*h);} /* si ricarica solo dopo un secondo e mezzo senza scatti */
+ if(p.stanco>0){p.stanco-=h;p.rotola=false;p.carica=0;if(p.stanco<=0){p.stanco=0;G.fiato=Math.max(G.fiato,.4);}}else{G.fiatoT=Math.max(0,(G.fiatoT||0)-h);if(G.fiatoT<=0)G.fiato=Math.min(1,(G.fiato||0)+.07*h);} /* Matteo è grasso: riprende fiato piano, solo dopo 2 secondi senza scatti */
  const tx=p.stanco>0?0:IN.tx;if(Math.abs(tx)>.08)p.verso=Math.sign(tx);
  p.px=p.x;p.py=p.y;const vy0=p.vy;
  p.animT+=h;const su0=!!p.ultimoSuolo;
