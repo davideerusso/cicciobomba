@@ -130,26 +130,6 @@ for x in (3, 15, 25, 46, 50): P.put(3, x, 'e')
 P.fila(5, 9, 10, 'c'); P.fila(8, 21, 22, 'c'); P.fila(6, 34, 35, 'c')
 P.fine()
 
-# 6. VALANGA: su con le molle, giù per i gradoni travolgendo tutto; in fondo il muro crepato
-P = Pezzo('valanga', 70, 16)
-P.fila(2, 0, 69, '#')
-P.put(3, 2, 'B'); P.put(3, 5, 'e')
-P.blocco(4, 3, 9, 6); P.put(7, 8, 'B')
-P.blocco(10, 3, 15, 10); P.put(11, 13, 'c')
-scendi(P, 16, 10, 4)
-P.blocco(20, 3, 23, 6); P.put(7, 21, 'e'); P.put(7, 23, 'C'); P.put(8, 20, 'c')
-scendi(P, 24, 6, 2)
-P.blocco(26, 3, 28, 4); P.put(5, 27, 'e'); P.put(5, 28, 'C')
-scendi(P, 29, 4, 2)
-for x in (33, 37, 40, 44, 47, 51): P.put(3, x, 'e')
-for x in (35, 42, 49): P.put(3, x, 'C')
-for x in (34, 39, 46): P.put(5, x, 'c')
-P.col(58, 3, 7, 'X'); P.fila(8, 58, 62, '#'); P.col(62, 3, 7, '#')
-P.put(3, 59, 'H'); P.put(3, 61, 'T'); P.fila(5, 59, 61, 'c')
-P.fila(4, 52, 53, '-'); P.fila(6, 55, 56, '-')
-P.put(3, 66, 'e')
-P.fine()
-
 if __name__ == '__main__':
     if '--scrivi' in sys.argv:   # rimette i pezzi e FINTI dentro game.js
         import os, re

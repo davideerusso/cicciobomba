@@ -25,12 +25,12 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
 - `window.__rotolamici` espone `G`, `P2`, `M` e il resto per le prove da console. Con il pannello del browser nascosto `requestAnimationFrame` si ferma e il gioco non avanza: in quel caso si può usare una copia di `index.html` in `dist/` che sostituisce `requestAnimationFrame` con una coda da far avanzare a mano.
 
 ## Livello 1 (Isola degli Ananas)
-- È la prima corsa, `CORSE[0]`: sei pezzi, `approdo`, `magazzino`, `crollo`, `scalata`, `artiglieria` e `valanga`, poi il boss Ananassone. Gli altri mondi usano ancora i pezzi vecchi; attenzione a non riusarne i nomi (`torre`, `cannoni`… ci sono già).
+- È la prima corsa, `CORSE[0]`: cinque pezzi, `approdo`, `magazzino`, `crollo`, `scalata` e `artiglieria`, poi il boss Ananassone. La discesa "valanga" è stata tolta perché non piaceva. Gli altri mondi usano ancora i pezzi vecchi; attenzione a non riusarne i nomi (`torre`, `cannoni`… ci sono già).
 - I pezzi e `FINTI` si generano con `tools/livello1.py`. Lo si cambia lì e poi si lancia `python3 tools/livello1.py --scrivi`; senza argomenti disegna i pezzi a schermo.
 - Il livello ha dei segreti che l'utente vuole scoprire da solo: non elencarli e non descriverne la posizione nelle risposte.
 - Difficoltà alta voluta: 3 cuori in tutto (`MAXC=3`), niente vite infinite. Se finisci i cuori riparti dall'inizio.
 - Caratteri nei pezzi:
-  - `O` peso: scivola dove inclini il telefono e Matteo lo spinge. Se cade fuori torna al suo posto.
+  - `O` peso: pesante. Scivola piano dove inclini il telefono e Matteo lo spinge; su una gobba lo porta solo spingendo. Se cade fuori torna al suo posto.
   - `P` pulsante, `D` porta: quando il peso cade sul pulsante, le porte dello stesso pezzo si aprono per sempre. Matteo da solo non lo preme.
   - `x` blocco che crolla: mezzo secondo dopo che ci sali cade, e torna dopo 4 secondi.
   - `y` botola: sembra terra, ma se ti fermi sopra crolla dopo 0,8 secondi.
@@ -43,6 +43,7 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
   - **Ripartenza:** dopo una caduta si riparte solo da terra vera (`#`), mai da un blocco che crolla.
 - Gli sprite nuovi vengono dal New Platformer Pack e stanno in `assets/kit2.webp`: pulsante, lucchetto, peso, mattoni e i blocchi con la faccia. `sp()` li disegna quando la voce di `KMAP` ha un terzo valore.
 - Misure per disegnare i pezzi: una molla fa salire di circa 4,9 caselle e un salto di circa 2,3; per atterrare su una piattaforma il centro di Matteo deve superarne la cima di 0,46. Ogni salto difficile va provato nel browser.
+- L'arena del boss è un `M` senza i campi dei livelli (`nomi`, `pesi`, `crolli`…): ogni uso di quei campi va protetto. Il boss ha raggio 0,85.
 - Per provare dei pezzi a parte da console: `__rotolamici.iniziaRun(['nome',...])` (alla fine torna al menu). La Spremiananas è stata tolta perché non piaceva: non rimetterla.
 
 ## Note

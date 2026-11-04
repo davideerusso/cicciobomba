@@ -214,13 +214,12 @@ intreccio:["                                                    ","             
  crollo:["                                                            ","                                                            ","                                                            ","                                                            ","                                             ccecc          ","                                         --#########        ","                                           X       #        ","              f           f            --- X       #        ","                                           X ccccc #        ","                                    ---    X       #        ","         c c c c c   c c c c c c           X H U T #  !!! e ","########xxxxxxxxxxx  xxxxxxxxxxxx###########################"],
  scalata:["                                            ","                                            ","                                            ","####                        ccccc cccc      ","####                       -------####      ","####                              ####      ","####                  ----        ####      ","# c               cc              ####      ","#Hc              xxxx             ####      ","####-----                         ####      ","####        ----                  ####      ","####     f       cc               ####      ","####            xxxx              ####      ","                                  ####      ","           ----                   ####      ","       cc                         ####      ","      ----                        ####      ","              e         r   ^^^   ####  ^^ e","############################################"],
  artiglieria:["                                                      ","                                                      ","                                                      ","                                                      ","                                                      ","                                         ccTcc        ","                                        -------       ","                                                      ","                     cc                               ","                      g                cccBcc         ","                C   ####          cc  --------        ","       g cc   ----- ####        g                     ","      ###   C       ####       ###  C      #          ","   e  ###  CC  e    #### er ^^ ### CCC   B #  e   e   ","######################################################"],
- valanga:["                                                                      ","                                                                      ","                                                                      ","                                                                      ","                                                                      ","             c                                                        ","          ######%                                                     ","          #######%                                                    ","          ########% c                                     #####       ","        B #########% e C                                  X   #       ","    ####################%                              -- X   #       ","    #####################% eC     c    c      c           Xccc#       ","    #########################%                      --    X   #       ","  B ##########################%  e C e  e C e  e C e      XH T#   e   ","######################################################################"],
  gradini:["                 c c    ","               #####    ","            ###         ","    c   ###       f     ","     ###                ","  ###            ^^     ","########################"]
 };
 /* pareti finte: rettangoli [x0,y0,x1,y1] in caselle del pezzo; sembrano terra ma si attraversano */
 const FINTI={"approdo":[[16,3,44,4]],"magazzino":[[6,11,13,13]],"scalata":[[1,12,3,13]],"artiglieria":[[40,3,43,4]]};
 const CORSE=[
- ['approdo','magazzino','crollo','scalata','artiglieria','valanga'],
+ ['approdo','magazzino','crollo','scalata','artiglieria'],
  ['duePiani','tempo','ricci','torre','fosso','casse','cannoni','gradini','buca','tempo','duePiani','sciame','isole'],
  ['cannoni','ricci','isole','tempo','fosso','sciame','gradini','cannoni','torre','ricci','tempo','duePiani','isole','fosso']
 ];
@@ -300,17 +299,17 @@ function raccogli(o){
 function rompiCassa(x,y){combo();M.g[y][x]=' ';const k=(x*7+y*3)%5,t=['H','c','U','Z','c','T'][(x*7+y*3)%6];schizzi2(x,y,16,'#c28a48',5);sfx('disappear')||suono(200,.15,'square',.09,90);
  if(t==='c')for(let j=0;j<3;j++)M.oggetti.push({tipo:'c',x:x-.6+j*.6,y:y+.2,fase:x+j});else M.oggetti.push({tipo:t,x,y,fase:x});}
 /* il peso: scivola dove inclini il telefono e Matteo lo può spingere; sul pulsante apre la porta */
-const PESO_R=.5,PESO_M=2.6;
+const PESO_R=.5,PESO_M=4.5;
 function passoPesi(h){
  const p=P2;
  for(const a of M.pesi){if(Math.abs(a.x-p.x)>24)continue;
-  const su=!!a.suolo;a.vx+=IN.tx*(su?9:3)*h;a.vx*=Math.exp(-(su?(Math.abs(IN.tx)<.1?2.2:.6):.1)*h);a.vx=clamp(a.vx,-6,6);a.vy-=16*h;
+  const su=!!a.suolo;a.vx+=IN.tx*(su?5:2)*h;a.vx*=Math.exp(-(su?(Math.abs(IN.tx)<.1?3:.9):.1)*h);a.vx=clamp(a.vx,-4,4);a.vy-=(su&&a.suolo.y<.95?10:20)*h; /* in pendenza Matteo riesce a spingerlo su, l'inclinazione da sola no */
   a.px=a.x;a.py=a.y;a.x+=a.vx*h;a.y+=a.vy*h;urta(a,PESO_R);
   const dx=a.x-p.x,dy=a.y-p.y,d=Math.hypot(dx,dy),min=p.R+PESO_R;
   if(d<min&&d>1e-6){const nx=dx/d,ny=dy/d,pen=min-d;
    if(ny<-.5){p.x-=nx*pen;p.y-=ny*pen;const vn=(p.vx-a.vx)*nx+(p.vy-a.vy)*ny;if(vn>0){p.vx-=vn*nx;p.vy-=vn*ny;}p.suolo={x:-nx,y:-ny};}
    else{const q=1.6/(1.6+PESO_M);p.x-=nx*pen*(1-q);p.y-=ny*pen*(1-q);a.x+=nx*pen*q;a.y+=Math.min(0,ny*pen*q);
-    const vr=(a.vx-p.vx)*nx+(a.vy-p.vy)*ny;if(vr<0){const j=-1.05*vr/(1/1.6+1/PESO_M);a.vx=clamp(a.vx+j*nx/PESO_M,-6,6);a.vy+=Math.min(0,j*ny/PESO_M);p.vx-=j*nx/1.6;p.vy-=j*ny/1.6;}}}
+    const vr=(a.vx-p.vx)*nx+(a.vy-p.vy)*ny;if(vr<0){const j=-1.05*vr/(1/1.6+1/PESO_M);a.vx=clamp(a.vx+j*nx/PESO_M,-4,4);a.vy+=Math.min(0,j*ny/PESO_M);p.vx-=j*nx/1.6;p.vy-=j*ny/1.6;}}}
   if(a.y<-4){a.x=a.x0;a.y=a.y0+.5;a.vx=a.vy=0;schizzi2(a.x,a.y,10,'#c9c9d4',4);suono(500,.3,'sine',.08,200);avviso('Il peso è caduto: è tornato al suo posto',1800);}
   if(a.suolo)calpesta(a.x,a.y-PESO_R);
   for(const k of M.pulsanti)if(!k.giu&&Math.abs(a.x-k.x)<.8&&a.y>k.y-.6&&a.y<k.y+1.4)premi(k);
@@ -332,7 +331,7 @@ function passoCrolli(dt){
 function rompiCrepa(x,y){M.g[y][x]=' ';schizzi2(x,y,10,'#b0643a',6);if(!M.dettaCrepa){M.dettaCrepa=true;avviso('Muro aperto: dentro c’è una stanza segreta!',2200);}}
 /* combo: nemici e casse travolti uno dopo l'altro valgono di più */
 function combo(){if(P2.slancio>0)P2.slancio=Math.max(P2.slancio,.8);G.combo=G.comboT>0?(G.combo||0)+1:1;G.comboT=1.5;if(G.combo>=2){G.gettoni+=G.combo;$('gett').textContent=G.gettoni;G.comboV={n:G.combo,t:G.t};suono(400+G.combo*90,.12,'triangle',.09,800+G.combo*120);}}
-const AIUTI={magazzino:'Inclina per far scivolare il peso: se cade sul pulsante, la porta si apre',crollo:'Il ponte crolla appena ci sali: non fermarti!',valanga:'Lanciati giù per la discesa: a tutta velocità travolgi nemici e casse'};
+const AIUTI={magazzino:'Inclina per far scivolare il peso: se cade sul pulsante, la porta si apre',crollo:'Il ponte crolla appena ci sali: non fermarti!'};
 function passo2d(h){
  const p=P2;p.cd=Math.max(0,p.cd-h);if(p.cd===0)$('aSin').classList.add('pronto');p.inv=Math.max(0,p.inv-h);p.buf=Math.max(0,p.buf-h);p.coyote=Math.max(0,p.coyote-h);
  const tx=IN.tx;if(Math.abs(tx)>.08)p.verso=Math.sign(tx);
@@ -377,7 +376,7 @@ function passo2d(h){
 }
 function passoOggetti(dt){
  const p=P2;G.comboT=Math.max(0,(G.comboT||0)-dt);if(M.crolli)passoCrolli(dt);
- for(const q of M.nomi)if(!q.detto&&p.x>q.x+1.5&&AIUTI[q.n]){q.detto=true;avviso(AIUTI[q.n],3800);}
+ for(const q of M.nomi||[])if(!q.detto&&p.x>q.x+1.5&&AIUTI[q.n]){q.detto=true;avviso(AIUTI[q.n],3800);}
  if(!M.boss&&!M.dettaCrepa&&!M.vistaCrepa&&cel(Math.round(p.x+p.verso*1.2),Math.round(p.y))==='X'){M.vistaCrepa=true;avviso('Muro crepato: si apre solo con l’esplosione. Mangia pizza e sbattici contro forte',3000);}
  for(let i=M.oggetti.length-1;i>=0;i--){const o=M.oggetti[i];if(Math.abs(o.x-p.x)<.75&&Math.abs(o.y-p.y)<.8){raccogli(o);M.oggetti.splice(i,1);}}
  for(const k in M.spine){const a=M.spine[k];if(a.t==='!'){const on=Math.sin(G.t*1.4+a.fase)>0;a.s=lerp(a.s,on?1:.1,1-Math.exp(-dt*12));}}
@@ -535,7 +534,7 @@ function costruisciArena(i){
  const m={i,g,w:W,alto:H,oggetti:[],nemici:[],colpi:[],spine:{},fine:Infinity,decor:[],posti:[],start:{x:3,y:2.97}};
  for(let q=0;q<H;q++)for(let x=0;x<W;x++){const y=H-1-q,t=r[q][x]||' ';if(t==='c'){m.oggetti.push({tipo:'c',x,y,fase:x});g[y][x]=' ';}else g[y][x]=t;}
  for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++)if(g[y][x]===' '&&(g[y-1][x]==='#'||g[y-1][x]==='-'))m.posti.push({x,y});
- const c=BOSS[i];m.boss={cfg:c,sp:BOSPR[i],x:W/2,y:9,r:1.25,vita:c.vita,stato:'fermo',t:2,dx:1,dy:0,vy:0,lampo:0,colpi:0,lung:0};
+ const c=BOSS[i];m.boss={cfg:c,sp:BOSPR[i],x:W/2,y:9,r:.85,vita:c.vita,stato:'fermo',t:2,dx:1,dy:0,vy:0,lampo:0,colpi:0,lung:0};
  return m;
 }
 function colpisciBoss(b){
