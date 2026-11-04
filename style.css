@@ -53,6 +53,7 @@ input[type=range]{width:100%;accent-color:var(--vernice)}
 #foto{position:absolute;width:1px;height:1px;opacity:0}
 #hud{position:fixed;top:0;left:0;right:0;padding:calc(var(--st) + 10px) max(12px,var(--sr)) 0 max(12px,var(--sl));display:flex;flex-direction:column;gap:6px;pointer-events:none;font-weight:800;color:var(--inchiostro);text-shadow:0 0 3px #fff,0 0 6px #fff,0 1px 0 #fff}
 .hudriga{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#hud .sx{display:flex;flex-direction:column;gap:2px}#fiato{display:flex;align-items:center;gap:4px;width:96px;pointer-events:none;font:800 11px/1 var(--testo);color:var(--inchiostro)}#fiato .barra{flex:1;height:8px;background:#fff8}#fiatoB{background:#4fc3f7!important}#fiato.basso .barra{animation:lampeggia .25s infinite alternate}
 .cuori{display:flex;align-items:center;gap:1px;font-size:24px;color:var(--inchiostro)}.cuori img{width:26px;height:26px}
 .gettoni{font-size:20px;font-variant-numeric:tabular-nums;color:var(--inchiostro)}
 #pausa{pointer-events:auto;width:44px;height:44px;padding:0;font-size:17px}
