@@ -328,7 +328,7 @@ const FIATO_SCATTO=.3,FIATO_LANCIO=.2;
 function aggFiato(){const f=$('fiatoB');if(f){f.style.width=(G.fiato*100)+'%';$('fiato').classList.toggle('basso',G.fiato<FIATO_SCATTO);}}
 function usaFiato(q){if(P2.stanco>0)return false;if(G.carica>=1)return true; /* da bomba non si stanca */if(G.fiato<q){senzaFiato();return false;}G.fiato-=q;G.fiatoT=2;aggFiato();return true;}
 function senzaFiato(){const p=P2;p.stanco=2;p.rotola=false;p.vx=0;p.carica=0;p.scatto=0;p.buf=0;suono(260,.5,'sine',.08,140);vibra(40);if(!G.dettoFiato){G.dettoFiato=true;avviso('Senza fiato! Matteo è grasso: riposa 2 secondi. Mangia la pizza per riprendere fiato',2600);}}
-function scatta2(){if(P2.cd>0||!usaFiato(FIATO_SCATTO))return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.catena=Math.abs(P2.vx)>=6?2:1;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;if(P2.ultimoSuolo)sbuffo();sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('aSin').classList.remove('pronto');}
+function scatta2(){if(P2.cd>0||!usaFiato(FIATO_SCATTO))return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.catena=Math.abs(P2.vx)>=8?2:1;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;if(P2.ultimoSuolo)sbuffo();sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('aSin').classList.remove('pronto');}
 function colpito2(nx){
  if(P2.inv>0||G.stella>0||G.stato!=='gioco')return;P2.inv=1.5;P2.vx=nx*6;P2.vy=6;P2.Wv+=8;
  if(G.scudo){G.scudo=false;suono(900,.25,'triangle',.1,300);schizzi2(P2.x,P2.y,16,'#7fe0ff',5);avviso('Scudo rotto',900);return;}
@@ -431,7 +431,7 @@ function passoOggetti(dt){
 }
 function uccidi2(n){combo();n.vivo=false;G.uccisi++;G.gettoni+=2;$('gett').textContent=G.gettoni;sfx('bump')||suono(180,.2,'square',.1,60);vibra(25);}
 function passoNemici2(dt){
- const p=P2,forte=p.scatto>0||G.stella>0||p.slancio>0;
+ const p=P2;
  for(const n of M.nemici){if(!n.vivo||Math.abs(n.x-V.cx)>22)continue;n.fase+=dt;
   if(n.tipo==='e'){n.x+=n.vx*dt;const d=Math.sign(n.vx),av=Math.round(n.x+d*.5),r=Math.round(n.y);if(pieno(cel(av,r))||!(pieno(cel(av,r-1))||cel(av,r-1)==='-'))n.vx*=-1;}
   else if(n.tipo==='r'){const d=p.x-n.x;n.vx=lerp(n.vx,Math.abs(d)<9?Math.sign(d)*2.3:0,1-Math.exp(-dt*2.5));n.vy-=26*dt;n.px=n.x;n.py=n.y;n.x+=n.vx*dt;n.y+=n.vy*dt;urta(n,.42);if(n.y<-4){n.vivo=false;G.uccisi++;}}
@@ -439,9 +439,11 @@ function passoNemici2(dt){
   else if(n.tipo==='g'){n.t-=dt;if(n.t<=0&&Math.abs(n.x-p.x)<10){n.t=3;const d=Math.sign(p.x-n.x)||-1;M.colpi.push({x:n.x+d*.6,y:n.y,vx:d*4.5,v:3.6});suono(300,.12,'square',.05,120);}}
   const d=Math.hypot(p.x-n.x,p.y-n.y),rn=n.tipo==='r'?.45:.42;
   if(d<p.R+rn){
+   /* si ricontrolla per ogni nemico: se lo scatto si è appena fermato sul primo, gli altri non muoiono */
+   const forte=p.scatto>0||G.stella>0||p.slancio>0;
    if(forte){uccidi2(n);if(p.scatto>0){p.cd=Math.min(p.cd,.3);if(G.stella<=0){p.catena--;
      /* lanciato forte: lo scatto prosegue sul secondo nemico; altrimenti si ferma al primo */
-     if(p.catena>0)p.scatto=.34;else{if(p.colpiti)avviso('Doppia eliminazione!',1000);p.scatto=0;p.vx*=.6;}p.colpiti=p.catena>0;}}}
+     if(p.catena>0)p.scatto=.2;else{if(p.colpiti)avviso('Doppia eliminazione!',1000);const v=Math.sign(p.vx)||p.verso;p.scatto=0;p.vx=-v*2.5;p.vy=Math.max(p.vy,3.5);p.ultimoSuolo=null;p.inv=Math.max(p.inv,.25);}p.colpiti=p.catena>0;}}}
    else if(n.tipo==='e'&&p.vy<0&&p.y>n.y+.35){p.vy=7;p.Wv+=7;}
    else colpito2(Math.sign(p.x-n.x)||1);
   }
