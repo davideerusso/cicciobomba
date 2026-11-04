@@ -6,7 +6,7 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
 - `index.html`: solo il markup delle schermate (menu, guida, amici e skin, pausa, fine, HUD).
 - `style.css`: lo stile, con i colori come variabili su `:root`.
 - `game.js`: tutta la logica, in un unico script classico chiuso in una funzione e diviso in sezioni `/* ---------- NOME ---------- */`: orientamento, salvataggio, mondi e tappe, kit grafico e sonoro, skin, palla dipinta, audio, stato, comandi, cuori, corsa 2D, boss 2D, la bomba, guida, flusso, menu, ciclo.
-- `assets/`: `kit.webp` (atlante dei blocchi Kenney, coordinate in `KMAP`), `personaggio.webp` e `personaggio2.webp` (fogli delle animazioni di Matteo), `fumo.webp`, `polvere.webp`, `esplosione.webp`, `pizza.webp`, `kit2.webp` (altri pezzi del kit), `pixel.webp` (caselle da 18: erba del Pixel Platformer per il terreno del mondo 1 e terra del kit Farm Expansion per le grotte), `bomba.webp` (Matteo carico al massimo: 37 fotogrammi da 160 in righe da 10, mappa in `disegnaBomba`), `boss_ananas.webp` (Ananassone: 32 fotogrammi da 192x204 in righe da 8, mappa in `disegnaAnanas` e `disegnaBoss`; gli altri due boss sono ancora disegnati nel codice in `BOSPR`), `fondi/*.webp`, `suoni/*.mp3`.
+- `assets/`: `kit.webp` (atlante dei blocchi Kenney, coordinate in `KMAP`), `personaggio.webp` e `personaggio2.webp` (fogli delle animazioni di Matteo), `fumo.webp`, `polvere.webp`, `esplosione.webp`, `pizza.webp`, `kit2.webp` (altri pezzi del kit), `pixel.webp` (caselle da 18: erba del Pixel Platformer per il terreno del mondo 1 e terra del kit Farm Expansion per le grotte), `bomba.webp` (Matteo carico al massimo: 37 fotogrammi da 160 in righe da 10, mappa in `disegnaBomba`), `boss_ananas.webp` (Ananassone: fotogrammi da 192x204 in righe da 8, 32-34 stordito, mappa in `disegnaAnanas` e `disegnaBoss`; gli altri due boss sono ancora disegnati nel codice in `BOSPR`), `fondi/*.webp`, `suoni/*.mp3`.
 - `tools/build.py`: ricompone tutto in `dist/cicciobomba.html`, un file unico con le risorse dentro, che si apre con un doppio clic. `dist/` è generata ed esclusa da git: non modificarla a mano.
 
 ## Regole
@@ -44,6 +44,7 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
   - **Ripartenza:** dopo una caduta si riparte solo da terra vera (`#`), mai da un blocco che crolla.
 - Gli sprite nuovi vengono dal New Platformer Pack e stanno in `assets/kit2.webp`: pulsante, lucchetto, peso, mattoni e i blocchi con la faccia. `sp()` li disegna quando la voce di `KMAP` ha un terzo valore.
 - Misure per disegnare i pezzi: una molla fa salire di circa 4,9 caselle e un salto di circa 2,3; per atterrare su una piattaforma il centro di Matteo deve superarne la cima di 0,46. Ogni salto difficile va provato nel browser.
+- Mentre il boss prende la mira, un cerchio rosso tenue segna dove atterrerà (`arrivoBoss`, che rifà gli stessi controlli dell'urto). Niente linea tratteggiata: all'utente sembrava troppo evidente.
 - L'arena del boss è un `M` senza i campi dei livelli (`nomi`, `pesi`, `crolli`…): ogni uso di quei campi va protetto. Il boss ha raggio 0,95.
 - Per provare dei pezzi a parte da console: `__rotolamici.iniziaRun(['nome',...])` (alla fine torna al menu). La Spremiananas è stata tolta perché non piaceva: non rimetterla.
 
