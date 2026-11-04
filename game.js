@@ -441,9 +441,11 @@ function passoNemici2(dt){
   if(d<p.R+rn){
    /* si ricontrolla per ogni nemico: se lo scatto si è appena fermato sul primo, gli altri non muoiono */
    const forte=p.scatto>0||G.stella>0||p.slancio>0;
-   if(forte){uccidi2(n);if(p.scatto>0){p.cd=Math.min(p.cd,.3);if(G.stella<=0){p.catena--;
-     /* lanciato forte: lo scatto prosegue sul secondo nemico; altrimenti si ferma al primo */
-     if(p.catena>0)p.scatto=.2;else{if(p.colpiti)avviso('Doppia eliminazione!',1000);const v=Math.sign(p.vx)||p.verso;p.scatto=0;p.vx=-v*2.5;p.vy=Math.max(p.vy,3.5);p.ultimoSuolo=null;p.inv=Math.max(p.inv,.25);}p.colpiti=p.catena>0;}}}
+   if(forte){const colpo=p.scatto>0&&G.stella<=0;uccidi2(n);
+    /* lo scatto elimina tutti i nemici nel blocco del primo (due blocchi se slanciato), poi Matteo rimbalza indietro */
+    if(colpo){const v=Math.sign(p.vx)||p.verso,raggio=p.catena||1;p.cd=Math.min(p.cd,.3);
+     for(const o of M.nemici)if(o.vivo&&Math.abs(o.y-n.y)<1.2&&(o.x-n.x)*v>-.6&&(o.x-n.x)*v<raggio+.5)uccidi2(o);
+     p.scatto=0;p.vx=-v*2.5;p.vy=Math.max(p.vy,3.5);p.ultimoSuolo=null;p.inv=Math.max(p.inv,.25);}}
    else if(n.tipo==='e'&&p.vy<0&&p.y>n.y+.35){p.vy=7;p.Wv+=7;}
    else colpito2(Math.sign(p.x-n.x)||1);
   }
