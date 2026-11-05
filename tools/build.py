@@ -25,8 +25,9 @@ def data_uri(m):
 
 html = leggi('index.html')
 js = re.sub(r"(['\"])(assets/[\w./-]+)\1", data_uri, leggi('game.js'))
-html = html.replace('<link rel="stylesheet" href="style.css">', '<style>\n' + leggi('style.css') + '</style>')
-html = html.replace('<script src="game.js"></script>', '<script>\n' + js + '</script>')
+# in index.html gli indirizzi hanno ?v=N, perché il telefono non tenga in memoria le versioni vecchie
+html = re.sub(r'<link rel="stylesheet" href="style\.css(\?v=\d+)?">', lambda m: '<style>\n' + leggi('style.css') + '</style>', html)
+html = re.sub(r'<script src="game\.js(\?v=\d+)?"></script>', lambda m: '<script>\n' + js + '</script>', html)
 assert 'assets/' not in js and 'game.js' not in html and 'style.css' not in html
 
 os.makedirs(os.path.join(RADICE, 'dist'), exist_ok=True)
