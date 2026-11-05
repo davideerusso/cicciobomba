@@ -826,7 +826,7 @@ $('bTappe').onclick=vaiMenu;
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pausa();else{lucchetto=null;if(G.stato==='gioco'||G.stato==='pausa')sveglia();}});
 
 /* ---------- CICLO ---------- */
-function centroY(){return V.H/V.ts/2-1.6;} /* il pavimento resta sempre in basso a vista */
+function centroY(){return V.H/V.ts/2-.3;} /* il pavimento resta sempre in basso a vista, con poca terra sotto ma le onde dell'acqua nei fossi ancora visibili */
 function telecamera2d(dt){
  const p=P2;
  if(M.boss){V.ts=Math.min(V.W/(M.w+.5),(V.H-56)/(M.alto+.6));V.cx=(M.w-1)/2;V.cy=V.H/V.ts/2-.9;return;}
