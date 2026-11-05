@@ -47,7 +47,7 @@ const PX_PAV=16,PX_FONDO=17;
 function px(c,i,x,y,w,h,capo,meta){if(!PIXEL.complete)return;const s=c.imageSmoothingEnabled;c.imageSmoothingEnabled=false;
  if(capo){c.save();c.translate(x,y+h);c.scale(1,-1);c.drawImage(PIXEL,i*18,0,18,meta?9:18,0,0,w,meta?h/2:h);c.restore();}else c.drawImage(PIXEL,i*18,0,18,18,x,y,w,h);c.imageSmoothingEnabled=s;}
 /* il terreno del mondo 1 è il paesaggio ananas dell'utente: caselle da 68 nello stesso ordine di PIX, l'ultima è la rampa che scende */
-const PAES=new Image();PAES.src='assets/paesaggio.webp';const PAES_RAMPA=16;
+const PAES=new Image();PAES.src='assets/paesaggio.webp';const PAES_RAMPA=16,PAES_SOTTO=17; /* 17: la terra sotto una rampa a scalini, con la buccia della rampa dopo nell'angolo */
 function paes(c,i,x,y,w,h,flip){const s=c.imageSmoothingEnabled;c.imageSmoothingEnabled=false;if(flip){c.save();c.translate(x+w,y);c.scale(-1,1);c.drawImage(PAES,i*68,0,68,68,0,0,w,h);c.restore();}else c.drawImage(PAES,i*68,0,68,68,x,y,w,h);c.imageSmoothingEnabled=s;}
 function sp(c,n,x,y,w,h,flip){if(n.startsWith('terrain_sand_')&&PAES.complete){const t=n.slice(13);if(t==='ramp_short_b'){paes(c,PAES_RAMPA,x,y,w,h,flip);return;}if(t in PIX){paes(c,PIX[t],x,y,w,h);return;}}
  const q=KMAP[n],im=q&&q[2]?KIT2:KIT;if(!q||!im.complete)return;if(flip){c.save();c.translate(x+w,y);c.scale(-1,1);c.drawImage(im,q[0],q[1],96,96,0,0,w,h);c.restore();}else c.drawImage(im,q[0],q[1],96,96,x,y,w,h);}
@@ -514,7 +514,7 @@ function disegna2d(){
  for(let y=Math.max(y0,-20);y<=y1;y++)for(let x=c0;x<=c1;x++){const a=sx(x)-ts/2,b=sy(y)-ts/2;
   if(y<=0&&cel(x,0)!=='#'){if(M.boss&&(x<0||x>=M.w))continue;sp(c,m.liquido+(y===0?(lento?'_top':'_top_low'):''),a,b,mz,mz);continue;}
   const t=y<0?'#':cel(x,y);if(t===' ')continue;
-  if(t==='#')sp(c,nomeTile(x,y,k),a,b,mz,mz);
+  if(t==='#'){const r=cel(x,y+1);if(k==='sand'&&PAES.complete&&((r==='%'&&'%#'.includes(cel(x+1,y)))||(r==='/'&&'/#'.includes(cel(x-1,y)))))paes(c,PAES_SOTTO,a,b,mz,mz,r==='/');else sp(c,nomeTile(x,y,k),a,b,mz,mz);}
   else if(t==='C')sp(c,'block_exclamation',a,b,mz,mz);
   else if(t==='D')sp(c,'lock_blue',a,b,mz,mz);
   else if(t==='X')sp(c,'bricks_brown',a,b,mz,mz);
