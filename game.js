@@ -50,7 +50,7 @@ function px(c,i,x,y,w,h,capo,meta){if(!PIXEL.complete)return;const s=c.imageSmoo
 const ERBANAN=new Image();ERBANAN.src='assets/erbananas.webp'; /* il ciuffo d'ananas dell'utente al posto del cespuglio nel mondo 1 */
 /* in grandezza vera, alla scala delle caselle da 68 del paesaggio: così il bordo scuro è spesso come quello del pavimento */
 function ciuffo(c,x,y,ts){const w=ERBANAN.width*ts/68,h=ERBANAN.height*ts/68;if(w)c.drawImage(ERBANAN,x-w/2,y-h,w,h);}
-const PAES=new Image();PAES.src='assets/paesaggio.webp';const PAES_RAMPA=16,PAES_SOTTO=17; /* 17: la terra sotto una rampa a scalini, con la buccia della rampa dopo nell'angolo */
+const PAES=new Image();PAES.src='assets/paesaggio.webp';const PAES_RAMPA=16,PAES_SOTTO=17,PAES_ANGOLO=18; /* 17: la terra sotto una rampa a scalini, con la buccia della rampa dopo nell'angolo; 18: il piano che parte ai piedi di un muro più alto a sinistra (a destra si capovolge) */
 function paes(c,i,x,y,w,h,flip){const s=c.imageSmoothingEnabled;c.imageSmoothingEnabled=false;if(flip){c.save();c.translate(x+w,y);c.scale(-1,1);c.drawImage(PAES,i*68,0,68,68,0,0,w,h);c.restore();}else c.drawImage(PAES,i*68,0,68,68,x,y,w,h);c.imageSmoothingEnabled=s;}
 function sp(c,n,x,y,w,h,flip){if(n.startsWith('terrain_sand_')&&PAES.complete){const t=n.slice(13);if(t==='ramp_short_b'){paes(c,PAES_RAMPA,x,y,w,h,flip);return;}if(t in PIX){paes(c,PIX[t],x,y,w,h);return;}}
  const q=KMAP[n],im=q&&q[2]?KIT2:KIT;if(!q||!im.complete)return;if(flip){c.save();c.translate(x+w,y);c.scale(-1,1);c.drawImage(im,q[0],q[1],96,96,0,0,w,h);c.restore();}else c.drawImage(im,q[0],q[1],96,96,x,y,w,h);}
@@ -517,7 +517,8 @@ function disegna2d(){
  for(let y=Math.max(y0,-20);y<=y1;y++)for(let x=c0;x<=c1;x++){const a=sx(x)-ts/2,b=sy(y)-ts/2;
   if(y<=0&&cel(x,0)!=='#'){if(M.boss&&(x<0||x>=M.w))continue;sp(c,m.liquido+(y===0?(lento?'_top':'_top_low'):''),a,b,mz,mz);continue;}
   const t=y<0?'#':cel(x,y);if(t===' ')continue;
-  if(t==='#'){const r=cel(x,y+1);if(k==='sand'&&PAES.complete&&((r==='%'&&'%#'.includes(cel(x+1,y)))||(r==='/'&&'/#'.includes(cel(x-1,y)))))paes(c,PAES_SOTTO,a,b,mz,mz,r==='/');else sp(c,nomeTile(x,y,k),a,b,mz,mz);}
+  if(t==='#'){const r=cel(x,y+1),muro=(i,j)=>solidoK(i,j)&&!'/%'.includes(cel(i,j)),su=!solidoK(x,y+1);if(k==='sand'&&PAES.complete&&((r==='%'&&'%#'.includes(cel(x+1,y)))||(r==='/'&&'/#'.includes(cel(x-1,y)))))paes(c,PAES_SOTTO,a,b,mz,mz,r==='/');
+  else if(k==='sand'&&PAES.complete&&su&&((muro(x-1,y)&&muro(x-1,y+1))||(muro(x+1,y)&&muro(x+1,y+1))))paes(c,PAES_ANGOLO,a,b,mz,mz,!(muro(x-1,y)&&muro(x-1,y+1)));else sp(c,nomeTile(x,y,k),a,b,mz,mz);}
   else if(t==='C')sp(c,'block_exclamation',a,b,mz,mz);
   else if(t==='D')sp(c,'lock_blue',a,b,mz,mz);
   else if(t==='X')sp(c,'bricks_brown',a,b,mz,mz);
