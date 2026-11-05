@@ -24,7 +24,7 @@ function salva(){try{localStorage.setItem(CHIAVE,JSON.stringify(S));}catch(e){}}
 
 /* ---------- MONDI E TAPPE ---------- */
 const MONDI=[
- {nome:'Isola degli Ananas',cielo:['#ffe382','#27a39b'],legno:'#f4bd3c',vena:'#a96c10',bordo:'#3f9e3a',nebbia:'#1f8f7d',tema:'ananas',kit:'sand',fondo:'color_hills',liquido:'water',decor:['bush','grass','rock'],nemico:'ananas',volo:'bee'},
+ {nome:'Isola degli Ananas',cielo:['#ffe382','#27a39b'],legno:'#f4bd3c',vena:'#a96c10',bordo:'#3f9e3a',nebbia:'#1f8f7d',tema:'ananas',kit:'sand',fondo:'color_hills',liquido:'water',decor:['erbananas','grass','rock'],nemico:'ananas',volo:'bee'},
  {nome:'Bosco dei Funghi',cielo:['#9a7bdc','#2b2360'],legno:'#b07a47',vena:'#83522b',bordo:'#f0b429',nebbia:'#5c4a9a',kit:'purple',fondo:'color_mushrooms',liquido:'water',decor:['mushroom_red','mushroom_brown','grass_purple','bush'],nemico:'slime_normal',volo:'fly'},
  {nome:'Fornace di Pietra',cielo:['#ff9a55','#5a1330'],legno:'#6a4c42',vena:'#46302a',bordo:'#37c4b8',nebbia:'#a23a3a',kit:'stone',fondo:'color_desert',liquido:'lava',decor:['rock','cactus','fence'],nemico:'slime_fire',volo:'fly'}
 ];
@@ -47,6 +47,7 @@ const PX_PAV=16,PX_FONDO=17;
 function px(c,i,x,y,w,h,capo,meta){if(!PIXEL.complete)return;const s=c.imageSmoothingEnabled;c.imageSmoothingEnabled=false;
  if(capo){c.save();c.translate(x,y+h);c.scale(1,-1);c.drawImage(PIXEL,i*18,0,18,meta?9:18,0,0,w,meta?h/2:h);c.restore();}else c.drawImage(PIXEL,i*18,0,18,18,x,y,w,h);c.imageSmoothingEnabled=s;}
 /* il terreno del mondo 1 è il paesaggio ananas dell'utente: caselle da 68 nello stesso ordine di PIX, l'ultima è la rampa che scende */
+const ERBANAN=new Image();ERBANAN.src='assets/erbananas.webp'; /* il ciuffo d'ananas dell'utente al posto del cespuglio nel mondo 1 */
 const PAES=new Image();PAES.src='assets/paesaggio.webp';const PAES_RAMPA=16,PAES_SOTTO=17; /* 17: la terra sotto una rampa a scalini, con la buccia della rampa dopo nell'angolo */
 function paes(c,i,x,y,w,h,flip){const s=c.imageSmoothingEnabled;c.imageSmoothingEnabled=false;if(flip){c.save();c.translate(x+w,y);c.scale(-1,1);c.drawImage(PAES,i*68,0,68,68,0,0,w,h);c.restore();}else c.drawImage(PAES,i*68,0,68,68,x,y,w,h);c.imageSmoothingEnabled=s;}
 function sp(c,n,x,y,w,h,flip){if(n.startsWith('terrain_sand_')&&PAES.complete){const t=n.slice(13);if(t==='ramp_short_b'){paes(c,PAES_RAMPA,x,y,w,h,flip);return;}if(t in PIX){paes(c,PIX[t],x,y,w,h);return;}}
@@ -507,7 +508,7 @@ function disegna2d(){
  c.setTransform(V.dpr,0,0,V.dpr,0,0);fondale(c,m);if(G.scossa>0)c.translate(rnd(-5,5)*G.scossa*2,rnd(-5,5)*G.scossa*2);
  const sx=x=>(x-V.cx)*ts+W/2,sy=y=>H/2-(y-V.cy)*ts,mz=ts+.8,lento=Math.floor(G.t*3)%2,veloce=Math.floor(G.t*7)%2;
  const c0=Math.floor(V.cx-W/2/ts)-1,c1=Math.ceil(V.cx+W/2/ts)+1,y0=Math.floor(V.cy-H/2/ts)-1,y1=Math.ceil(V.cy+H/2/ts)+1;
- for(const d of M.decor){if(d.x<c0||d.x>c1)continue;const a=sx(d.x)-ts/2,b=sy(3)-ts/2;if(d.n==='ananas')c.drawImage(ANAN,a,b,ts,ts);else sp(c,d.n,a,b,ts,ts);}
+ for(const d of M.decor){if(d.x<c0||d.x>c1)continue;const a=sx(d.x)-ts/2,b=sy(3)-ts/2;if(d.n==='ananas')c.drawImage(ANAN,a,b,ts,ts);else if(d.n==='erbananas')c.drawImage(ERBANAN,a,b,ts,ts);else sp(c,d.n,a,b,ts,ts);}
  if(!M.boss){sp(c,'sign_right',sx(M.start.x+2)-ts/2,sy(3)-ts/2,ts,ts);sp(c,'sign_exit',sx(M.fine-3)-ts/2,sy(3)-ts/2,ts,ts);
  sp(c,'door_open',sx(M.fine+1)-ts*.8,sy(3)-ts*1.1,ts*1.6,ts*1.6);sp(c,'door_open_top',sx(M.fine+1)-ts*.8,sy(4)-ts*1.1,ts*1.6,ts*1.6);}
  for(const f of M.finti||[]){if(f[2]<c0||f[0]>c1)continue;for(let y=f[1];y<=f[3];y++)for(let x=f[0];x<=f[2];x++)if(!pieno(cel(x,y))){const a=sx(x)-ts/2,b=sy(y)-ts/2;px(c,PX_FONDO,a,b,mz,mz);c.fillStyle='rgba(20,10,20,.5)';c.fillRect(a,b,mz,mz);}}
@@ -580,7 +581,7 @@ function disegnaMenu(dt){
  const c=ctx2,m=MONDI[0],ts=V.ts,W=V.W,H=V.H;V.cx+=dt*.5;
  c.setTransform(V.dpr,0,0,V.dpr,0,0);fondale(c,m);
  const r=Math.min(W*.15,H*.2),base=H*.84,cols=Math.ceil(W/ts)+1;
- c.drawImage(ANAN,W*.04,base-ts*1.3,ts*1.3,ts*1.3);sp(c,'bush',W*.41,base-ts,ts,ts);
+ c.drawImage(ANAN,W*.04,base-ts*1.3,ts*1.3,ts*1.3);c.drawImage(ERBANAN,W*.41,base-ts,ts,ts);
  for(let y=0;y*ts<H-base+ts;y++)for(let i=0;i<cols;i++)sp(c,'terrain_sand_block_'+(y?'center':'top'),i*ts,base+y*ts,ts+.8,ts+.8);
  M0.t+=dt;if(!riduci&&(M0.t>2.4)){M0.t=0;M0.Wv+=5;}
  M0.Wv+=(-120*M0.W-7*M0.Wv)*dt;M0.W+=M0.Wv*dt;
