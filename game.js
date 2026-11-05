@@ -507,8 +507,8 @@ function nomeTile(x,y,k){
 }
 /* com'è il lato del piano in x,y: [m|g|v, -1 sinistra|1 destra], o null se i lati continuano o finiscono tutti e due */
 function latoPiano(x,y){const muro=(i,j)=>solidoK(i,j)&&!'/%'.includes(cel(i,j)),caso=d=>muro(x+d,y)&&muro(x+d,y+1)?'m':solidoK(x+d,y)?null:solidoK(x+d,y-1)?'g':'v',l=caso(-1),r=caso(1);
- /* il bordo sul vuoto (v) solo se dall'altra parte c'è un muro, dove l'uncino si attacca: sui piani larghi resta il pezzo normale */
- if(l&&r){if(l==='m'&&r!=='m')return[r,1];if(r==='m'&&l!=='m')return[l,-1];return l==='m'?[l,-1]:null;}if(l==='v'||r==='v')return null;return l?[l,-1]:r?[r,1]:null;}
+ /* il bordo sul vuoto (v) solo se dall'altra parte c'è un muro, dove l'uncino si attacca: sui piani larghi il vuoto ha lo stesso pezzo del gradino */
+ if(l&&r){if(l==='m'&&r!=='m')return[r,1];if(r==='m'&&l!=='m')return[l,-1];return l==='m'?[l,-1]:null;}return l?[l==='v'?'g':l,-1]:r?[r==='v'?'g':r,1]:null;}
 function disegna2d(){
  const c=ctx2,m=MONDI[M.i],ts=V.ts,W=V.W,H=V.H,p=P2,k=m.kit,k0=k;
  c.setTransform(V.dpr,0,0,V.dpr,0,0);fondale(c,m);if(G.scossa>0)c.translate(rnd(-5,5)*G.scossa*2,rnd(-5,5)*G.scossa*2);
