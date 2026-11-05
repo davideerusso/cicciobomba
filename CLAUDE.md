@@ -31,7 +31,7 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
 - Il livello ha dei segreti che l'utente vuole scoprire da solo: non elencarli e non descriverne la posizione nelle risposte. Alcuni sono in alto e si raggiungono solo con salto e bolla.
 - Difficoltà alta voluta: si parte con 3 cuori (`MAXC=3`), niente vite infinite. I cuori raccolti (e quello dopo il boss) si sommano senza tetto. Se finisci i cuori riparti dall'inizio.
 - Caratteri nei pezzi:
-  - `O` peso: pesante. Scivola piano dove inclini il telefono e Matteo lo spinge; su una gobba lo porta solo spingendo. Se cade fuori torna al suo posto. Nel magazzino è chiuso tra due casse da rompere.
+  - `O` peso: pesante. Scivola piano dove inclini il telefono e Matteo lo spinge; su una gobba lo porta solo spingendo. Se cade fuori torna al suo posto. Nel magazzino è chiuso tra due casse da rompere. Per Matteo la cima del peso è piatta, alla stessa altezza delle casse (`passoPesi`): col solo cerchio tra il peso e la cassa restava una conca dove Matteo si incastrava e, inclinando poco, tremava sul posto.
   - `P` pulsante, `D` porta: quando il peso cade sul pulsante, le porte dello stesso pezzo si aprono per sempre. Matteo da solo non lo preme.
   - `x` blocco che crolla: mezzo secondo dopo che ci sali cade, e torna dopo 4 secondi.
   - `y` botola: sembra terra, ma se ti fermi sopra crolla dopo 0,8 secondi. Per ora nel livello 1 non ce ne sono: l'utente non le voleva dove c'erano.

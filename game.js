@@ -361,7 +361,9 @@ function passoPesi(h){
   const su=!!a.suolo;a.vx+=IN.tx*(su?5:2)*h;a.vx*=Math.exp(-(su?(Math.abs(IN.tx)<.1?3:.9):.1)*h);a.vx=clamp(a.vx,-4,4);a.vy-=(su&&a.suolo.y<.95?10:20)*h; /* in pendenza Matteo riesce a spingerlo su, l'inclinazione da sola no */
   a.px=a.x;a.py=a.y;a.x+=a.vx*h;a.y+=a.vy*h;urta(a,PESO_R);
   const dx=a.x-p.x,dy=a.y-p.y,d=Math.hypot(dx,dy),min=p.R+PESO_R;
-  if(d<min&&d>1e-6){const nx=dx/d,ny=dy/d,pen=min-d;
+  /* sopra il peso Matteo poggia su una cima piatta, come le casse: col cerchio tra il peso e la cassa restava una conca dove si incastrava */
+  if(Math.abs(dx)<PESO_R+p.R*.7&&p.y>a.y+.2&&p.y-p.R<a.y+PESO_R){p.y=a.y+PESO_R+p.R;if(p.vy<a.vy)p.vy=a.vy;p.suolo={x:0,y:1};}
+  else if(d<min&&d>1e-6){const nx=dx/d,ny=dy/d,pen=min-d;
    if(ny<-.5){p.x-=nx*pen;p.y-=ny*pen;const vn=(p.vx-a.vx)*nx+(p.vy-a.vy)*ny;if(vn>0){p.vx-=vn*nx;p.vy-=vn*ny;}p.suolo={x:-nx,y:-ny};}
    else{const q=1.6/(1.6+PESO_M);p.x-=nx*pen*(1-q);p.y-=ny*pen*(1-q);a.x+=nx*pen*q;a.y+=Math.min(0,ny*pen*q);
     const vr=(a.vx-p.vx)*nx+(a.vy-p.vy)*ny;if(vr<0){const j=-1.05*vr/(1/1.6+1/PESO_M);a.vx=clamp(a.vx+j*nx/PESO_M,-4,4);a.vy+=Math.min(0,j*ny/PESO_M);p.vx-=j*nx/1.6;p.vy-=j*ny/1.6;}}}
