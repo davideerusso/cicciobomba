@@ -308,7 +308,7 @@ function costruisci(i,lista){
  pezzo(["                ","                ","################"]);
  m.fine=m.w-6;
  for(let y=0;y<ALTO;y++)for(let x=0;x<m.w;x++)if(g[y][x]===undefined)g[y][x]=' ';
- const dc=MONDI[i].decor;m.decor=[];for(let x=1;x<m.w-8;x++){const h=(x*2654435761>>>0)>>>7;if(h%7<2&&g[2][x]==='#'&&g[3][x]===' '&&!m.oggetti.some(o=>o.x===x&&o.y===3))m.decor.push({x,n:dc[(h>>>3)%dc.length]});}
+ const dc=MONDI[i].decor;m.decor=[];for(let x=1;x<m.w-8;x++){const h=(x*2654435761>>>0)>>>7;if(h%7<2&&g[2][x]==='#'&&g[3][x]===' '&&!m.oggetti.some(o=>o.x===x&&o.y===3)){let n=dc[(h>>>3)%dc.length],dx=0;if(n==='erbananas'){/* il ciuffo è largo più di 3 caselle: deve stare tutto sul piano, se no rientra un po' a sinistra, o diventa erba */const r=213/68/2,su=v=>{for(let k=Math.floor(x+v-r+.5);k<=Math.floor(x+v+r+.5);k++)if(g[2][k]!=='#'||(g[3][k]||' ')!==' ')return false;return true;};dx=[0,-.5,-1,-1.5,-2,.5,1].find(su);if(dx===undefined){n='grass';dx=0;}}m.decor.push({x,dx,n});}}
  return m;
 }
 const cel=(x,y)=>{const r=M.g[y];return r?(r[x]||' '):' ';};
@@ -510,7 +510,7 @@ function disegna2d(){
  c.setTransform(V.dpr,0,0,V.dpr,0,0);fondale(c,m);if(G.scossa>0)c.translate(rnd(-5,5)*G.scossa*2,rnd(-5,5)*G.scossa*2);
  const sx=x=>(x-V.cx)*ts+W/2,sy=y=>H/2-(y-V.cy)*ts,mz=ts+.8,lento=Math.floor(G.t*3)%2,veloce=Math.floor(G.t*7)%2;
  const c0=Math.floor(V.cx-W/2/ts)-1,c1=Math.ceil(V.cx+W/2/ts)+1,y0=Math.floor(V.cy-H/2/ts)-1,y1=Math.ceil(V.cy+H/2/ts)+1;
- for(const d of M.decor){if(d.x<c0||d.x>c1)continue;const a=sx(d.x)-ts/2,b=sy(3)-ts/2;if(d.n==='ananas')c.drawImage(ANAN,a,b,ts,ts);else if(d.n==='erbananas')ciuffo(c,sx(d.x),sy(2.5),ts);else sp(c,d.n,a,b,ts,ts);}
+ for(const d of M.decor){if(d.x<c0-3||d.x>c1+3)continue;const a=sx(d.x)-ts/2,b=sy(3)-ts/2;if(d.n==='ananas')c.drawImage(ANAN,a,b,ts,ts);else if(d.n==='erbananas')ciuffo(c,sx(d.x+d.dx),sy(2.5),ts);else sp(c,d.n,a,b,ts,ts);}
  if(!M.boss){sp(c,'sign_right',sx(M.start.x+2)-ts/2,sy(3)-ts/2,ts,ts);sp(c,'sign_exit',sx(M.fine-3)-ts/2,sy(3)-ts/2,ts,ts);
  sp(c,'door_open',sx(M.fine+1)-ts*.8,sy(3)-ts*1.1,ts*1.6,ts*1.6);sp(c,'door_open_top',sx(M.fine+1)-ts*.8,sy(4)-ts*1.1,ts*1.6,ts*1.6);}
  for(const f of M.finti||[]){if(f[2]<c0||f[0]>c1)continue;for(let y=f[1];y<=f[3];y++)for(let x=f[0];x<=f[2];x++)if(!pieno(cel(x,y))){const a=sx(x)-ts/2,b=sy(y)-ts/2;px(c,PX_FONDO,a,b,mz,mz);c.fillStyle='rgba(20,10,20,.5)';c.fillRect(a,b,mz,mz);}}
