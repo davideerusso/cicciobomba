@@ -161,20 +161,20 @@ function suOrient(e){
   const zm=v=>Math.abs(v)<.8?0:v-Math.sign(v)*.8;IN.tiltX=clamp(zm(x)/8,-1,1);IN.tiltZ=clamp(zm(-y)/8,-1,1); /* assoluto: telefono in piano = piano dritto */
 }
 /* il lancio: un colpo secco del telefono verso un lato lancia Matteo da quella parte */
-const SC_LANCIO=15;let gLento=null,ultLancio=0,picchi=[],ultPicco=0,vPicco=null,ultBolla=0,lancioIn=null;
+const SC_LANCIO=15,BOLLA_PICCHI=4,LANCIO_CALMO=180;let gLento=null,ultLancio=0,picchi=[],ultPicco=0,vPicco=null,ultBolla=0,lancioIn=null;
 function suMoto(e){
  let a=e.acceleration;if(!a||a.x==null){const r=e.accelerationIncludingGravity;if(!r||r.x==null)return;gLento=gLento?{x:gLento.x*.9+r.x*.1,y:gLento.y*.9+r.y*.1}:{x:r.x,y:r.y};a={x:r.x-gLento.x,y:r.y-gLento.y};}
  const an=SC.rot?90:(screen.orientation&&screen.orientation.angle)||window.orientation||0;
  const lato=an===90?-a.y:an===-90||an===270?a.y:an===180?-a.x:a.x; /* accelerazione verso destra dello schermo */
  const ora=performance.now(),az=a.z||0,forza=Math.hypot(a.x,a.y,az);
  /* scossone: conta solo i picchi che cambiano verso (avanti e indietro); un colpo secco ne fa due o tre, uno scossone di più */
- if(forza>9){if(!vPicco||(a.x*vPicco.x+a.y*vPicco.y+az*vPicco.z<0&&ora-ultPicco>60)){picchi.push(ora);ultPicco=ora;}vPicco={x:a.x,y:a.y,z:az};}
- picchi=picchi.filter(t=>ora-t<800);if(!picchi.length)vPicco=null;
- if(picchi.length>=5&&ora-ultBolla>900){ultBolla=ora;picchi.length=0;vPicco=null;lancioIn=null;bolla();return;}
+ if(forza>8){if(!vPicco||(a.x*vPicco.x+a.y*vPicco.y+az*vPicco.z<0&&ora-ultPicco>60)){picchi.push(ora);ultPicco=ora;}vPicco={x:a.x,y:a.y,z:az};}
+ picchi=picchi.filter(t=>ora-t<1000);if(!picchi.length)vPicco=null;
+ if(picchi.length>=BOLLA_PICCHI&&ora-ultBolla>900){ultBolla=ora;picchi.length=0;vPicco=null;lancioIn=null;bolla();return;}
  /* colpo secco da un lato: lancio appena il telefono si ferma, se intanto non è diventato uno scossone; mai subito dopo una bolla */
  if(Math.abs(lato)>SC_LANCIO&&ora-ultLancio>700&&ora-ultBolla>700&&!lancioIn)lancioIn={d:Math.sign(lato),t:ora,calmo:0};
  if(lancioIn){if(forza>6)lancioIn.calmo=0;else if(!lancioIn.calmo)lancioIn.calmo=ora;
-  if(lancioIn.calmo&&ora-lancioIn.calmo>100){if(picchi.length<5){ultLancio=ora;lancio(lancioIn.d);}lancioIn=null;}else if(ora-lancioIn.t>700)lancioIn=null;} /* se non si ferma è uno scossone: niente lancio */
+  if(lancioIn.calmo&&ora-lancioIn.calmo>LANCIO_CALMO){if(picchi.length<BOLLA_PICCHI){ultLancio=ora;lancio(lancioIn.d);}lancioIn=null;}else if(ora-lancioIn.t>700)lancioIn=null;} /* se non si ferma è uno scossone: niente lancio */
 }
 /* la bolla: Matteo vibra e galleggia leggero per un attimo; una volta per salto e costa un po' di fiato */
 function bolla(){
