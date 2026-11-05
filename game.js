@@ -50,7 +50,7 @@ function px(c,i,x,y,w,h,capo,meta){if(!PIXEL.complete)return;const s=c.imageSmoo
 const ERBANAN=new Image();ERBANAN.src='assets/erbananas.webp'; /* il ciuffo d'ananas dell'utente al posto del cespuglio nel mondo 1 */
 /* in grandezza vera, alla scala delle caselle da 68 del paesaggio: così il bordo scuro è spesso come quello del pavimento */
 function ciuffo(c,x,y,ts){const w=ERBANAN.width*ts/68,h=ERBANAN.height*ts/68;if(w)c.drawImage(ERBANAN,x-w/2,y-h,w,h);}
-const PAES=new Image();PAES.src='assets/paesaggio.webp';const PAES_RAMPA=16,PAES_SOTTO=17,PAES_BORDO={m:18,g:19,v:20},PAES_UNIONE=21; /* 17: la terra sotto una rampa a scalini, con la buccia della rampa dopo nell'angolo; 18-20: dove il piano finisce a sinistra, ai piedi di un muro più alto (m), con un gradino in giù (g) o sul vuoto (v); a destra si capovolgono, il bordo sul vuoto al contrario; 21: il muro accanto al bordo sul vuoto, dove le due linee si uniscono */
+const PAES=new Image();PAES.src='assets/paesaggio.webp';const PAES_RAMPA=16,PAES_SOTTO=17,PAES_BORDO={m:18,g:19,v:20},PAES_UNIONE=21,PAES_COLONNA=22; /* 17: la terra sotto una rampa a scalini, con la buccia della rampa dopo nell'angolo; 18-20: dove il piano finisce a sinistra, ai piedi di un muro più alto (m), con un gradino in giù (g) o sul vuoto (v); a destra si capovolgono, il bordo sul vuoto al contrario; 21: il muro accanto al bordo sul vuoto, dove le due linee si uniscono; 22: sotto una colonna, con il piano che arriva dai due lati */
 function paes(c,i,x,y,w,h,flip){const s=c.imageSmoothingEnabled;c.imageSmoothingEnabled=false;if(flip){c.save();c.translate(x+w,y);c.scale(-1,1);c.drawImage(PAES,i*68,0,68,68,0,0,w,h);c.restore();}else c.drawImage(PAES,i*68,0,68,68,x,y,w,h);c.imageSmoothingEnabled=s;}
 function sp(c,n,x,y,w,h,flip){if(n.startsWith('terrain_sand_')&&PAES.complete){const t=n.slice(13);if(t==='ramp_short_b'){paes(c,PAES_RAMPA,x,y,w,h,flip);return;}if(t in PIX){paes(c,PIX[t],x,y,w,h);return;}}
  const q=KMAP[n],im=q&&q[2]?KIT2:KIT;if(!q||!im.complete)return;if(flip){c.save();c.translate(x+w,y);c.scale(-1,1);c.drawImage(im,q[0],q[1],96,96,0,0,w,h);c.restore();}else c.drawImage(im,q[0],q[1],96,96,x,y,w,h);}
@@ -509,8 +509,8 @@ function nomeTile(x,y,k){
 function latoPiano(x,y){const muro=(i,j)=>solidoK(i,j)&&!'/%'.includes(cel(i,j)),caso=d=>muro(x+d,y)&&muro(x+d,y+1)?'m':solidoK(x+d,y)?null:solidoK(x+d,y-1)?'g':'v',l=caso(-1),r=caso(1);
  /* il bordo sul vuoto (v) solo se dall'altra parte c'è un muro, dove l'uncino si attacca: sui piani larghi il vuoto ha lo stesso pezzo del gradino */
  if(l&&r){if(l==='m'&&r!=='m')return[r,1];if(r==='m'&&l!=='m')return[l,-1];return l==='m'?[l,-1]:null;}return l?[l==='v'?'g':l,-1]:r?[r==='v'?'g':r,1]:null;}
-/* il piano in x,y finisce sul vuoto dal lato d (che è il lato da cui lo guarda il muro accanto) */
-function vuotoAMuro(x,y,d){if(cel(x,y)!=='#'||solidoK(x,y+1)||!(y<=0||solidoK(x,y-1)))return false;const b=latoPiano(x,y);return!!b&&b[0]==='v'&&b[1]===d;}
+/* il piano in x,y arriva al muro che sta dal lato -d: finisce lì (m) o finisce sul vuoto dal lato d (v) */
+function pianoAlMuro(x,y,d){if(cel(x,y)!=='#'||solidoK(x,y+1)||!(y<=0||solidoK(x,y-1)))return null;const b=latoPiano(x,y);return!b?null:b[0]==='v'&&b[1]===d?'v':b[0]==='m'&&b[1]===-d?'m':null;}
 function disegna2d(){
  const c=ctx2,m=MONDI[M.i],ts=V.ts,W=V.W,H=V.H,p=P2,k=m.kit,k0=k;
  c.setTransform(V.dpr,0,0,V.dpr,0,0);fondale(c,m);if(G.scossa>0)c.translate(rnd(-5,5)*G.scossa*2,rnd(-5,5)*G.scossa*2);
@@ -524,7 +524,8 @@ function disegna2d(){
   if(y<=0&&cel(x,0)!=='#'){if(M.boss&&(x<0||x>=M.w))continue;sp(c,m.liquido+(y===0?(lento?'_top':'_top_low'):''),a,b,mz,mz);continue;}
   const t=y<0?'#':cel(x,y);if(t===' ')continue;
   if(t==='#'){const r=cel(x,y+1),su=!solidoK(x,y+1);let bordo;if(k==='sand'&&PAES.complete&&((r==='%'&&'%#'.includes(cel(x+1,y)))||(r==='/'&&'/#'.includes(cel(x-1,y)))))paes(c,PAES_SOTTO,a,b,mz,mz,r==='/');
-  else if(k==='sand'&&PAES.complete&&!su&&(bordo=[-1,1].find(d=>vuotoAMuro(x+d,y,d))))paes(c,PAES_UNIONE,a,b,mz,mz,bordo>0);
+  else if(k==='sand'&&PAES.complete&&!su&&pianoAlMuro(x-1,y,-1)&&pianoAlMuro(x+1,y,1))paes(c,PAES_COLONNA,a,b,mz,mz);
+  else if(k==='sand'&&PAES.complete&&!su&&(bordo=[-1,1].find(d=>pianoAlMuro(x+d,y,d)==='v')))paes(c,PAES_UNIONE,a,b,mz,mz,bordo>0);
   else if(k==='sand'&&PAES.complete&&su&&(y<=0||solidoK(x,y-1))&&(bordo=latoPiano(x,y)))paes(c,PAES_BORDO[bordo[0]],a,b,mz,mz,(bordo[1]>0)!==(bordo[0]==='v'));else sp(c,nomeTile(x,y,k),a,b,mz,mz);}
   else if(t==='C')sp(c,'block_exclamation',a,b,mz,mz);
   else if(t==='D')sp(c,'lock_blue',a,b,mz,mz);
