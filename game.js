@@ -66,6 +66,7 @@ let stancoVis=false;
 const FOGLISPR={};
 for(const [n,src] of [['stanco','assets/matteo_stanco.webp'],['fermo','assets/matteo_fermo.webp'],['salto','assets/matteo_salto.webp'],['palla','assets/matteo_palla.webp'],['passi','assets/matteo_cammina.webp']]){FOGLISPR[n]=new Image();FOGLISPR[n].src=src;}
 /* i disegni sono di tre quarti, il piede dietro sta più in alto: si abbassa lo sprite di SPR_PIEDI raggi perché poggino tutti e due */
+const SPR_GIRO=1.15; /* giri del foglio della palla: uno ogni 5 caselle circa. Con la rotazione vera (3,8 caselle) e pochi fotogrammi sembrava troppo veloce e in discesa sfarfallava */
 const SPR_PIEDI=.13,SPR_K=3.8/122; /* Matteo in piedi è alto 3,8 raggi: più grande dell'urto, che resta quello di prima */
 function fogSpr(c,im,cw,ch,oy,kr,x,yPiedi,r,f,verso,W,ang){
  if(!im||!im.complete)return;const k=r*kr;c.save();c.translate(x,yPiedi+r*SPR_PIEDI);if(ang)c.rotate(ang);c.scale(verso*(1-W*.6),1+W);c.drawImage(im,f*cw,0,cw,ch,-cw/2*k,-oy*k,cw*k,ch*k);c.restore();
@@ -642,7 +643,7 @@ function disegna2d(){
   else if(!nuovo&&p.rotola&&!(p.anim==='chiude'&&p.animT<.2)){
    op.disegno=am.skin==='classica'||!!am.foto;op.foto=am._img;disegnaSlime(c,sx(p.x),sy(p.y),r,-p.rot,op);}
   else{
-   if(nuovo&&p.rotola){if(p.anim==='chiude'&&p.animT<.2)apreSpr(c,sx(p.x),pie,r,1+Math.min(3,Math.floor(p.animT/.05)),p.verso,p.W,ang);else{const d=p.vx<0?-1:1,g=(((-p.rot*d*2)%6.2832)+6.2832)%6.2832;gelSpr(c,sx(p.x),pie,r,5+Math.floor(g/6.2832*5)%5,d,p.W,p.vx,p.vy,G.t,n);}}
+   if(nuovo&&p.rotola){if(p.anim==='chiude'&&p.animT<.2)apreSpr(c,sx(p.x),pie,r,1+Math.min(3,Math.floor(p.animT/.05)),p.verso,p.W,ang);else{const d=p.vx<0?-1:1,g=(((-p.rot*d*SPR_GIRO)%6.2832)+6.2832)%6.2832;gelSpr(c,sx(p.x),pie,r,5+Math.floor(g/6.2832*5)%5,d,p.W,p.vx,p.vy,G.t,n);}}
    else if(nuovo&&p.anim==='apre'&&p.animT<.2)apreSpr(c,sx(p.x),pie,r,10+Math.min(2,Math.floor(p.animT/.067)),p.verso,p.W,ang);
    else if(p.rotola)disegnaPasso(c,sx(p.x),pie,r,Math.min(2,Math.floor(p.animT/.067)),2,p.verso,p.W,ang);
    else if(p.anim==='apre'&&p.animT<.2)disegnaPasso(c,sx(p.x),pie,r,p.animT<.1?2:1,2,p.verso,p.W,ang);
