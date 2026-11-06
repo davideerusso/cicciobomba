@@ -215,7 +215,7 @@ function suono(f,d,tipo,vol,f2){if(!AC||!S.audio)return;try{const o=AC.createOsc
 function vibra(ms){try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}}
 
 /* ---------- STATO ---------- */
-const G={carica:0,stato:'menu',modo:'menu',t:0,mondo:0,cuori:3,gettoni:0,uccisi:0,tempo:0,scudo:false,stella:0,avanz:0,scossa:0};
+const G={carica:0,stato:'menu',modo:'menu',t:0,mondo:0,cuori:3,gettoni:0,uccisi:0,tempo:0,avanz:0,scossa:0};
 
 /* ---------- COMANDI ---------- */
 const IN={tx:0,tz:0,tiltX:0,tiltZ:0,tiltOn:false,ricevuto:false,stickX:0,stickZ:0};
@@ -311,25 +311,25 @@ function togliCuore(){if(VITE_INFINITE)return;G.cuori--;hud();if(G.cuori<=0)fine
 const PEZZI={
  prato:["                    ","      c c c         ","     -----          ","                    ","  c        e    c   ","####################"],
  buca:["         c c        ","        -----       ","                    ","  c   c       c     ","#######   ###   ####"],
- spine:["            U       ","          -----     ","   c  c        c    ","  ---- ---          ","                    ","      ^^^      ^^   ","####################"],
+ spine:["            c       ","          -----     ","   c  c        c    ","  ---- ---          ","                    ","      ^^^      ^^   ","####################"],
  collina:["                       ","        c c c c        ","                       ","        /#####%        ","       /#######%       ","      /#########%      ","     /###########%     ","#######################"],
  duePiani:["      c   c   H         ","     e                  ","  /###################  "," /#                     ","/#     c  c  c  c       ","#    e        ^    e    ","########################"],
  torre:["           H            ","        ------          ","                        ","  c  ------      ------ ","                        ","  ------   ------       ","                     C  ","    B            e      ","########################"],
  fosso:["        c c c           ","                        ","   f          f         ","                        ","  B                     ","######    #####    #####"],
- cannoni:["                        ","  c   c    T            ","  ---------             ","                  g     ","         e        #     ","############ ###########"],
+ cannoni:["                        ","  c   c    c            ","  ---------             ","                  g     ","         e        #     ","############ ###########"],
  tempo:["      c   c   c         ","                        ","    !!!   !!!   !!!     ","########################"],
  casse:["        C  C            ","       -----            ","   C              C     ","          e             ","########################"],
  isole:[" c     c    c    H       ","                         ","####  ###  ###  ###  ####"],
  ricci:["       c    c           ","      -------           ","                        ","   r          r         ","###########   ##########"],
  sciame:["    f       f      f    ","                        ","  c    c  H    c    c   ","  ------- ---- -------  ","                        ","     e        ^^^       ","########################"],
 intreccio:["                                                    ","                                        D           ","                                        D           ","                                        D           ","                       cccccc           D           ","                      --------          D           ","                                        D           ","                                        D           ","           O  /%          B             D           ","     ##############xxxxx######  ###     D           ","                                        D           ","                                        D           ","   B    c   c   e    c   ce   PP        D  cccc  e  ","####################################################"],
- approdo:["                                                          ","                                                          ","                           ccUc                           ","                           ----                           ","                       ccc             ccc                ","                                                          ","                   e       e  ^^     e                    ","              ###############################       cc    ","              ##                      c                   ","    ccc      ###      ccccccc  H    ccccc        ^^  r !! ","##########   #############################################"],
- magazzino:["                                                              ","                                                              ","                                          D                   ","     #########                            D                   ","     #                                    D                   ","     # cccc                               D                   ","     #  Tccc            ccccccc           D                   ","     #########------------------          D                   ","         f            f                   D                   ","                                          D                   ","         COC                  B           D                   ","     #############xxxxxxxxxx####  ###     D                   ","                                          D                   ","                                          D                   ","   B    e       e   ^^  e   r   PP        D  ccccc  e   e !!  ","##############################################################"],
- crollo:["                                                            ","                                                            ","                                                            ","                                                            ","                                             ccecc          ","                                         --#########        ","   Hcc                                     X       #        ","  ----        f           f            --- X       #        ","                                           X ccccc #        ","                                    ---    X       #        ","         c c c c c   c c c c c c           X H U T #  !!! e ","########xxxxxxxxxxx  xxxxxxxxxxxx###########################"],
+ approdo:["                                                          ","                                                          ","                           cccc                           ","                           ----                           ","                       ccc             ccc                ","                                                          ","                   e       e  ^^     e                    ","              ###############################       cc    ","              ##                      c                   ","    ccc      ###      ccccccc  H    ccccc        ^^  r !! ","##########   #############################################"],
+ magazzino:["                                                              ","                                                              ","                                          D                   ","     #########                            D                   ","     #                                    D                   ","     # cccc                               D                   ","     #  cccc            ccccccc           D                   ","     #########------------------          D                   ","         f            f                   D                   ","                                          D                   ","         COC                  B           D                   ","     #############xxxxxxxxxx####  ###     D                   ","                                          D                   ","                                          D                   ","   B    e       e   ^^  e   r   PP        D  ccccc  e   e !!  ","##############################################################"],
+ crollo:["                                                            ","                                                            ","                                                            ","                                                            ","                                             ccecc          ","                                         --#########        ","   Hcc                                     X       #        ","  ----        f           f            --- X       #        ","                                           X ccccc #        ","                                    ---    X       #        ","         c c c c c   c c c c c c           X H c c #  !!! e ","########xxxxxxxxxxx  xxxxxxxxxxxx###########################"],
  burrone:["                                               ","                                               ","                                               ","                                               ","                                               ","                           ccccccc  e          ","                         ################%     ","                         #################%    ","                         ##################%   ","                         ###################%  ","                         ####################% ","     ccc                 #####################%","#############            ######################"],
  scalata:["                                            ","                                            ","                                            ","####                        ccccc cccc      ","####                       -------####      ","####                              ####      ","####                  ----        ####      ","# c               cc              ####      ","#Hc              xxxx             ####      ","####-----                         ####      ","####        ----                  ####      ","####     f       cc               ####      ","####            xxxx              ####      ","                                  ####      ","           ----                   ####      ","       cc                         ####      ","      ----                        ####      ","              e         r   ^^^   ####  ^^ e","############################################"],
- artiglieria:["                                                      ","                                                      ","                                                      ","                                                      ","                                                      ","                     Tcc                 ccTcc        ","                   ------               -------       ","                                                      ","                     cc                         ##  ##","                      g                cccBcc   ##H ##","                C   ####          cc  --------        ","       g cc   ----- ####        g                     ","      ###   C       ####       ###  C      #          ","   e  ###  CC  e    #### er ^^ ### CCC   B #  e   e   ","######################################################"],
- valanga:["                                                                      ","                                                                      ","                                                                      ","                                                                      ","                                                                      ","             c                                                        ","          ######%                                                     ","          #######%                                                    ","          ########% c                                     #####       ","        B #########% e C                                  X   #       ","    ####################%                              -- X   #       ","    #####################% eC     c    c      c           Xccc#       ","    #########################%                      --    X   #       ","  B ##########################%  e C e  e C e  e C e      XH T#   e   ","######################################################################"],
+ artiglieria:["                                                      ","                                                      ","                                                      ","                                                      ","                                                      ","                     ccc                 ccccc        ","                   ------               -------       ","                                                      ","                     cc                         ##  ##","                      g                cccBcc   ##H ##","                C   ####          cc  --------        ","       g cc   ----- ####        g                     ","      ###   C       ####       ###  C      #          ","   e  ###  CC  e    #### er ^^ ### CCC   B #  e   e   ","######################################################"],
+ valanga:["                                                                      ","                                                                      ","                                                                      ","                                                                      ","                                                                      ","             c                                                        ","          ######%                                                     ","          #######%                                                    ","          ########% c                                     #####       ","        B #########% e C                                  X   #       ","    ####################%                              -- X   #       ","    #####################% eC     c    c      c           Xccc#       ","    #########################%                      --    X   #       ","  B ##########################%  e C e  e C e  e C e      XH c#   e   ","######################################################################"],
  gradini:["                 c c    ","               #####    ","            ###         ","    c   ###       f     ","     ###                ","  ###            ^^     ","########################"]
 };
 /* pareti finte: rettangoli [x0,y0,x1,y1] in caselle del pezzo; sembrano terra ma si attraversano */
@@ -354,7 +354,7 @@ function costruisci(i,lista){
  const pezzo=(rows)=>{
   const n=rows.length,w=rows[0].length,base=m.w;
   for(let r=0;r<n;r++){const y=2+(n-1-r);for(let q=0;q<w;q++){const t=rows[r][q]||' ',x=base+q;
-   if(t==='c'||t==='H'||t==='U'||t==='T')m.oggetti.push({tipo:t,x,y,fase:x});
+   if(t==='c'||t==='H')m.oggetti.push({tipo:t,x,y,fase:x});
    else if(t==='e')m.nemici.push({tipo:'e',x,y:y-.1,px:x,py:y,vx:1.5,vy:0,vivo:true,fase:x});
    else if(t==='r')m.nemici.push({tipo:'r',x,y,px:x,py:y,vx:0,vy:0,vivo:true,fase:x});
    else if(t==='f')m.nemici.push({tipo:'f',x,y,x0:x,y0:y,vivo:true,fase:x});
@@ -406,21 +406,18 @@ function usaFiato(q){if(P2.stanco>0)return false;if(G.carica>=1)return true; /* 
 function senzaFiato(){const p=P2;p.stanco=2;p.rotola=false;p.vx=0;p.carica=0;p.scatto=0;p.buf=0;suono(260,.5,'sine',.08,140);vibra(40);if(!G.dettoFiato){G.dettoFiato=true;avviso('Senza fiato! Matteo è grasso: riposa 2 secondi. Mangia la pizza per riprendere fiato',2600);}}
 function scatta2(){if(P2.cd>0||!usaFiato(FIATO_SCATTO))return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.catena=Math.abs(P2.vx)>=8?2:1;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.vyS=Math.max(P2.vy,0);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;if(P2.ultimoSuolo)sbuffo();sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('aSin').classList.remove('pronto');}
 function colpito2(nx,spina){
- if(P2.inv>0||G.stella>0||G.stato!=='gioco')return;
+ if(P2.inv>0||G.stato!=='gioco')return;
  /* se è una bomba, le spine e i nemici con le spine la fanno esplodere: niente cuore perso */
  if(G.carica>=1&&spina){esplodi();P2.inv=Math.max(P2.inv,1);return;}
  P2.inv=1.5;P2.vx=nx*6;P2.vy=6;P2.Wv+=8;
- if(G.scudo){G.scudo=false;suono(900,.25,'triangle',.1,300);schizzi2(P2.x,P2.y,16,'#7fe0ff',5);avviso('Scudo rotto',900);return;}
  togliCuore();sfx('hurt')||suono(150,.25,'square',.1,70);vibra(60);schizzi2(P2.x,P2.y,12,'#d8432e',5);
 }
 function raccogli(o){
  if(o.tipo==='c'){P2.mangia=.5;P2.Wv-=3;G.gettoni++;$('gett').textContent=G.gettoni;G.fiato=Math.min(1,(G.fiato||0)+.25);G.carica=Math.min(1,G.carica+.08);aggBarra();if(G.carica>=.25&&!G.avvisato){G.avvisato=true;avviso('Sei esplosivo: cadi da molto in alto o sbatti forte!',2600);}sfx('coin')||suono(880,.09,'triangle',.08,1320);}
  else if(o.tipo==='H'){G.cuori++;hud();sfx('gem')||suono(520,.3,'sine',.12,1040);avviso('+1 cuore',900);schizzi2(o.x,o.y,12,'#d8432e',4);}
- else if(o.tipo==='U'){G.scudo=true;sfx('magic')||suono(440,.3,'triangle',.1,880);avviso('Scudo: para il prossimo colpo',1400);}
  else if(o.tipo==='Z'){G.carica=Math.min(1,G.carica+.4);aggBarra();sfx('magic')||suono(300,.3,'square',.08,600);avviso('Esplosione più forte',900);}
- else if(o.tipo==='T'){G.stella=7;sfx('magic')||suono(660,.5,'square',.08,1320);avviso('Stella: travolgi tutto per 7 secondi',1600);}
 }
-function rompiCassa(x,y){combo();M.g[y][x]=' ';const k=(x*7+y*3)%5,t=['H','c','U','Z','c','T'][(x*7+y*3)%6];schizzi2(x,y,16,'#c28a48',5);sfx('disappear')||suono(200,.15,'square',.09,90);
+function rompiCassa(x,y){combo();M.g[y][x]=' ';const k=(x*7+y*3)%5,t=['H','c','c','Z','c','c'][(x*7+y*3)%6];schizzi2(x,y,16,'#c28a48',5);sfx('disappear')||suono(200,.15,'square',.09,90);
  if(t==='c')for(let j=0;j<3;j++)M.oggetti.push({tipo:'c',x:x-.6+j*.6,y:y+.2,fase:x+j});else M.oggetti.push({tipo:t,x,y,fase:x});}
 /* il peso: scivola dove inclini il telefono e Matteo lo può spingere; sul pulsante apre la porta */
 const PESO_R=.5,PESO_M=4.5;
@@ -525,8 +522,8 @@ function passoNemici2(dt){
   const d=Math.hypot(p.x-n.x,p.y-n.y),rn=n.tipo==='r'?.45:.42;
   if(d<p.R+rn){
    /* si ricontrolla per ogni nemico: lo scatto può essere finito su quello prima */
-   const forte=p.scatto>0||G.stella>0||p.slancio>0;
-   if(forte){const colpo=p.scatto>0&&G.stella<=0;uccidi2(n);
+   const forte=p.scatto>0||p.slancio>0;
+   if(forte){const colpo=p.scatto>0;uccidi2(n);
     /* lo scatto elimina tutti i nemici nel blocco del primo (due blocchi se slanciato): slanciato va avanti, lento rimbalza indietro */
     if(colpo){const v=Math.sign(p.vx)||p.verso,raggio=p.catena||1;p.cd=Math.min(p.cd,.3);
      for(const o of M.nemici)if(o.vivo&&Math.abs(o.y-n.y)<1.2&&(o.x-n.x)*v>-.6&&(o.x-n.x)*v<raggio+.5)uccidi2(o);
@@ -559,8 +556,6 @@ function disegnaSlime(c,x,y,r,rot,st){
  const g=c.createRadialGradient(-r*.25,-r*.35,r*.2,0,0,r*1.15);g.addColorStop(0,'#ffffff30');g.addColorStop(.6,'#ffffff00');g.addColorStop(1,'#00000055');c.fillStyle=g;c.fillRect(-r*2,-r*2,r*4,r*4);
  c.fillStyle='#ffffffb0';c.beginPath();c.ellipse(-r*.38,-r*.5,r*.2,r*.12,-.6,0,6.3);c.fill();c.beginPath();c.arc(-r*.08,-r*.66,r*.05,0,6.3);c.fill();
  c.restore();c.lineWidth=Math.max(2,r*.09);c.strokeStyle='#2a1a10cc';c.stroke(pa);
- if(st.stella>0){c.strokeStyle=`hsl(${t*400%360},95%,62%)`;c.lineWidth=r*.2;c.stroke(pa);}
- if(st.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(x,y,r*1.42,0,6.3);c.stroke();}
  c.restore();
 }
 function cuoreP(c,x,y,s){c.beginPath();c.moveTo(x,y+s*.55);c.bezierCurveTo(x-s*1.1,y-s*.2,x-s*.55,y-s*.95,x,y-s*.35);c.bezierCurveTo(x+s*.55,y-s*.95,x+s*1.1,y-s*.2,x,y+s*.55);c.fill();}
@@ -631,7 +626,7 @@ function disegna2d(){
  for(const a of M.pesi||[]){if(a.x<c0-2||a.x>c1+2)continue;const z=ts*1.15;sp(c,'weight',sx(a.x)-z/2,sy(a.y-PESO_R)-z*.98,z,z);}
  for(const o of M.oggetti){if(o.x<c0-1||o.x>c1+1)continue;const a=sx(o.x)-ts/2,b=sy(o.y+Math.sin(G.t*3+o.fase)*.08)-ts/2;
   if(o.tipo==='c'){c.drawImage(PIZZA,a+ts*.03,b+ts*.03,ts*.94,ts*.94);}
-  else sp(c,o.tipo==='H'?'heart':o.tipo==='U'?'gem_blue':o.tipo==='Z'?'bomb':'star',a,b,ts,ts);}
+  else sp(c,o.tipo==='H'?'heart':'bomb',a,b,ts,ts);}
  for(const n of M.nemici){if(!n.vivo||n.x<c0-1||n.x>c1+1)continue;const a=sx(n.x),b=sy(n.y),z=ts*1.1,pas=Math.floor(G.t*7+n.fase)%2?'_a':'_b';
   if(n.tipo==='e'){const pie=sy(Math.round(n.y+.1)-.5),q=Math.sin(G.t*12+n.fase),dv=n.vx>0?1:-1;
    if(m.nemico==='ananas'&&NEMICO.complete){const hh=ts*1.3,ww=hh*NEMICO.width/NEMICO.height,sal=Math.abs(q)*ts*.08,s=c.imageSmoothingEnabled;c.save();c.translate(a,pie-sal);c.rotate(q*.08);if(dv>0)c.scale(-1,1);c.imageSmoothingEnabled=false;c.drawImage(NEMICO,-ww/2,-hh,ww,hh);c.imageSmoothingEnabled=s;c.restore();}
@@ -646,7 +641,7 @@ function disegna2d(){
  for(const f of fumi)disegnaFumo(c,sx(f.x),sy(f.y),ts*1.2,f.v,(G.t-f.t)/.55);
  if(G.carica>=MIN_BOTTO){const k=.15+G.carica*.45+.08*Math.sin(G.t*12),rg=p.R*ts*2.2,cx=sx(p.x),cy=sy(p.y),gr=c.createRadialGradient(cx,cy,p.R*ts*.5,cx,cy,rg);gr.addColorStop(0,`rgba(255,90,20,${k})`);gr.addColorStop(1,'rgba(255,90,20,0)');c.fillStyle=gr;c.beginPath();c.arc(cx,cy,rg,0,6.3);c.fill();}
  c.save();if(p.bolla>0&&!riduci)c.translate(rnd(-1.6,1.6),rnd(-1.6,1.6));
- const pg=c=>{const op={t:G.t,W:p.W,vx:p.vx,vy:p.vy,n:p.ultimoSuolo,stella:G.stella,scudo:G.scudo};
+ const pg=c=>{const op={t:G.t,W:p.W,vx:p.vx,vy:p.vy,n:p.ultimoSuolo};
   const n=p.ultimoSuolo,r=R_NORMALE*ts*1.02,pie=sy(p.y-p.R),ang=n?Math.atan2(n.x,n.y):0,am=amico(),nuovo=matteoNuovo();
   stancoVis=G.carica>=1?0:p.stanco>0?2:G.fiato<FIATO_SCATTO?1:0;
   if(PROVA)disegnaProva(c,sx(p.x),pie,r,p,n,ang);
@@ -657,11 +652,9 @@ function disegna2d(){
    else if(p.rotola)gPallaGira(c,sx(p.x),pie,r,-p.rot*1.24,p.W);
    else if(p.gFermo)gPallaGira(c,sx(p.x),pie,r,-p.rotF*1.24,p.W+Math.sin(G.t*2.5)*.02); /* fermandosi resta com'è, girato, finché non riparte */
    else if(!n)grassoSpr(c,sx(p.x),pie,r,6,p.verso,p.W,0);
-   else grassoSpr(c,sx(p.x),pie,r,6,p.verso,dd<.25?p.W+Math.sin(G.t*2.5)*.025:p.W,ang+(dd<.25?0:Math.sin(p.passi*.8)*.1));
-   if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),pie-r*1.1,r*1.5,0,6.3);c.stroke();}}
+   else grassoSpr(c,sx(p.x),pie,r,6,p.verso,dd<.25?p.W+Math.sin(G.t*2.5)*.025:p.W,ang+(dd<.25?0:Math.sin(p.passi*.8)*.1));}
   else if(G.carica>=1){const fr=p.inv>0?34:G.t%1.3<.09?18:p.rotola?0:!n?(p.vy<-7?35:19):Math.abs(p.vx)<.25?(p.fermoT>5?Math.floor((p.fermoT-5)*7)%9:36):19+Math.floor(p.passi)%10;
-   disegnaBomba(c,sx(p.x),pie,r,fr,p.rotola?1:p.verso,p.W,p.rotola?0:ang,p.rotola?-p.rot*2:0);
-   if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),pie-r*1.1,r*1.5,0,6.3);c.stroke();}}
+   disegnaBomba(c,sx(p.x),pie,r,fr,p.rotola?1:p.verso,p.W,p.rotola?0:ang,p.rotola?-p.rot*2:0);}
   else if(!nuovo&&p.rotola&&!(p.anim==='chiude'&&p.animT<.2)){
    op.disegno=am.skin==='classica'||!!am.foto;op.foto=am._img;disegnaSlime(c,sx(p.x),sy(p.y),r,-p.rot,op);}
   else{
@@ -681,8 +674,7 @@ function disegna2d(){
    else if(nuovo&&Math.abs(p.vx)<.25){if(G.carica>.6)grassoSpr(c,sx(p.x),pie,r,G.carica>.85?4:5,p.verso,p.W+Math.sin(G.t*1.96)*.02,ang);else if(p.fermoT>5)passiSpr(c,sx(p.x),pie,r,10+Math.floor((p.fermoT-5)*8)%11,p.verso,p.W,ang);else fermoSpr(c,sx(p.x),pie,r,p.verso,p.W+Math.sin(G.t*1.96)*.02,ang);}
    else if(Math.abs(p.vx)<.25){const col=p.fermoT>5?Math.floor((p.fermoT-5)*8)%10:[0,1,2,1][Math.floor(G.t*1.5)%4];disegnaCamm(c,sx(p.x),pie,r,col,0,p.verso,p.W+Math.sin(G.t*3)*.01,ang);}
    else disegnaCamm(c,sx(p.x),pie,r,Math.floor(p.passi)%10,Math.abs(p.vx)>2.3?2:1,p.verso,p.W,ang);
-   if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.5,0,6.3);c.stroke();}
-   if(G.stella>0){c.strokeStyle=`hsl(${G.t*400%360},95%,62%)`;c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.3,0,6.3);c.stroke();}}};
+   }};
  pg(c);{if(p.inv>0)tingiRosso(c,pg);else if(G.carica>=1&&matteoNuovo())tingiRosso(c,pg,.03+.1*(.5+.5*Math.sin(G.t*7)));}
  stancoVis=0;c.restore();if(PROVA)elencoProva(c,c.canvas.clientWidth||c.canvas.width);
  if(p.bolla>0)bollaSapone(c,sx(p.x),sy(p.y),p.R*ts*(1.75+.06*Math.sin(G.t*9)),Math.min(1,p.bolla/.25),ts);
@@ -805,15 +797,20 @@ function esplodi(){
  G.carica=0;aggBarra();
 }
 
-/* ---------- GUIDA: quattro pagine con scenette animate ---------- */
+/* ---------- GUIDA: cinque pagine con scenette animate ---------- */
 const GUIDA=[
  {t:'Nei livelli',c:['Inclina per rotolare','Tocca a destra: salti','Tocca a sinistra: scatti e travolgi i nemici'],f:[gInclina,gSalto,gScatto]},
  {t:'Muovi il telefono',c:['Scuoti il telefono: galleggi in una bolla','Colpo secco di lato: lanci Matteo','Salto e bolla: arrivi più in alto'],f:[gBolla,gSpinta,gAlto]},
- {t:'La bomba',c:['Mangia: ti carichi','Cadi da molto in alto: BOOM','Schiantati veloce: BOOM'],f:[gCibo,gCaduta,gSchianto]},
+ {t:'Il fiato',c:['Scattare consuma il fiato','Senza fiato si ferma a riposare','La pizza ridà fiato'],f:[gFiatoScatto,gFiatoRiposo,gFiatoPizza]},
+ {t:'Mangia e ingrassa',c:['Mangia: ingrassi e ti carichi','Da gonfio, cadi dall\'alto: BOOM','Da gonfio, schiantati veloce: BOOM'],f:[gCibo,gCaduta,gSchianto]},
  {t:'I boss',c:['Si lancia su di te: schivalo','Se sbatte resta stordito','Scattagli addosso'],f:[gLancio,gSbatte,gColpo]}
 ];
 const GW=300,GH=180,GS=GH-40,GR=19;
 let gPag=0,gDopo=null;
+/* Matteo nelle scenette: i fogli nuovi, per gli amici il disegno di prima. riga 0 fermo, 1 cammina, 2 corre, 3 salto */
+function gCamm(c,x,y,r,col,riga,verso,W,ang){if(!matteoNuovo())return disegnaCamm(c,x,y,r,col,riga,verso,W,ang);if(riga===0)fermoSpr(c,x,y,r,verso,W,ang);else if(riga===3)saltoSpr(c,x,y,r,[8,1,4,6,7][col]||4,verso,W,ang);else passiSpr(c,x,y,r,riga===2?col%6:6+col%4,verso,W,ang);}
+function gPalla(c,x,y,r,rot,W,aTerra){if(!matteoNuovo())return disegnaPalla(c,x,y,r,rot,W,aTerra);gelSpr(c,x,y+r,r,9,1,0,0,0,G.t,null,rot);}
+function gGonfio(c,x,y,r,rot){if(!matteoNuovo())return disegnaPalla(c,x,y,r,rot,0,true);gPallaGira(c,x,y+r,r,rot,0);}
 function gFondo(c){c.fillStyle='#c4e2ff';c.fillRect(0,0,GW,GH);for(let i=0;i<8;i++){sp(c,'terrain_sand_block_top',i*40,GS,41,41);}}
 function gTelefono(c,x,y,ang,lato,acceso){
  const w=104,h=50;c.save();c.translate(x,y);c.rotate(ang);c.fillStyle='#2b2b3a';c.beginPath();c.roundRect(-w/2-4,-h/2-4,w+8,h+8,8);c.fill();c.fillStyle='#e8f4ff';c.fillRect(-w/2,-h/2,w,h);
@@ -822,41 +819,45 @@ function gTelefono(c,x,y,ang,lato,acceso){
 }
 function gBoom(c,x,y,e,R){if(e<0||e>1)return;disegnaEspl(c,x,y,R,e);c.fillStyle='#d8432e';c.font='400 26px "Bowlby One","Arial Black",sans-serif';c.textAlign='center';c.textBaseline='middle';if(e<.7){c.lineWidth=5;c.strokeStyle='#fff';c.strokeText('BOOM',x,y-34);c.fillText('BOOM',x,y-34);}}
 function gBarra(c,v){sp(c,v>=.25?'bomb_active':'bomb',8,6,24,24);c.fillStyle='#fff';c.strokeStyle='#2b2b3a';c.lineWidth=2.5;c.beginPath();c.roundRect(34,12,86,12,6);c.fill();c.stroke();c.fillStyle='#d8432e';c.beginPath();c.roundRect(35,13,84*v,10,5);c.fill();}
-function gInclina(c,t){gFondo(c);const s=Math.sin(t*6.283);gTelefono(c,GW/2,40,s*.3);const x=GW/2+Math.sin(t*6.283-.5)*105;disegnaPalla(c,x,GS-GR,GR,x/GR*.8,0,true);}
+function gInclina(c,t){gFondo(c);const s=Math.sin(t*6.283);gTelefono(c,GW/2,40,s*.3);const x=GW/2+Math.sin(t*6.283-.5)*105;gPalla(c,x,GS-GR,GR,x/GR*.8,0,true);}
 function gSalto(c,t){gFondo(c);const x=30+t*250,o=clamp((x-105)/90,0,1),u=4*o*(1-o);sp(c,'spikes',135,GS-34,34,34);gTelefono(c,GW/2,36,0,1,o>0&&o<.25);
- const g=o>0&&o<1;disegnaPolvere(c,105,GS,70,o/.5);disegnaCamm(c,x,GS-u*62,GR,g?(o<.5?1:3):Math.floor(t*40)%10,g?3:1,1,0,0);}
+ const g=o>0&&o<1;disegnaPolvere(c,105,GS,70,o/.5);gCamm(c,x,GS-u*62,GR,g?(o<.5?1:3):Math.floor(t*40)%10,g?3:1,1,0,0);}
 function gScatto(c,t){gFondo(c);const col=t>.32&&t<.45;gTelefono(c,GW/2,36,0,-1,col);const via=t>.44,e=(t-.44)/.25;
  if(!via){if(NEMICO.complete)c.drawImage(NEMICO,229-15,GS-52,30,52);else c.drawImage(ANAN,205,GS-46,48,48);}gBoom2(c,229,GS-22,e);
- disegnaFumo(c,84,GS,38,1,(t-.32)/.5);if(t<.32)disegnaCamm(c,30+t*150,GS,GR,Math.floor(t*40)%10,1,1,0,0);else{const x=78+Math.min(1,(t-.32)/.2)*170;disegnaPalla(c,x,GS-GR,GR,x*.09,0,true);}}
+ disegnaFumo(c,84,GS,38,1,(t-.32)/.5);if(t<.32)gCamm(c,30+t*150,GS,GR,Math.floor(t*40)%10,1,1,0,0);else{const x=78+Math.min(1,(t-.32)/.2)*170;gPalla(c,x,GS-GR,GR,x*.09,0,true);}}
 function gBolla(c,t){gFondo(c);const sc=t>.08&&t<.42;gTelefono(c,72+(sc?Math.sin(t*160)*7:0),36,sc?Math.sin(t*130)*.08:0);
  const su=clamp((t-.2)/.45,0,1),giu=clamp((t-.75)/.2,0,1),y=GS-Math.sin(su*1.5708)*62*(1-giu*giu),dent=t>.2&&t<.75,j=dent?Math.sin(t*90)*1.5:0;
- disegnaCamm(c,205+j,y,GR,dent?2:0,dent?3:0,1,0,0);if(dent)bollaSapone(c,205,y-GR,GR*1.75,Math.min(1,(.75-t)/.08),12);}
+ gCamm(c,205+j,y,GR,dent?2:0,dent?3:0,1,0,0);if(dent)bollaSapone(c,205,y-GR,GR*1.75,Math.min(1,(.75-t)/.08),12);}
 /* il telefono scatta di lato e Matteo vola da quella parte */
 function gSpinta(c,t){gFondo(c);const e=t<.15?0:t<.22?(t-.15)/.07:Math.max(0,1-(t-.22)/.15);gTelefono(c,64+e*26,36,e*.12);
  const u=clamp((t-.22)/.45,0,1),x=60+u*190,vola=u>0&&u<1,y=GS-GR-4*u*(1-u)*52;
  if(vola)for(let i=1;i<4;i++){c.strokeStyle='#2b2b3a55';c.lineWidth=2;c.beginPath();c.moveTo(x-GR-i*8,y-6+i*5);c.lineTo(x-GR-i*8-14,y-6+i*5);c.stroke();}
- disegnaPalla(c,x,y,GR,x*.09,0,!vola);}
+ gPalla(c,x,y,GR,x*.09,0,!vola);}
 /* salto e poi bolla: arriva su un ripiano che col salto da solo non prende */
 function gAlto(c,t){gFondo(c);const ty=58;sp(c,'terrain_sand_horizontal_left',185,ty,35,35);sp(c,'terrain_sand_horizontal_middle',220,ty,35,35);sp(c,'terrain_sand_horizontal_right',255,ty,35,35);
  const u=clamp((t-.08)/.62,0,1),x=60+u*170,y=GS-(GS-ty)*Math.sin(u*1.5708),bol=u>.35&&u<.97;
- disegnaCamm(c,x,y,GR,u>0&&u<1?2:0,u>0&&u<1?3:0,1,0,0);if(bol)bollaSapone(c,x,y-GR,GR*1.75,Math.min(1,(.97-u)/.08),12);
+ gCamm(c,x,y,GR,u>0&&u<1?2:0,u>0&&u<1?3:0,1,0,0);if(bol)bollaSapone(c,x,y-GR,GR*1.75,Math.min(1,(.97-u)/.08),12);
  c.fillStyle='#2b2b3a';c.font='800 11px "Baloo 2",sans-serif';c.textAlign='right';c.textBaseline='middle';if(u>0&&u<=.35)c.fillText('salto',x-GR*1.3,y-GR);else if(bol)c.fillText('bolla',x-GR*2,y-GR);}
 function gBoom2(c,x,y,e){if(e<0||e>1)return;c.fillStyle=`rgba(255,255,255,${1-e})`;for(let i=0;i<8;i++){const a=i*.785,r=8+e*30;c.beginPath();c.arc(x+Math.cos(a)*r,y+Math.sin(a)*r,5*(1-e)+1,0,6.3);c.fill();}}
-function gCibo(c,t){gFondo(c);const px=[110,170,230],x=30+t*250;let n=0;px.forEach((q,i)=>{if(x<q)c.drawImage(PIZZA,q-17,GS-42,34,34);else n++;});gBarra(c,n/3*.9);disegnaCamm(c,x,GS,GR,Math.floor(t*40)%10,1,1,0,0);}
+function gCibo(c,t){gFondo(c);const px=[110,170,230],x=30+t*250;let n=0;px.forEach((q,i)=>{if(x<q)c.drawImage(PIZZA,q-17,GS-42,34,34);else n++;});gBarra(c,n/3*.99);if(matteoNuovo()&&n>0)grassoSpr(c,x,GS,GR,[5,4,6][n-1],1,0,Math.sin(x*.12)*.08);else gCamm(c,x,GS,GR,Math.floor(t*40)%10,1,1,0,0);}
 function gCaduta(c,t){gFondo(c);for(let i=0;i<3;i++)sp(c,'terrain_sand_horizontal_middle',i*34,46,35,35);const pr=t<.25?t/.25:1,fall=clamp((t-.25)/.25,0,1),x=20+pr*90,boom=(t-.5)/.32;gBarra(c,boom>=0?0:.9);
- const y=t<.25?46-GR:46-GR+(GS-GR-(46-GR))*fall*fall;if(boom<0||boom>.05)disegnaPalla(c,x,boom>=0?GS-GR-Math.sin(clamp(boom,0,1)*3.14)*30:y,GR,x*.08,0,boom>=0);gBoom(c,x,GS-20,boom,70);}
+ const y=t<.25?46-GR:46-GR+(GS-GR-(46-GR))*fall*fall;if(boom<0)gGonfio(c,x,y,GR,x*.08);else if(boom>.05)gCamm(c,x,GS-Math.sin(clamp(boom,0,1)*3.14)*46,GR,boom<.5?1:3,3,1,0,0);gBoom(c,x,GS-20,boom,70);}
 function gSchianto(c,t){gFondo(c);for(let i=0;i<3;i++)sp(c,'terrain_sand_block_center',GW-40,GS-40*(i+1),41,41);const a=clamp(t/.5,0,1),x=20+a*a*(GW-80),boom=(t-.5)/.32;gBarra(c,boom>=0?0:.9);
- const bx=boom>=0?GW-60-clamp(boom,0,1)*70:x;disegnaPalla(c,bx,GS-GR,GR,bx*.09,0,true);if(boom<0)for(let i=1;i<4;i++){c.strokeStyle='#2b2b3a66';c.lineWidth=2;c.beginPath();c.moveTo(x-GR-i*9,GS-8-i*8);c.lineTo(x-GR-i*20,GS-8-i*8);c.stroke();}gBoom(c,GW-50,GS-24,boom,66);}
+ const bx=boom>=0?GW-60-clamp(boom,0,1)*70:x;if(boom<0)gGonfio(c,bx,GS-GR,GR,bx*.09);else gCamm(c,bx,GS-Math.sin(clamp(boom,0,1)*3.14)*40,GR,boom<.5?1:3,3,-1,0,0);if(boom<0)for(let i=1;i<4;i++){c.strokeStyle='#2b2b3a66';c.lineWidth=2;c.beginPath();c.moveTo(x-GR-i*9,GS-8-i*8);c.lineTo(x-GR-i*20,GS-8-i*8);c.stroke();}gBoom(c,GW-50,GS-24,boom,66);}
+function gBarraFiato(c,v,poco){c.fillStyle='#2b2b3a';c.font='800 11px "Baloo 2",sans-serif';c.textAlign='left';c.textBaseline='middle';c.fillText('fiato',8,18);c.fillStyle='#fff';c.strokeStyle='#2b2b3a';c.lineWidth=2.5;c.beginPath();c.roundRect(38,12,92,12,6);c.fill();c.stroke();c.fillStyle=poco?'#d8432e':'#3a9bd8';c.beginPath();c.roundRect(39,13,Math.max(0,90*v),10,5);c.fill();}
+function gFiatoScatto(c,t){gFondo(c);const ni=Math.floor(t*3),u=t*3-ni,v=1-.3*(ni+clamp(u/.3,0,1));gBarraFiato(c,v,v<.3);const xs=30+t*230,sc=u<.3;disegnaFumo(c,xs-34,GS,34,1,u/.5);if(sc)gPalla(c,xs,GS-GR,GR,xs*.09,0,true);else gCamm(c,xs,GS,GR,Math.floor(t*40)%10,1,1,0,0);}
+function gFiatoRiposo(c,t){gFondo(c);gBarraFiato(c,t>.9?.4:.03,t<=.9);if(matteoNuovo())stancoSpr(c,GW/2,GS,GR,t,1,0);else disegnaCamm(c,GW/2,GS,GR,4+Math.floor(t*12)%2,3,1,0,0);}
+function gFiatoPizza(c,t){gFondo(c);const px=[120,200],x=30+t*240;let n=0;px.forEach(q=>{if(x<q)c.drawImage(PIZZA,q-17,GS-42,34,34);else n++;});gBarraFiato(c,.15+n*.25,n===0);const mg=px.some(q=>x>=q&&x<q+24);if(matteoNuovo()&&mg)grassoSpr(c,x,GS,GR,1+Math.floor(t*30)%3,1,0,0);else gCamm(c,x,GS,GR,Math.floor(t*40)%10,1,1,0,0);}
 function gStanza(c){gFondo(c);for(let i=0;i<5;i++)sp(c,'terrain_sand_cloud_middle',20+i*34,62,35,35);for(let i=0;i<5;i++)sp(c,'block_exclamation',GW-22,GS-22*(i+1),23,23);}
 function gBossS(c,x,y,st,t){const z=70;c.save();c.translate(x,y);if(!disegnaAnanas(c,st?32+Math.floor(t*12)%3:16+Math.floor(t*16)%8,z,1)){if(st)c.rotate(.25*Math.sin(t*30));c.drawImage(BOSPR[0],-z/2,-z/2,z,z);}c.restore();if(st){c.fillStyle='#f6c445';c.strokeStyle='#2b2b3a';c.lineWidth=1.5;for(let i=0;i<5;i++){const a=t*20+i*1.257;c.beginPath();c.arc(x+Math.cos(a)*30,y-30+Math.sin(a)*8,4.5,0,6.3);c.fill();c.stroke();}}}
-function gLancio(c,t){gStanza(c);const e=clamp((t-.3)/.3,0,1),x=60+e*180,y=40+e*(GS-70),mz=t<.3;if(mz){c.save();c.globalAlpha=.5;c.strokeStyle='#ff3b2e';c.lineWidth=3;c.beginPath();c.arc(240,GS-30,14,0,6.3);c.stroke();c.globalAlpha=.18;c.fillStyle='#ff3b2e';c.fill();c.restore();}gBossS(c,x+(mz?rnd(-1,1):0),y,false,t);const j=clamp((t-.22)/.3,0,1);disegnaCamm(c,190-j*90,GS-Math.sin(j*3.14)*46,GR,j>0&&j<1?2:0,3,-1,0,0);}
-function gSbatte(c,t){gStanza(c);const e=clamp(t/.3,0,1),x=70+e*165,hit=t>.3,y=hit?Math.min(GS-34,80+(t-.3)*400):80;gBossS(c,x,y,hit,t);gBoom2(c,GW-34,80,(t-.3)/.3);disegnaCamm(c,50,GS,GR,0,0,1,0,0);}
-function gColpo(c,t){gStanza(c);const e=clamp((t-.25)/.2,0,1),x=30+e*165,hit=t>.45;gBossS(c,235,GS-34,hit?0:t+.5,t);if(!hit)gTelefono(c,GW/2,30,0,-1,t>.15&&t<.3);disegnaPalla(c,hit?195-(t-.45)*120:x,GS-GR,GR,x*.09,0,true);gBoom2(c,212,GS-30,(t-.45)/.3);
+function gLancio(c,t){gStanza(c);const e=clamp((t-.3)/.3,0,1),x=60+e*180,y=40+e*(GS-70),mz=t<.3;if(mz){c.save();c.globalAlpha=.5;c.strokeStyle='#ff3b2e';c.lineWidth=3;c.beginPath();c.arc(240,GS-30,14,0,6.3);c.stroke();c.globalAlpha=.18;c.fillStyle='#ff3b2e';c.fill();c.restore();}gBossS(c,x+(mz?rnd(-1,1):0),y,false,t);const j=clamp((t-.22)/.3,0,1);gCamm(c,190-j*90,GS-Math.sin(j*3.14)*46,GR,j>0&&j<1?2:0,3,-1,0,0);}
+function gSbatte(c,t){gStanza(c);const e=clamp(t/.3,0,1),x=70+e*165,hit=t>.3,y=hit?Math.min(GS-34,80+(t-.3)*400):80;gBossS(c,x,y,hit,t);gBoom2(c,GW-34,80,(t-.3)/.3);gCamm(c,50,GS,GR,0,0,1,0,0);}
+function gColpo(c,t){gStanza(c);const e=clamp((t-.25)/.2,0,1),x=30+e*165,hit=t>.45;gBossS(c,235,GS-34,hit?0:t+.5,t);if(!hit)gTelefono(c,GW/2,30,0,-1,t>.15&&t<.3);gPalla(c,hit?195-(t-.45)*120:x,GS-GR,GR,x*.09,0,true);gBoom2(c,212,GS-30,(t-.45)/.3);
  const q=hit?2:3;c.strokeStyle='#2b2b3a';c.lineWidth=2;for(let i=0;i<3;i++){c.fillStyle=i<q?'#d8432e':'#ffffff88';c.beginPath();c.roundRect(112+i*28,8,24,10,4);c.fill();c.stroke();}}
 function disegnaGuida(){const r=riduci?.42:null;GUIDA[gPag].f.forEach((f,i)=>{const cv=$('gc'+i),c=cv.getContext('2d');c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,GW,GH);f(c,r===null?((G.t/ (2.8))%1):r);});}
 function apriGuida(dopo){gPag=0;gDopo=dopo;G.guida=true;mostra('sGuida');pagGuida();}
 function pagGuida(){const g=GUIDA[gPag];$('gTit').textContent=g.t;g.c.forEach((x,i)=>$('gt'+i).textContent=x);$('gNum').textContent=(gPag+1)+' / '+GUIDA.length;$('gAvanti').textContent=gPag<GUIDA.length-1?'Avanti':(gDopo?'Gioca':'Ho capito');}
-function chiudiGuida(){G.guida=false;S.guidaVista=2;salva();const d=gDopo;gDopo=null;if(d)d();else mostra('sMenu');}
+function chiudiGuida(){G.guida=false;S.guidaVista=3;salva();const d=gDopo;gDopo=null;if(d)d();else mostra('sMenu');}
 $('gAvanti').onclick=()=>{if(gPag<GUIDA.length-1){gPag++;pagGuida();}else chiudiGuida();};
 $('gSalta').onclick=chiudiGuida;
 
@@ -868,7 +869,7 @@ let tAvv=0;function avviso(t,ms){const a=$('avviso');a.textContent=t;a.hidden=fa
 function giocoUI(on){['hud','tocchi','aSin','aDes'].forEach(i=>$(i).hidden=!on);}
 function dissolvi(fn){G.stato='velo';$('velo').classList.add('on');setTimeout(()=>{fn();$('velo').classList.remove('on');},380);}
 function banner(t){$('grande').textContent=t;$('grande').hidden=false;$('avviso').hidden=true;G.pronti=1.4;G.stato='pronti';}
-function iniziaRun(prova){Object.assign(G,{fiato:1,dettoFiato:false,carica:0,avvisato:false,base:0,cuori:MAXC,gettoni:0,uccisi:0,tempo:0,scudo:false,stella:0,avanz:0,scossa:0,jelly:0,visti:G.visti||0});mostra('');giocoUI(true);hud();aggBarra();$('gett').textContent='0';entraCorsa(0,Array.isArray(prova)?prova:null);sveglia();}
+function iniziaRun(prova){Object.assign(G,{fiato:1,dettoFiato:false,carica:0,avvisato:false,base:0,cuori:MAXC,gettoni:0,uccisi:0,tempo:0,avanz:0,scossa:0,jelly:0,visti:G.visti||0});mostra('');giocoUI(true);hud();aggBarra();$('gett').textContent='0';entraCorsa(0,Array.isArray(prova)?prova:null);sveglia();}
 function entraCorsa(i,prova){
  G.modo='2d';G.mondo=i;M=costruisci(i,prova);M.prova=!!prova;goo.length=0;fumi.length=0;polveri.length=0;G.combo=0;G.comboT=0;
  G.fiato=1;Object.assign(P2,{R:R_NORMALE,boomAria:false,gFermo:false,eraBomba:G.carica>=1,gonfioT:0,sgonfiaT:0,mangia:0,stanco:0,slancio:0,x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
@@ -911,7 +912,7 @@ function disegnaAmici(){const a=$('listaAmici');a.textContent='';
  $('saldo').textContent=S.gettoni;$('togliAmico').hidden=S.sel===0;$('togliFoto').hidden=!f.foto;$('togliFoto').textContent='Togli la foto di '+f.nome;$('fotoTesto').textContent=(f.foto?'Cambia la foto di ':'Metti la foto di ')+f.nome;
 }
 async function bloccaOrizzontale(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();await screen.orientation.lock('landscape');}catch(e){}}
-$('bGioca').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();if((S.guidaVista|0)>=2)iniziaRun();else apriGuida(iniziaRun);};
+$('bGioca').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();if((S.guidaVista|0)>=3)iniziaRun();else apriGuida(iniziaRun);};
 $('bGuida').onclick=()=>{audioOn();apriGuida(null);};
 $('bAmici').onclick=()=>{audioOn();disegnaAmici();mostra('sAmici');};
 $('amiciChiudi').onclick=()=>mostra('sMenu');
@@ -957,7 +958,7 @@ function ciclo(ora){
  if(G.stato==='gioco')G.tempo+=dt;
  G.scossa=Math.max(0,G.scossa-dt);
  if(G.stato==='gioco'){const ps=5;for(let i=0;i<ps&&G.stato==='gioco';i++)passo2d(dt/ps);
-  passoOggetti(dt);passoNemici2(dt);if(M.boss)passoBoss(dt);G.stella=Math.max(0,G.stella-dt);
+  passoOggetti(dt);passoNemici2(dt);if(M.boss)passoBoss(dt);
   if(!M.boss)G.avanz=(G.base||0)+Math.max(0,P2.x-M.start.x);}
  telecamera2d(dt);disegna2d();
 }

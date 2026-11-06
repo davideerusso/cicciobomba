@@ -1,6 +1,6 @@
 """Livello 1 definitivo (Isola degli Ananas). y come nel gioco: la riga di terra è y=2.
 Caratteri: # terra, - asse attraversabile, / % rampe, B molla, C cassa, ^ spine, ! spine a tempo,
-c pizza, H cuore, U scudo, T stella, e nemico, r riccio, f mosca, g cannone,
+c pizza, H cuore, e nemico, r riccio, f mosca, g cannone,
 O peso, P pulsante, D porta, x blocco che crolla, y botola (sembra terra), X muro crepato.
 Le pareti finte (sembrano terra, si attraversano) sono rettangoli in FINTI."""
 import sys, json
@@ -50,7 +50,7 @@ P.fila(3, 22, 28, 'c'); P.put(3, 31, 'H'); P.fila(3, 36, 40, 'c'); P.put(4, 38, 
 P.put(6, 19, 'e'); P.put(6, 27, 'e'); P.put(6, 37, 'e')
 P.fila(6, 30, 31, '^')
 P.fila(8, 23, 25, 'c'); P.fila(8, 39, 41, 'c')
-P.fila(9, 27, 30, '-'); P.fila(10, 27, 30, 'c'); P.put(10, 29, 'U')     # in alto: salto e bolla
+P.fila(9, 27, 30, '-'); P.fila(10, 27, 30, 'c'); P.put(10, 29, 'c')     # in alto: salto e bolla
 P.fila(2, 45, 57, '#')
 P.fila(3, 49, 50, '^'); P.put(3, 53, 'r'); P.fila(5, 52, 53, 'c')
 P.fila(3, 55, 56, '!')
@@ -73,7 +73,7 @@ P.fila(10, 14, 31, '-')                                 # mensola alta
 P.fila(11, 24, 30, 'c')
 P.blocco(5, 10, 13, 10); P.blocco(5, 14, 13, 14); P.col(5, 11, 13, '#')   # stanza nascosta a sinistra della mensola
 P.col(13, 11, 13, ' '); P.finto(6, 11, 13, 13)          # la parete destra è finta
-P.put(11, 8, 'T'); P.fila(11, 9, 11, 'c'); P.fila(12, 7, 10, 'c')
+P.put(11, 8, 'c'); P.fila(11, 9, 11, 'c'); P.fila(12, 7, 10, 'c')
 P.col(42, 3, 15, 'D')                                   # porta alta
 P.fila(3, 45, 49, 'c'); P.put(3, 52, 'e'); P.put(3, 56, 'e')
 P.fila(3, 58, 59, '!')
@@ -88,7 +88,7 @@ for x in range(9, 32, 2):
 P.put(6, 14, 'f'); P.put(6, 26, 'f')
 P.fila(4, 36, 38, '-'); P.fila(6, 39, 41, '-'); P.fila(8, 41, 42, '-')
 P.col(43, 3, 7, 'X'); P.fila(8, 43, 51, '#'); P.col(51, 3, 7, '#')
-P.put(3, 45, 'H'); P.put(3, 47, 'U'); P.fila(5, 45, 49, 'c'); P.put(3, 49, 'T')
+P.put(3, 45, 'H'); P.put(3, 47, 'c'); P.fila(5, 45, 49, 'c'); P.put(3, 49, 'c')
 P.fila(9, 45, 49, 'c'); P.put(9, 47, 'e')
 P.fila(3, 54, 56, '!'); P.put(3, 58, 'e')
 P.fila(6, 2, 5, '-'); P.put(7, 3, 'H'); P.fila(7, 4, 5, 'c')          # in alto: ci si arriva solo con salto e bolla
@@ -126,7 +126,7 @@ P.blocco(6, 3, 8, 4); P.put(5, 7, 'g')
 P.put(3, 11, 'C'); P.put(3, 12, 'C'); P.put(4, 12, 'C')
 P.fila(5, 14, 18, '-'); P.put(6, 16, 'C')
 P.blocco(20, 3, 23, 6); P.put(7, 22, 'g')
-P.fila(10, 19, 24, '-'); P.put(11, 21, 'T'); P.fila(11, 22, 23, 'c')    # in alto: salto e bolla
+P.fila(10, 19, 24, '-'); P.put(11, 21, 'c'); P.fila(11, 22, 23, 'c')    # in alto: salto e bolla
 P.put(3, 26, 'r'); P.fila(3, 28, 29, '^')
 P.blocco(31, 3, 33, 4); P.put(5, 32, 'g')
 P.fila(3, 35, 37, 'C'); P.fila(4, 36, 36, 'C')
@@ -134,7 +134,7 @@ P.blocco(41, 3, 42, 4, ' '); P.put(3, 41, 'B'); P.finto(40, 3, 43, 4); P.blocco(
 P.col(40, 3, 4, ' ')                                    # si entra da sinistra nella terra finta e c'è la molla
 P.fila(6, 38, 45, '-'); P.fila(7, 39, 44, 'c')
 P.put(7, 42, 'B')                                       # seconda molla sulla mensola
-P.fila(10, 40, 46, '-'); P.put(11, 43, 'T'); P.fila(11, 41, 42, 'c'); P.fila(11, 44, 45, 'c')
+P.fila(10, 40, 46, '-'); P.put(11, 43, 'c'); P.fila(11, 41, 42, 'c'); P.fila(11, 44, 45, 'c')
 for x in (3, 15, 25, 46, 50): P.put(3, x, 'e')
 P.blocco(48, 7, 53, 8); P.blocco(50, 7, 51, 8, ' '); P.finto(50, 7, 51, 8); P.put(7, 50, 'H')
 P.fila(5, 9, 10, 'c'); P.fila(8, 21, 22, 'c'); P.fila(6, 34, 35, 'c')
@@ -155,7 +155,7 @@ for x in (33, 37, 40, 44, 47, 51): P.put(3, x, 'e')
 for x in (35, 42, 49): P.put(3, x, 'C')
 for x in (34, 39, 46): P.put(5, x, 'c')
 P.col(58, 3, 7, 'X'); P.fila(8, 58, 62, '#'); P.col(62, 3, 7, '#')
-P.put(3, 59, 'H'); P.put(3, 61, 'T'); P.fila(5, 59, 61, 'c')
+P.put(3, 59, 'H'); P.put(3, 61, 'c'); P.fila(5, 59, 61, 'c')
 P.fila(4, 52, 53, '-'); P.fila(6, 55, 56, '-')
 P.put(3, 66, 'e')
 P.fine()
