@@ -679,7 +679,9 @@ function disegnaMenu(dt){
  for(let y=0;y*ts<H-base+ts;y++)for(let i=0;i<cols;i++)sp(c,'terrain_sand_block_'+(y?'center':'top'),i*ts,base+y*ts,ts+.8,ts+.8);
  M0.t+=dt;if(!riduci&&(M0.t>2.4)){M0.t=0;M0.Wv+=5;}
  M0.Wv+=(-120*M0.W-7*M0.Wv)*dt;M0.W+=M0.Wv*dt;
- disegnaCamm(c,W*.25,base+2,r*.9,riduci?0:Math.floor(G.t*5)%10,0,1,M0.W,0);
+ const am=amico(),tm=G.t%8;
+ if(!am._img&&am.colore===COLORI[0]&&am.skin==='classica'){const rn=r*.65;if(!riduci&&tm>5.8)passiSpr(c,W*.25,base+2,rn,10+Math.floor((tm-5.8)*5)%11,1,M0.W,0);else fermoSpr(c,W*.25,base+2,rn,1,M0.W+Math.sin(G.t*1.96)*.02,0);}
+ else disegnaCamm(c,W*.25,base+2,r*.9,riduci?0:Math.floor(G.t*5)%10,0,1,M0.W,0);
 }
 
 /* ---------- BOSS 2D SU PIÙ PIANI: si lancia, sbatte, resta stordito ---------- */
