@@ -29,7 +29,7 @@ body{font-family:var(--testo);font-size:16px}
 /* Menu: il logo in alto e i pulsanti sotto, con il bordo blu notte e l'orlo bianco da adesivo come il logo. Col telefono in verticale lo schermo ruota: l'altezza è vmin e la larghezza vmax. */
 #sMenu{position:fixed;inset:0;box-sizing:border-box;padding:calc(var(--st) + 2vmin) max(16px,var(--sr)) calc(var(--sb) + 1.6vmin) max(16px,var(--sl));display:grid;grid-template-rows:minmax(0,1fr) auto auto;justify-items:center;gap:2.6vmin}
 .mTesta{margin:0;min-height:0;width:100%;display:flex;justify-content:center;align-items:center}
-#logo{display:block;width:auto;height:auto;max-width:min(66vmax,760px);max-height:100%;filter:drop-shadow(0 .9vmin 0 #1b146455);animation:logoEntra .55s cubic-bezier(.2,1.5,.45,1) both,logoOndeggia 3.6s ease-in-out .55s infinite}
+#logo{display:block;width:auto;height:auto;max-width:min(58vmax,670px);max-height:82%;filter:drop-shadow(0 .9vmin 0 #1b146455);animation:logoEntra .55s cubic-bezier(.2,1.5,.45,1) both,logoOndeggia 3.6s ease-in-out .55s infinite}
 @keyframes logoEntra{from{opacity:0;transform:scale(.6)}}
 @keyframes logoOndeggia{50%{transform:translateY(-1.1vmin) rotate(-.6deg)}}
 .mPulsanti{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,1fr);align-items:center;gap:clamp(12px,2.4vmax,24px);width:min(100%,780px)}

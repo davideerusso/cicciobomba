@@ -167,8 +167,8 @@ if __name__ == '__main__':
         nomi = [t.strip().split(':')[0] for t in PEZZI]
         L = open(js, encoding='utf-8').read().split('\n')
         L = [l for l in L if not re.match(r'^\s?(' + '|'.join(nomi) + r'):\[', l)]
-        i = [k for k, l in enumerate(L) if l.startswith(' gradini:[')]; assert len(i) == 1
-        L[i[0]:i[0]] = PEZZI
+        i = [k for k, l in enumerate(L) if l.startswith('const PEZZI={')]; assert len(i) == 1
+        L[i[0] + 1:i[0] + 1] = PEZZI
         i = [k for k, l in enumerate(L) if l.startswith('const FINTI=')]; assert len(i) == 1
         L[i[0]] = 'const FINTI=' + json.dumps(FINTI, separators=(',', ':')) + ';'
         open(js, 'w', encoding='utf-8').write('\n'.join(L))
