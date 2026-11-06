@@ -27,7 +27,7 @@ const MONDI=[
  {nome:'Isola degli Ananas',cielo:['#ffe382','#27a39b'],legno:'#f4bd3c',vena:'#a96c10',bordo:'#3f9e3a',nebbia:'#1f8f7d',tema:'ananas',kit:'sand',fondo:'ananas_nuovo',retro:'cielo',liquido:'water',decor:['erbananas','grass','rock'],nemico:'ananas',volo:'bee'},
 ];
 const BOSS=[
- {nome:'Ananassone',r:1.1,terra:true,vita:6,scatto:16,stordito:1.8,colore:'#f4bd3c',corona:true},
+ {nome:'Ananassone',r:1.1,terra:true,vita:6,scatto:14,stordito:1.8,colore:'#f4bd3c',corona:true},
 ];
 /* ---------- KIT GRAFICO E SONORO (Kenney, New Platformer Pack, licenza CC0) ---------- */
 const KIT=new Image();KIT.src='assets/kit.webp';
@@ -679,7 +679,7 @@ function disegnaMenu(dt){
 
 /* ---------- BOSS 2D SU PIÙ PIANI: si lancia, sbatte, resta stordito ---------- */
 const ARENE=[
- ["############################","#                          #","#                          #","#                          #","#                          #","#                          #","#          c    c          #","#  c   c   x    x   c   c  #","#  x   x            x   x  #","#                          #","#        C        C        #","# !  B   C c !! c C   B  ! #","############################","############################"],
+ ["####################","#                  #","#                  #","#       c  c       #","# c   c x  x c   c #","# x   x      x   x #","#                  #","#      C    C      #","#!  B  Cc!!cC  B  !#","####################","####################"],
 ];
 /* Ananassone con la corazza, disegnato dall'utente: fotogrammi da 232x166 in righe da 8, guarda a destra. 0-3 fermo, 4-11 corre, 9 a testa bassa per la mira, 12-13 pugno, 14-16 stordito, 17-20 cade sconfitto. z è l'altezza da fermo */
 const NEMICO=new Image();NEMICO.src='assets/nemico_ananas.webp'; /* l'ananas arrabbiato del foglio Pineapple Tiles, nemico del mondo 1 */
@@ -691,7 +691,7 @@ const BOSPR=[0].map(n=>{const k=document.createElement('canvas');k.width=k.heigh
  return k;});
 function costruisciArena(i){
  const r=ARENE[i],H=r.length,W=r[0].length,g=[];for(let y=0;y<H;y++)g.push([]);
- const m={i,g,w:W,alto:H,oggetti:[],nemici:[],colpi:[],spine:{},crolli:{},fine:Infinity,decor:[],posti:[],start:{x:3,y:2.97}};
+ const m={i,g,w:W,alto:H,oggetti:[],nemici:[],colpi:[],spine:{},crolli:{},fine:Infinity,decor:[],posti:[],start:{x:2.5,y:2.97}};
  for(let q=0;q<H;q++)for(let x=0;x<W;x++){const y=H-1-q,t=r[q][x]||' ';if(t==='c'){m.oggetti.push({tipo:'c',x,y,fase:x});g[y][x]=' ';}else g[y][x]=t;if(t==='C')(m.casse=m.casse||[]).push({x,y});if(t==='^'||t==='!')m.spine[y+'_'+x]={t,s:1,fase:x*.8};if(t==='x')m.crolli[y+'_'+x]={x,y,t:-1,via:0,c:t};}
  for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++)if(g[y][x]===' '&&(g[y-1][x]==='#'||g[y-1][x]==='-'))m.posti.push({x,y});
  const c=BOSS[i];m.boss={cfg:c,sp:BOSPR[i],x:W/2,y:9,r:c.r||.95,vita:c.vita,stato:'fermo',t:2,dx:1,dy:0,vy:0,lampo:0,colpi:0,lung:0};
@@ -718,14 +718,14 @@ function cadeBoss(b,dt){if(b.cfg.terra){b.y=b.r+1.5;b.vy=0;b.aTerra=true;return;
  if(b.y<b.r+1.5){b.y=b.r+1.5;b.vy=0;b.aTerra=true;}}
 /* tra un attacco e l'altro: Ananassone non si riposa quasi mai */
 const pausaBoss=b=>b.cfg.terra?rnd(.3,.7):rnd(1,1.7);
-/* il pugno di Ananassone: fa tremare tutto e dall'alto cadono ananas nemici in giro per la stanza */
-function pugnoBoss(b){G.scossa=riduci?0:.45;vibra(90);sfx('hurt')||suono(70,.5,'sawtooth',.14,40);const n=Math.min(3,4-M.nemici.filter(q=>q.vivo).length);for(let i=0;i<n;i++){let x;do{x=2+Math.floor(Math.random()*24);}while(cassaBoss(x)||Math.abs(x-P2.x)<1.5);M.nemici.push({tipo:'e',x,y:11+i,px:x,py:11,vx:Math.sign(P2.x-x)*2.2||2.2,vy:0,vivo:true,fase:x,cade:true});}}
+/* il pugno di Ananassone: fa tremare tutto e dall'alto cade un ananas nemico in giro per la stanza */
+function pugnoBoss(b){G.scossa=riduci?0:.45;vibra(90);sfx('hurt')||suono(70,.5,'sawtooth',.14,40);if(M.nemici.filter(q=>q.vivo).length>=4)return;let x;do{x=2+Math.floor(Math.random()*(M.w-4));}while(cassaBoss(x)||Math.abs(x-P2.x)<1.5);M.nemici.push({tipo:'e',x,y:9,px:x,py:9,vx:Math.sign(P2.x-x)*2.2||2.2,vy:0,vivo:true,fase:x,cade:true});}
 function passoBoss(dt){
  const b=M.boss,p=P2;if(!b||b.vita<=0)return;b.t-=dt;b.lampo=Math.max(0,b.lampo-dt);
  const dx=p.x-b.x,dy=p.y-b.y,d=Math.hypot(dx,dy)||1;
  if(b.stato==='fermo'){cadeBoss(b,dt);const v=Math.abs(dx)>.6?Math.sign(dx):0;b.cammina=0;
   if(b.aTerra&&v&&(b.cfg.terra?!cassaBoss(Math.round(b.x+v*(b.r+.15))):!pieno(cel(Math.round(b.x+v*(b.r+.15)),Math.round(b.y))))){b.x=clamp(b.x+v*(b.cfg.terra?3:1.4)*dt,1.5+b.r,M.w-1.5-b.r);b.cammina=v;}
-  if(b.t<=0&&b.aTerra){b.az=(b.az||0)+1;if(b.cfg.terra&&b.az%3===0){b.stato='pugno';b.t=.9;b.fatto=false;}else{b.stato='mira';b.t=b.cfg.terra?.8:1.1;}}}
+  if(b.t<=0&&b.aTerra){b.az=(b.az||0)+1;if(b.cfg.terra&&b.az%3===0&&b.vita<=b.cfg.vita/2){b.stato='pugno';b.t=.9;b.fatto=false;}else{b.stato='mira';b.t=b.cfg.terra?.8:1.1;}}}
  else if(b.stato==='pugno'){cadeBoss(b,dt);if(b.t<.45&&!b.fatto){b.fatto=true;pugnoBoss(b);}if(b.t<=0){b.stato='fermo';b.t=pausaBoss(b);}}
  else if(b.stato==='mira'){cadeBoss(b,dt);if(b.t>.25&&b.cfg.terra){b.dx=Math.sign(dx)||b.dx;b.dy=0;}else if(b.t>.25){/* punta ai piedi di Matteo, non al centro: sullo stesso piano il lancio resta dritto invece di finire subito contro terra */const h=Math.max(p.y-p.R+b.r,b.r+1.5)-b.y,a=Math.abs(h)<.3?0:h,l=Math.hypot(dx,a);if(l){b.dx=dx/l;b.dy=a/l;}}b.lung=raggioBoss(b);b.arrivo=arrivoBoss(b);if(b.t<=0){b.stato='carica';b.tc=G.t;sfx('throw')||suono(110,.4,'sawtooth',.1,330);}}
  else if(b.stato==='carica'&&b.cfg.terra){b.x+=b.dx*b.cfg.scatto*dt; /* corre dritto sul pavimento: si ferma contro il muro o sfondando una colonna di casse */
@@ -861,7 +861,7 @@ function entraBoss(i){
  Object.assign(P2,{R:R_NORMALE,gFermo:false,x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
  $('bossBox').hidden=false;$('bossNome').textContent=BOSS[i].nome;$('bossHp').style.width='100%';$('nomeTappa').textContent='';
  banner(BOSS[i].nome);
- if(i===0)setTimeout(()=>{if(M.boss&&G.stato==='gioco')avviso('Schiva il lancio: quando sbatte è stordito. Le molle portano ai piani alti.',3800);},1700);
+ if(i===0)setTimeout(()=>{if(M.boss&&G.stato==='gioco')avviso('Schiva la carica: se sbatte è stordito. Mettiti dietro le casse!',3800);},1700);
 }
 function dopoBoss(){const i=G.mondo;G.base=G.avanz;G.cuori++;hud();if(i>=MONDI.length-1){fine(true);return;}dissolvi(()=>entraCorsa(i+1));}
 let lucchetto=null;async function sveglia(){try{if(navigator.wakeLock&&!lucchetto){lucchetto=await navigator.wakeLock.request('screen');lucchetto.addEventListener('release',()=>lucchetto=null);}}catch(e){}}
@@ -912,7 +912,8 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)pausa();els
 function centroY(){return V.H/V.ts/2-.3;} /* il pavimento resta sempre in basso a vista, con poca terra sotto ma le onde dell'acqua nei fossi ancora visibili */
 function telecamera2d(dt){
  const p=P2;
- if(M.boss){V.ts=Math.min(V.W/(M.w+.5),(V.H-56)/(M.alto+.6));V.cx=(M.w-1)/2;V.cy=V.H/V.ts/2-.9;return;}
+ if(M.boss){ /* ferma: tutta la stanza sta nello schermo, così il boss si vede sempre. Vicina come nella corsa, se la larghezza lo permette */
+  V.ts=Math.min(V.ts0,V.W/M.w);V.cx=(M.w-1)/2;const k=1-Math.exp(-dt*4),q=V.H/V.ts/2-.9;V.cy=lerp(V.cy,clamp(q+Math.max(0,p.y-5.5),q,Math.max(q,10.5-V.H/V.ts/2)),k);return;}
  /* cambia lato solo se il personaggio va davvero dall'altra parte per un attimo */
  const d=Math.abs(p.vx)>1?Math.sign(p.vx):V.dir;V.attesa=d!==V.dir?V.attesa+dt:0;if(V.attesa>.7){V.dir=d;V.attesa=0;}
  const meta=V.dir*(Math.min(V.W/V.ts*.16,3)+Math.abs(p.vx)*.3),max=(1.5+Math.abs(p.vx)*.35)*dt;V.la+=clamp(meta-V.la,-max,max);
