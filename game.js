@@ -64,7 +64,7 @@ const FOGLIO3=new Image();FOGLIO3.src='assets/personaggio3.webp'; /* Matteo stan
 let stancoVis=false;
 /* il Matteo nuovo disegnato dall'utente, con i suoi fogli (una riga di celle, rivolto a destra). Gli amici con colore, skin o foto tengono il disegno di prima */
 const FOGLISPR={};
-for(const [n,src] of [['stanco','assets/matteo_stanco.webp'],['fermo','assets/matteo_fermo.webp'],['salto','assets/matteo_salto.webp'],['palla','assets/matteo_palla.webp'],['passi','assets/matteo_cammina.webp']]){FOGLISPR[n]=new Image();FOGLISPR[n].src=src;}
+for(const [n,src] of [['stanco','assets/matteo_stanco.webp'],['fermo','assets/matteo_fermo.webp'],['salto','assets/matteo_salto.webp'],['palla','assets/matteo_palla.webp'],['passi','assets/matteo_cammina.webp'],['grasso','assets/matteo_grasso.webp']]){FOGLISPR[n]=new Image();FOGLISPR[n].src=src;}
 /* i disegni sono di tre quarti, il piede dietro sta più in alto: si abbassa lo sprite di SPR_PIEDI raggi perché poggino tutti e due */
 const SPR_GIRO=1.51; /* la palla ruota davvero: un giro ogni 3,8 caselle, la circonferenza del disegno (p.rot va a metà velocità e il raggio disegnato è 1,3 volte quello vero) */
 const SPR_PIEDI=.13,SPR_K=3.8/122; /* Matteo in piedi è alto 3,8 raggi: più grande dell'urto, che resta quello di prima */
@@ -80,6 +80,8 @@ function fermoSpr(c,x,yPiedi,r,verso,W,ang){fogSpr(c,FOGLISPR.fermo,130,126,126,
 function saltoSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.salto,170,200,165,SPR_K,x,yPiedi,r,f,verso,W,ang);}
 /* rotola, 14 fotogrammi: 1-4 si chiude, 10-12 si riapre; la palla è il 9, quello senza la testa, che ruota di continuo (gelSpr) */
 function apreSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.palla,80,80,80,3.35/75,x,yPiedi,r,f,verso,W,ang);}
+/* grasso, 9 fotogrammi: 0-3 mangia, 5 e 4 la pancia cresce, 6 gonfio al massimo (al posto della bomba), 7-8 si sgonfia */
+function grassoSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.grasso,170,140,140,SPR_K,x,yPiedi,r,f,verso,W,ang);}
 /* passi, 21 fotogrammi: 0-5 corre, 6-9 cammina, 10-20 si gira per noia. Scelti dal foglio dell'utente e messi in ordine perché braccia e gambe si alternino */
 function passiSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.passi,130,126,126,SPR_K,x,yPiedi,r,f,verso,W,ang);}
 /* ---------- PROVA ANIMAZIONI (?prova=1): sagome segnaposto con nome dello stato, fotogramma e tempo d'uso ---------- */
@@ -401,7 +403,7 @@ function colpito2(nx,spina){
  togliCuore();sfx('hurt')||suono(150,.25,'square',.1,70);vibra(60);schizzi2(P2.x,P2.y,12,'#d8432e',5);
 }
 function raccogli(o){
- if(o.tipo==='c'){G.gettoni++;$('gett').textContent=G.gettoni;G.fiato=Math.min(1,(G.fiato||0)+.25);G.carica=Math.min(1,G.carica+.08);aggBarra();if(G.carica>=.25&&!G.avvisato){G.avvisato=true;avviso('Sei esplosivo: cadi da molto in alto o sbatti forte!',2600);}sfx('coin')||suono(880,.09,'triangle',.08,1320);}
+ if(o.tipo==='c'){P2.mangia=.5;G.gettoni++;$('gett').textContent=G.gettoni;G.fiato=Math.min(1,(G.fiato||0)+.25);G.carica=Math.min(1,G.carica+.08);aggBarra();if(G.carica>=.25&&!G.avvisato){G.avvisato=true;avviso('Sei esplosivo: cadi da molto in alto o sbatti forte!',2600);}sfx('coin')||suono(880,.09,'triangle',.08,1320);}
  else if(o.tipo==='H'){G.cuori++;hud();sfx('gem')||suono(520,.3,'sine',.12,1040);avviso('+1 cuore',900);schizzi2(o.x,o.y,12,'#d8432e',4);}
  else if(o.tipo==='U'){G.scudo=true;sfx('magic')||suono(440,.3,'triangle',.1,880);avviso('Scudo: para il prossimo colpo',1400);}
  else if(o.tipo==='Z'){G.carica=Math.min(1,G.carica+.4);aggBarra();sfx('magic')||suono(300,.3,'square',.08,600);avviso('Esplosione più forte',900);}
@@ -446,7 +448,7 @@ function rompiCrepa(x,y){M.g[y][x]=' ';schizzi2(x,y,10,'#b0643a',6);if(!M.dettaC
 function combo(){if(P2.slancio>0)P2.slancio=Math.max(P2.slancio,.8);G.combo=G.comboT>0?(G.combo||0)+1:1;G.comboT=1.5;if(G.combo>=2){G.gettoni+=G.combo;$('gett').textContent=G.gettoni;G.comboV={n:G.combo,t:G.t};suono(400+G.combo*90,.12,'triangle',.09,800+G.combo*120);}}
 const AIUTI={burrone:'Fosso troppo largo e sponda troppo alta: dai un colpo secco al telefono verso destra per lanciare Matteo',magazzino:'Il peso apre la porta se cade sul pulsante: rompi le casse con lo scatto per liberarlo',crollo:'Il ponte crolla appena ci sali: non fermarti!',valanga:'Lanciati giù per la discesa: a tutta velocità travolgi nemici e casse'};
 function passo2d(h){
- const p=P2;p.cd=Math.max(0,p.cd-h);if(p.cd===0)$('aSin').classList.add('pronto');p.inv=Math.max(0,p.inv-h);p.buf=Math.max(0,p.buf-h);p.coyote=Math.max(0,p.coyote-h);
+ const p=P2;{const bo=G.carica>=1;if(bo&&!p.eraBomba)p.gonfioT=.45;if(!bo&&p.eraBomba)p.sgonfiaT=.6;p.eraBomba=bo;p.gonfioT=Math.max(0,(p.gonfioT||0)-h);p.sgonfiaT=Math.max(0,(p.sgonfiaT||0)-h);p.mangia=Math.max(0,(p.mangia||0)-h);}p.cd=Math.max(0,p.cd-h);if(p.cd===0)$('aSin').classList.add('pronto');p.inv=Math.max(0,p.inv-h);p.buf=Math.max(0,p.buf-h);p.coyote=Math.max(0,p.coyote-h);
  if(p.stanco>0){p.stanco-=h;p.rotola=false;p.carica=0;p.vx=0;if(p.stanco<=0){p.stanco=0;G.fiato=Math.max(G.fiato,.4);}}else{G.fiatoT=Math.max(0,(G.fiatoT||0)-h);if(G.fiatoT<=0)G.fiato=Math.min(1,(G.fiato||0)+.07*h);} /* Matteo è grasso: riprende fiato piano, solo dopo 2 secondi senza scatti */
  const tx=p.stanco>0?0:IN.tx;if(Math.abs(tx)>.08)p.verso=Math.sign(tx);
  p.px=p.x;p.py=p.y;const vy0=p.vy;
@@ -583,7 +585,7 @@ function pianoAlMuro(x,y,d){if(cel(x,y)!=='#'||solidoK(x,y+1)||!(y<=0||solidoK(x
 const colonna=(x,y)=>!!(pianoAlMuro(x-1,y,-1)&&pianoAlMuro(x+1,y,1));
 /* colpito: Matteo resta visibile e pulsa di un rosso leggero. Si ridisegna su un livello a parte per colorare solo lui */
 const ROSSO=document.createElement('canvas');
-function tingiRosso(c,pg){const w=c.canvas.width,h=c.canvas.height;if(ROSSO.width!==w||ROSSO.height!==h){ROSSO.width=w;ROSSO.height=h;}const k=ROSSO.getContext('2d');k.setTransform(1,0,0,1,0,0);k.clearRect(0,0,w,h);k.setTransform(c.getTransform());pg(k);k.setTransform(1,0,0,1,0,0);k.globalCompositeOperation='source-atop';k.globalAlpha=.06+.16*(.5+.5*Math.sin(G.t*28));k.fillStyle='#ff1010';k.fillRect(0,0,w,h);k.globalAlpha=1;k.globalCompositeOperation='source-over';c.save();c.setTransform(1,0,0,1,0,0);c.drawImage(ROSSO,0,0);c.restore();}
+function tingiRosso(c,pg,a){const w=c.canvas.width,h=c.canvas.height;if(ROSSO.width!==w||ROSSO.height!==h){ROSSO.width=w;ROSSO.height=h;}const k=ROSSO.getContext('2d');k.setTransform(1,0,0,1,0,0);k.clearRect(0,0,w,h);k.setTransform(c.getTransform());pg(k);k.setTransform(1,0,0,1,0,0);k.globalCompositeOperation='source-atop';k.globalAlpha=a===undefined?.06+.16*(.5+.5*Math.sin(G.t*28)):a;k.fillStyle='#ff1010';k.fillRect(0,0,w,h);k.globalAlpha=1;k.globalCompositeOperation='source-over';c.save();c.setTransform(1,0,0,1,0,0);c.drawImage(ROSSO,0,0);c.restore();}
 function disegna2d(){
  const c=ctx2,m=MONDI[M.i],ts=V.ts,W=V.W,H=V.H,p=P2,k=m.kit,k0=k;
  c.setTransform(V.dpr,0,0,V.dpr,0,0);fondale(c,m);if(G.scossa>0)c.translate(rnd(-5,5)*G.scossa*2,rnd(-5,5)*G.scossa*2);
@@ -637,27 +639,35 @@ function disegna2d(){
   if(PROVA)disegnaProva(c,sx(p.x),pie,r,p,n,ang);
   else if(nuovo&&stancoVis===2)stancoSpr(c,sx(p.x),pie,r,1-p.stanco/2,p.verso,ang);
   else if(stancoVis===2)disegnaCamm(c,sx(p.x),pie,r,p.stanco<.35?3:4+Math.floor(G.t*3)%2,3,p.verso,0,ang);
+  else if(nuovo&&G.carica>=1){const gt=p.gonfioT||0,dd=Math.abs(p.vx);
+   if(gt>0)grassoSpr(c,sx(p.x),pie,r,gt>.3?5:gt>.15?4:6,p.verso,p.W,ang);
+   else if(p.rotola){const im=FOGLISPR.grasso,k=r*SPR_K;if(im&&im.complete){c.save();c.translate(sx(p.x),pie-66*k);c.rotate(-p.rot*SPR_GIRO);c.scale(1-p.W*.6,1+p.W);c.drawImage(im,6*170,0,170,140,-85*k,-75*k,170*k,140*k);c.restore();}}
+   else if(!n)grassoSpr(c,sx(p.x),pie,r,6,p.verso,p.W,0);
+   else grassoSpr(c,sx(p.x),pie,r,6,p.verso,dd<.25?p.W+Math.sin(G.t*2.5)*.025:p.W,ang+(dd<.25?0:Math.sin(p.passi*.8)*.1));
+   if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),pie-r*1.1,r*1.5,0,6.3);c.stroke();}}
   else if(G.carica>=1){const fr=p.inv>0?34:G.t%1.3<.09?18:p.rotola?0:!n?(p.vy<-7?35:19):Math.abs(p.vx)<.25?(p.fermoT>5?Math.floor((p.fermoT-5)*7)%9:36):19+Math.floor(p.passi)%10;
    disegnaBomba(c,sx(p.x),pie,r,fr,p.rotola?1:p.verso,p.W,p.rotola?0:ang,p.rotola?-p.rot*2:0);
    if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),pie-r*1.1,r*1.5,0,6.3);c.stroke();}}
   else if(!nuovo&&p.rotola&&!(p.anim==='chiude'&&p.animT<.2)){
    op.disegno=am.skin==='classica'||!!am.foto;op.foto=am._img;disegnaSlime(c,sx(p.x),sy(p.y),r,-p.rot,op);}
   else{
-   if(nuovo&&p.rotola){if(p.anim==='chiude'&&p.animT<.2)apreSpr(c,sx(p.x),pie,r,1+Math.min(3,Math.floor(p.animT/.05)),p.verso,p.W,ang);else gelSpr(c,sx(p.x),pie,r,9,1,p.W,p.vx,p.vy,G.t,n,-p.rot*SPR_GIRO);}
+   if(nuovo&&(p.sgonfiaT||0)>0)grassoSpr(c,sx(p.x),pie,r,p.sgonfiaT>.3?7:8,p.verso,p.W,n?ang:0);
+   else if(nuovo&&p.rotola){if(p.anim==='chiude'&&p.animT<.2)apreSpr(c,sx(p.x),pie,r,1+Math.min(3,Math.floor(p.animT/.05)),p.verso,p.W,ang);else gelSpr(c,sx(p.x),pie,r,9,1,p.W,p.vx,p.vy,G.t,n,-p.rot*SPR_GIRO);}
    else if(nuovo&&p.anim==='apre'&&p.animT<.2)apreSpr(c,sx(p.x),pie,r,10+Math.min(2,Math.floor(p.animT/.067)),p.verso,p.W,ang);
    else if(p.rotola)disegnaPasso(c,sx(p.x),pie,r,Math.min(2,Math.floor(p.animT/.067)),2,p.verso,p.W,ang);
    else if(p.anim==='apre'&&p.animT<.2)disegnaPasso(c,sx(p.x),pie,r,p.animT<.1?2:1,2,p.verso,p.W,ang);
+   else if(nuovo&&n&&p.atterra<=0&&(p.mangia||0)>0)grassoSpr(c,sx(p.x),pie,r,Math.min(3,Math.floor((.5-p.mangia)/.125)),p.verso,p.W,ang);
    else if(nuovo&&p.atterra>0)saltoSpr(c,sx(p.x),pie,r,p.atterra>.13?7:p.atterra>.07?8:9,p.verso,p.W,ang);
    else if(nuovo&&!n)saltoSpr(c,sx(p.x),pie,r,p.vy>6?1:p.vy>3?2:p.vy>1?3:p.vy>-1.5?4:p.vy>-5?5:6,p.verso,p.W,0);
    else if(p.atterra>0)disegnaCamm(c,sx(p.x),pie,r,4,3,p.verso,p.W,ang);
    else if(!n)disegnaCamm(c,sx(p.x),pie,r,p.vy>2.5?1:p.vy<-2.5?3:2,3,p.verso,p.W,0);
    else if(nuovo&&Math.abs(p.vx)>=.25){const q=Math.floor(p.passi*.6);passiSpr(c,sx(p.x),pie,r,Math.abs(p.vx)>2.3?q%6:6+q%4,p.verso,p.W,ang);}
-   else if(nuovo&&Math.abs(p.vx)<.25){if(p.fermoT>5)passiSpr(c,sx(p.x),pie,r,10+Math.floor((p.fermoT-5)*8)%11,p.verso,p.W,ang);else fermoSpr(c,sx(p.x),pie,r,p.verso,p.W+Math.sin(G.t*1.96)*.02,ang);}
+   else if(nuovo&&Math.abs(p.vx)<.25){if(G.carica>.6)grassoSpr(c,sx(p.x),pie,r,G.carica>.85?4:5,p.verso,p.W+Math.sin(G.t*1.96)*.02,ang);else if(p.fermoT>5)passiSpr(c,sx(p.x),pie,r,10+Math.floor((p.fermoT-5)*8)%11,p.verso,p.W,ang);else fermoSpr(c,sx(p.x),pie,r,p.verso,p.W+Math.sin(G.t*1.96)*.02,ang);}
    else if(Math.abs(p.vx)<.25){const col=p.fermoT>5?Math.floor((p.fermoT-5)*8)%10:[0,1,2,1][Math.floor(G.t*1.5)%4];disegnaCamm(c,sx(p.x),pie,r,col,0,p.verso,p.W+Math.sin(G.t*3)*.01,ang);}
    else disegnaCamm(c,sx(p.x),pie,r,Math.floor(p.passi)%10,Math.abs(p.vx)>2.3?2:1,p.verso,p.W,ang);
    if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.5,0,6.3);c.stroke();}
    if(G.stella>0){c.strokeStyle=`hsl(${G.t*400%360},95%,62%)`;c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.3,0,6.3);c.stroke();}}};
- pg(c);if(p.inv>0)tingiRosso(c,pg);
+ pg(c);{const am=amico();if(p.inv>0)tingiRosso(c,pg);else if(G.carica>=1&&!am._img&&am.colore===COLORI[0]&&am.skin==='classica')tingiRosso(c,pg,.03+.1*(.5+.5*Math.sin(G.t*7)));}
  stancoVis=0;c.restore();if(PROVA)elencoProva(c,c.canvas.clientWidth||c.canvas.width);
  if(p.bolla>0)bollaSapone(c,sx(p.x),sy(p.y),p.R*ts*(1.75+.06*Math.sin(G.t*9)),Math.min(1,p.bolla/.25),ts);
  if(G.boom){const e=(G.t-G.boom.t)/.55;if(e<1)disegnaEspl(c,sx(G.boom.x),sy(G.boom.y),G.boom.r*ts,e);else G.boom=null;}
@@ -845,7 +855,7 @@ function banner(t){$('grande').textContent=t;$('grande').hidden=false;$('avviso'
 function iniziaRun(prova){Object.assign(G,{fiato:1,dettoFiato:false,carica:0,avvisato:false,base:0,cuori:MAXC,gettoni:0,uccisi:0,tempo:0,scudo:false,stella:0,avanz:0,scossa:0,jelly:0,visti:G.visti||0});mostra('');giocoUI(true);hud();aggBarra();$('gett').textContent='0';entraCorsa(0,Array.isArray(prova)?prova:null);sveglia();}
 function entraCorsa(i,prova){
  G.modo='2d';G.mondo=i;M=costruisci(i,prova);M.prova=!!prova;goo.length=0;fumi.length=0;polveri.length=0;G.combo=0;G.comboT=0;
- G.fiato=1;Object.assign(P2,{stanco:0,slancio:0,x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
+ G.fiato=1;Object.assign(P2,{eraBomba:G.carica>=1,gonfioT:0,sgonfiaT:0,mangia:0,stanco:0,slancio:0,x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
  V.dir=1;V.la=2;V.attesa=0;V.py=P2.y;V.zoom=1;V.ts=V.ts0;V.cx=P2.x+2;V.cy=centroY();$('bossBox').hidden=true;$('nomeTappa').textContent=amico().nome+' · Mondo '+(i+1);$('aSin').classList.add('pronto');
  banner(prova?'Nuova tappa':MONDI[i].nome);
  if(!prova&&i===0)setTimeout(()=>{if(G.modo==='2d'&&G.stato==='gioco'&&G.mondo===0)avviso('Mangia per caricare l\u2019esplosione. Le casse si rompono con lo scatto.',3400);},2200);
