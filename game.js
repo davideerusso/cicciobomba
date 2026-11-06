@@ -29,7 +29,7 @@ const MONDI=[
  {nome:'Fornace di Pietra',cielo:['#ff9a55','#5a1330'],legno:'#6a4c42',vena:'#46302a',bordo:'#37c4b8',nebbia:'#a23a3a',kit:'stone',fondo:'color_desert',liquido:'lava',decor:['rock','cactus','fence'],nemico:'slime_fire',volo:'fly'}
 ];
 const BOSS=[
- {nome:'Ananassone',vita:3,scatto:7,stordito:2.6,colore:'#f4bd3c',corona:true},
+ {nome:'Ananassone',r:1.1,vita:3,scatto:7,stordito:2.6,colore:'#f4bd3c',corona:true},
  {nome:'Regina Trivella',vita:4,scatto:8.5,stordito:2.3,colore:'#7d4bc9',pioggia:true},
  {nome:'Re Birillo',vita:5,scatto:9.5,stordito:2,colore:'#e08a1e',pioggia:true,raggiera:true,servi:true}
 ];
@@ -702,10 +702,10 @@ const ARENE=[
  ["############################","#                          #","#   c                  c   #","#-------      c     -------#","#         ----------       #","#                          #","#      B            B      #","#-------            -------#","#         ----------       #","#             c            #","#                          #","#   B  c            c  B   #","###########      ###########","###########      ###########"],
  ["############################","#                          #","#            c             #","#      --------------      #","#  c                    c  #","#-----                -----#","#        B        B        #","#     --------------       #","#                          #","#---                    ---#","#                          #","#  c     B         B    c  #","######   ##########   ######","######   ##########   ######"]
 ];
-/* Ananassone disegnato: fotogrammi da 192x204 in righe da 8, guarda a destra. 0-7 si gira, 8-15 cammina, 16-23 corre, 25 arrabbiato, 29-30 mazza alzata, 31 mazza calata nel lancio, 32-34 stordito */
+/* Ananassone con la corazza, disegnato dall'utente: fotogrammi da 232x166 in righe da 8, guarda a destra. 0-3 fermo, 4-11 corre, 9 chinato a prendere la mira, 12-13 pugno nel lancio, 14-16 stordito, 17-20 cade sconfitto. z è l'altezza da fermo */
 const NEMICO=new Image();NEMICO.src='assets/nemico_ananas.webp'; /* l'ananas arrabbiato del foglio Pineapple Tiles, nemico del mondo 1 */
-const ANAS=new Image();ANAS.src='assets/boss_ananas.webp';
-function disegnaAnanas(c,f,z,verso,piedi){if(!ANAS.complete)return false;const k=z/185,oy=piedi?195:118;c.save();if(verso<0)c.scale(-1,1);c.drawImage(ANAS,f%8*192,Math.floor(f/8)*204,192,204,-96*k,-oy*k,192*k,204*k);c.restore();return true;}
+const ANAS=new Image();ANAS.src='assets/boss_corazza.webp';const ANW=232,ANH=166,ANX=117,ANY=164;
+function disegnaAnanas(c,f,z,verso,piedi){if(!ANAS.complete)return false;const k=z/160,oy=piedi?ANY:90;c.save();if(verso<0)c.scale(-1,1);c.drawImage(ANAS,f%8*ANW,Math.floor(f/8)*ANH,ANW,ANH,-ANX*k,-oy*k,ANW*k,ANH*k);c.restore();return true;}
 const BOSPR=[0,1,2].map(n=>{const k=document.createElement('canvas');k.width=k.height=240;const c=k.getContext('2d'),o='#2b2b3a';c.lineWidth=10;c.lineJoin='round';c.strokeStyle=o;
  if(n===0)c.drawImage(ANAN,0,0,240,240);
  else if(n===1){c.fillStyle='#7d4bc9';c.beginPath();c.moveTo(30,92);c.lineTo(210,92);c.lineTo(120,232);c.closePath();c.fill();c.stroke();c.save();c.clip();c.strokeStyle='#b58cf0';c.lineWidth=10;for(let i=0;i<6;i++){c.beginPath();c.moveTo(0,100+i*28);c.lineTo(240,130+i*28);c.stroke();}c.restore();c.fillStyle='#fff4df';c.beginPath();c.ellipse(120,86,96,20,0,0,6.3);c.fill();c.stroke();c.fillStyle='#7d4bc9';c.fillRect(108,16,24,56);c.strokeRect(108,16,24,56);}
@@ -717,12 +717,12 @@ function costruisciArena(i){
  const m={i,g,w:W,alto:H,oggetti:[],nemici:[],colpi:[],spine:{},fine:Infinity,decor:[],posti:[],start:{x:3,y:2.97}};
  for(let q=0;q<H;q++)for(let x=0;x<W;x++){const y=H-1-q,t=r[q][x]||' ';if(t==='c'){m.oggetti.push({tipo:'c',x,y,fase:x});g[y][x]=' ';}else g[y][x]=t;}
  for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++)if(g[y][x]===' '&&(g[y-1][x]==='#'||g[y-1][x]==='-'))m.posti.push({x,y});
- const c=BOSS[i];m.boss={cfg:c,sp:BOSPR[i],x:W/2,y:9,r:.95,vita:c.vita,stato:'fermo',t:2,dx:1,dy:0,vy:0,lampo:0,colpi:0,lung:0};
+ const c=BOSS[i];m.boss={cfg:c,sp:BOSPR[i],x:W/2,y:9,r:c.r||.95,vita:c.vita,stato:'fermo',t:2,dx:1,dy:0,vy:0,lampo:0,colpi:0,lung:0};
  return m;
 }
 function colpisciBoss(b){
  b.vita--;b.colpi++;b.lampo=.3;G.scossa=riduci?0:.45;schizzi2(b.x,b.y,30,b.cfg.colore,8);sfx('hurt')||suono(70,.5,'sawtooth',.14,40);vibra(90);$('bossHp').style.width=(b.vita/b.cfg.vita*100)+'%';
- if(b.vita<=0){schizzi2(b.x,b.y,70,'#f6c445',10);G.gettoni+=30;$('gett').textContent=G.gettoni;if(G.stato==='gioco'){G.stato='sconfitto';G.finT=1.1;}return;}
+ if(b.vita<=0){b.tm=G.t;b.lampo=0;schizzi2(b.x,b.y,70,'#f6c445',10);G.gettoni+=30;$('gett').textContent=G.gettoni;if(G.stato==='gioco'){G.stato='sconfitto';G.finT=1.1;}return;}
  b.stato='fermo';b.t=1.5;dopoStordito(b);
 }
 function dopoStordito(b){
@@ -745,7 +745,7 @@ function passoBoss(dt){
  if(b.stato==='fermo'){cadeBoss(b,dt);const v=Math.abs(dx)>.6?Math.sign(dx):0;b.cammina=0;
   if(b.aTerra&&v&&!pieno(cel(Math.round(b.x+v*(b.r+.15)),Math.round(b.y)))){b.x=clamp(b.x+v*1.4*dt,1.5+b.r,M.w-1.5-b.r);b.cammina=v;}
   if(b.t<=0&&b.aTerra){b.stato='mira';b.t=1.1;}}
- else if(b.stato==='mira'){cadeBoss(b,dt);if(b.t>.25){b.dx=dx/d;b.dy=dy/d;}b.lung=raggioBoss(b);b.arrivo=arrivoBoss(b);if(b.t<=0){b.stato='carica';b.tc=G.t;sfx('throw')||suono(110,.4,'sawtooth',.1,330);}}
+ else if(b.stato==='mira'){cadeBoss(b,dt);if(b.t>.25){/* punta ai piedi di Matteo, non al centro: sullo stesso piano il lancio resta dritto invece di finire subito contro terra */const h=Math.max(p.y-p.R+b.r,b.r+1.5)-b.y,a=Math.abs(h)<.3?0:h,l=Math.hypot(dx,a);if(l){b.dx=dx/l;b.dy=a/l;}}b.lung=raggioBoss(b);b.arrivo=arrivoBoss(b);if(b.t<=0){b.stato='carica';b.tc=G.t;sfx('throw')||suono(110,.4,'sawtooth',.1,330);}}
  else if(b.stato==='carica'){b.x+=b.dx*b.cfg.scatto*dt;b.y+=b.dy*b.cfg.scatto*dt;
   const qx=Math.round(b.x+b.dx*b.r),qy=Math.round(b.y+b.dy*b.r);
   if(pieno(cel(qx,qy))||pieno(cel(Math.round(b.x+b.dx*b.r),Math.round(b.y)))||pieno(cel(Math.round(b.x),Math.round(b.y+b.dy*b.r)))||b.y<b.r+1.5){b.stato='stordito';b.t=b.cfg.stordito;b.vy=0;b.x-=b.dx*.3;b.y=Math.max(b.y-b.dy*.3,b.r+1.5);schizzi2(b.x,b.y,20,'#f6c445',6);suono(90,.35,'square',.13,50);vibra(70);G.scossa=riduci?0:.45;avviso('Stordito: scattagli addosso!',1300);}}
@@ -759,12 +759,12 @@ function passoBoss(dt){
   else colpito2(nx);}
 }
 function disegnaBoss(c,sx,sy,ts){
- const b=M.boss;if(!b||b.vita<=0)return;const a=sx(b.x),q=sy(b.y),z=b.r*ts*2.9;
+ const b=M.boss;if(!b||(b.vita<=0&&!(M.i===0&&G.stato==='sconfitto')))return;const a=sx(b.x),q=sy(b.y),z=b.r*ts*2.9;
  /* mentre prende la mira, un cerchio rosso segna il punto dove atterrerà */
  if(b.stato==='mira'&&b.arrivo){const gx=sx(b.arrivo.x),gy=sy(b.arrivo.y),rr=ts*(.5+.06*Math.sin(G.t*12));c.save();c.globalAlpha=.5;c.strokeStyle='#ff3b2e';c.lineWidth=Math.max(2,ts*.1);c.beginPath();c.arc(gx,gy,rr,0,6.3);c.stroke();c.globalAlpha=.18;c.fillStyle='#ff3b2e';c.fill();c.restore();}
  c.save();c.translate(a+(b.stato==='mira'?rnd(-2,2):0),q);
  if(M.i===0&&ANAS.complete){const p=P2,v=b.stato==='carica'||b.stato==='mira'?Math.sign(b.dx)||1:Math.sign(p.x-b.x)||1;
-  const f=b.stato==='carica'?(G.t-(b.tc||0)<.08?30:31):b.stato==='mira'?(b.t>.75?25:b.t>.6?29:30):b.stato==='stordito'?32+Math.floor(G.t*5)%3:b.cammina?8+Math.floor(G.t*8)%8:24;
+  const f=b.vita<=0?17+Math.min(3,Math.floor((G.t-b.tm)*7)):b.stato==='carica'?(G.t-(b.tc||0)<.08?12:13):b.stato==='mira'?(b.t>.25?9:12):b.stato==='stordito'?14+Math.floor(G.t*5)%3:b.cammina?4+Math.floor(G.t*10)%8:Math.floor(G.t*3)%4;
   c.translate(0,b.r*ts);if(b.lampo>0&&Math.floor(G.t*24)%2)c.globalAlpha=.35;
   disegnaAnanas(c,f,z,v,true);c.restore();}
  else{
@@ -842,7 +842,7 @@ function gFiatoScatto(c,t){gFondo(c);const ni=Math.floor(t*3),u=t*3-ni,v=1-.3*(n
 function gFiatoRiposo(c,t){gFondo(c);gBarraFiato(c,t>.9?.4:.03,t<=.9);if(matteoNuovo())stancoSpr(c,GW/2,GS,GR,t,1,0);else disegnaCamm(c,GW/2,GS,GR,4+Math.floor(t*12)%2,3,1,0,0);}
 function gFiatoPizza(c,t){gFondo(c);const px=[120,200],x=30+t*240;let n=0;px.forEach(q=>{if(x<q)c.drawImage(PIZZA,q-17,GS-42,34,34);else n++;});gBarraFiato(c,.15+n*.25,n===0);const mg=px.some(q=>x>=q&&x<q+24);if(matteoNuovo()&&mg)grassoSpr(c,x,GS,GR,1+Math.floor(t*30)%3,1,0,0);else gCamm(c,x,GS,GR,Math.floor(t*40)%10,1,1,0,0);}
 function gStanza(c){gFondo(c);for(let i=0;i<5;i++)sp(c,'terrain_sand_cloud_middle',20+i*34,62,35,35);for(let i=0;i<5;i++)sp(c,'block_exclamation',GW-22,GS-22*(i+1),23,23);}
-function gBossS(c,x,y,st,t){const z=70;c.save();c.translate(x,y);if(!disegnaAnanas(c,st?32+Math.floor(t*12)%3:16+Math.floor(t*16)%8,z,1)){if(st)c.rotate(.25*Math.sin(t*30));c.drawImage(BOSPR[0],-z/2,-z/2,z,z);}c.restore();if(st){c.fillStyle='#f6c445';c.strokeStyle='#2b2b3a';c.lineWidth=1.5;for(let i=0;i<5;i++){const a=t*20+i*1.257;c.beginPath();c.arc(x+Math.cos(a)*30,y-30+Math.sin(a)*8,4.5,0,6.3);c.fill();c.stroke();}}}
+function gBossS(c,x,y,st,t){const z=100;c.save();c.translate(x,y-14);if(!disegnaAnanas(c,st?14+Math.floor(t*12)%3:4+Math.floor(t*16)%8,z,1)){if(st)c.rotate(.25*Math.sin(t*30));c.drawImage(BOSPR[0],-z/2,-z/2,z,z);}c.restore();if(st){c.fillStyle='#f6c445';c.strokeStyle='#2b2b3a';c.lineWidth=1.5;for(let i=0;i<5;i++){const a=t*20+i*1.257;c.beginPath();c.arc(x+Math.cos(a)*30,y-56+Math.sin(a)*8,4.5,0,6.3);c.fill();c.stroke();}}}
 function gLancio(c,t){gStanza(c);const e=clamp((t-.3)/.3,0,1),x=60+e*180,y=40+e*(GS-70),mz=t<.3;if(mz){c.save();c.globalAlpha=.5;c.strokeStyle='#ff3b2e';c.lineWidth=3;c.beginPath();c.arc(240,GS-30,14,0,6.3);c.stroke();c.globalAlpha=.18;c.fillStyle='#ff3b2e';c.fill();c.restore();}gBossS(c,x+(mz?rnd(-1,1):0),y,false,t);const j=clamp((t-.22)/.3,0,1);gCamm(c,190-j*90,GS-Math.sin(j*3.14)*46,GR,j>0&&j<1?2:0,3,-1,0,0);}
 function gSbatte(c,t){gStanza(c);const e=clamp(t/.3,0,1),x=70+e*165,hit=t>.3,y=hit?Math.min(GS-34,80+(t-.3)*400):80;gBossS(c,x,y,hit,t);gBoom2(c,GW-34,80,(t-.3)/.3);gCamm(c,50,GS,GR,0,0,1,0,0);}
 function gColpo(c,t){gStanza(c);const e=clamp((t-.25)/.2,0,1),x=30+e*165,hit=t>.45;gBossS(c,235,GS-34,hit?0:t+.5,t);if(!hit)gTelefono(c,GW/2,30,0,-1,t>.15&&t<.3);gPalla(c,hit?195-(t-.45)*120:x,GS-GR,GR,x*.09,0,true);gBoom2(c,212,GS-30,(t-.45)/.3);
@@ -947,7 +947,7 @@ function ciclo(ora){
  if(G.modo==='menu'){if(G.guida)disegnaGuida();else disegnaMenu(dt);return;}
  leggiInput(dt);
  if(G.stato==='pronti'){G.pronti-=dt;if(G.pronti<=0){G.stato='gioco';$('grande').hidden=true;}}
- if(G.stato==='sconfitto'){G.finT-=dt;if(G.finT<=0){G.stato='velo';dopoBoss();}}
+ if(G.stato==='sconfitto'){G.finT-=dt;if(M.boss)cadeBoss(M.boss,dt);if(G.finT<=0){G.stato='velo';dopoBoss();}}
  if(G.stato==='fineAtt'){G.finT-=dt;if(G.finT<=0)mostraFine();}
  if(G.stato==='gioco')G.tempo+=dt;
  G.scossa=Math.max(0,G.scossa-dt);
