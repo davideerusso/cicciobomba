@@ -79,7 +79,7 @@ function fermoSpr(c,x,yPiedi,r,verso,W,ang){fogSpr(c,FOGLISPR.fermo,130,126,126,
 function saltoSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.salto,170,200,165,SPR_K,x,yPiedi,r,f,verso,W,ang);}
 /* rotola, 14 fotogrammi: 1-4 si chiude, 5-9 palla (gelSpr), 10-12 si riapre */
 function apreSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.palla,80,80,80,3.35/75,x,yPiedi,r,f,verso,W,ang);}
-/* passi, 31 fotogrammi: 0-9 corre, 10-19 cammina, 20-30 si gira per noia */
+/* passi, 21 fotogrammi: 0-5 corre, 6-9 cammina, 10-20 si gira per noia. Scelti dal foglio dell'utente e messi in ordine perché braccia e gambe si alternino */
 function passiSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.passi,130,126,126,SPR_K,x,yPiedi,r,f,verso,W,ang);}
 /* ---------- PROVA ANIMAZIONI (?prova=1): sagome segnaposto con nome dello stato, fotogramma e tempo d'uso ---------- */
 const PROVA=/[?&]prova\b/.test(location.search),USO={},POSE={fermo:[4,3,'#7fb0d8'],noia:[8,5,'#7fb0d8'],cammina:[8,10,'#6fc27a'],corre:[8,16,'#3fa04c'],stacco:[2,12,'#e8c84a'],sale:[2,8,'#e8c84a'],punta:[1,1,'#f0a830'],cade:[2,8,'#e08a20'],atterra:[2,12,'#c96a18'],chiude:[3,15,'#b48ae0'],rotola:[8,0,'#8a5ad0'],apre:[3,15,'#b48ae0'],scatto:[4,14,'#e0503c'],lancio:[4,10,'#e03c8c'],bolla:[2,8,'#5ad0e0'],colpito:[2,8,'#ff6060'],schianto:[3,10,'#ff3030'],riposo:[4,3,'#999999'],'stanco fermo':[3,3,'#b0b0a0'],'stanco cammina':[8,8,'#a0b090'],'stanco corre':[8,12,'#90a080']};
@@ -580,6 +580,9 @@ function latoPiano(x,y){const muro=(i,j)=>solidoK(i,j)&&!'/%'.includes(cel(i,j))
 /* il piano in x,y arriva al muro che sta dal lato -d: finisce lì (m) o finisce sul vuoto dal lato d (v) */
 function pianoAlMuro(x,y,d){if(cel(x,y)!=='#'||solidoK(x,y+1)||!(y<=0||solidoK(x,y-1)))return null;const b=latoPiano(x,y);return!b?null:b[0]==='v'&&b[1]===d?'v':b[0]==='m'&&b[1]===-d?'m':null;}
 const colonna=(x,y)=>!!(pianoAlMuro(x-1,y,-1)&&pianoAlMuro(x+1,y,1));
+/* colpito: Matteo resta visibile e pulsa di un rosso leggero. Si ridisegna su un livello a parte per colorare solo lui */
+const ROSSO=document.createElement('canvas');
+function tingiRosso(c,pg){const w=c.canvas.width,h=c.canvas.height;if(ROSSO.width!==w||ROSSO.height!==h){ROSSO.width=w;ROSSO.height=h;}const k=ROSSO.getContext('2d');k.setTransform(1,0,0,1,0,0);k.clearRect(0,0,w,h);k.setTransform(c.getTransform());pg(k);k.setTransform(1,0,0,1,0,0);k.globalCompositeOperation='source-atop';k.globalAlpha=.06+.16*(.5+.5*Math.sin(G.t*28));k.fillStyle='#ff1010';k.fillRect(0,0,w,h);k.globalAlpha=1;k.globalCompositeOperation='source-over';c.save();c.setTransform(1,0,0,1,0,0);c.drawImage(ROSSO,0,0);c.restore();}
 function disegna2d(){
  const c=ctx2,m=MONDI[M.i],ts=V.ts,W=V.W,H=V.H,p=P2,k=m.kit,k0=k;
  c.setTransform(V.dpr,0,0,V.dpr,0,0);fondale(c,m);if(G.scossa>0)c.translate(rnd(-5,5)*G.scossa*2,rnd(-5,5)*G.scossa*2);
@@ -627,7 +630,7 @@ function disegna2d(){
  for(const f of fumi)disegnaFumo(c,sx(f.x),sy(f.y),ts*1.2,f.v,(G.t-f.t)/.55);
  if(G.carica>=MIN_BOTTO){const k=.15+G.carica*.45+.08*Math.sin(G.t*12),rg=p.R*ts*2.2,cx=sx(p.x),cy=sy(p.y),gr=c.createRadialGradient(cx,cy,p.R*ts*.5,cx,cy,rg);gr.addColorStop(0,`rgba(255,90,20,${k})`);gr.addColorStop(1,'rgba(255,90,20,0)');c.fillStyle=gr;c.beginPath();c.arc(cx,cy,rg,0,6.3);c.fill();}
  c.save();if(p.bolla>0&&!riduci)c.translate(rnd(-1.6,1.6),rnd(-1.6,1.6));
- if(!(p.inv>0&&Math.floor(G.t*14)%2===0)){const op={t:G.t,W:p.W,vx:p.vx,vy:p.vy,n:p.ultimoSuolo,stella:G.stella,scudo:G.scudo};
+ const pg=c=>{const op={t:G.t,W:p.W,vx:p.vx,vy:p.vy,n:p.ultimoSuolo,stella:G.stella,scudo:G.scudo};
   const n=p.ultimoSuolo,r=p.R*ts*1.02,pie=sy(p.y-p.R),ang=n?Math.atan2(n.x,n.y):0,am=amico(),nuovo=!am._img&&am.colore===COLORI[0]&&am.skin==='classica';
   stancoVis=G.carica>=1?0:p.stanco>0?2:G.fiato<FIATO_SCATTO?1:0;
   if(PROVA)disegnaProva(c,sx(p.x),pie,r,p,n,ang);
@@ -647,12 +650,13 @@ function disegna2d(){
    else if(nuovo&&!n)saltoSpr(c,sx(p.x),pie,r,p.vy>6?1:p.vy>3?2:p.vy>1?3:p.vy>-1.5?4:p.vy>-5?5:6,p.verso,p.W,0);
    else if(p.atterra>0)disegnaCamm(c,sx(p.x),pie,r,4,3,p.verso,p.W,ang);
    else if(!n)disegnaCamm(c,sx(p.x),pie,r,p.vy>2.5?1:p.vy<-2.5?3:2,3,p.verso,p.W,0);
-   else if(nuovo&&Math.abs(p.vx)>=.25)passiSpr(c,sx(p.x),pie,r,(Math.abs(p.vx)>2.3?0:10)+Math.floor(p.passi)%10,p.verso,p.W,ang);
-   else if(nuovo&&Math.abs(p.vx)<.25){if(p.fermoT>5)passiSpr(c,sx(p.x),pie,r,20+Math.floor((p.fermoT-5)*8)%11,p.verso,p.W,ang);else fermoSpr(c,sx(p.x),pie,r,p.verso,p.W+Math.sin(G.t*1.96)*.02,ang);}
+   else if(nuovo&&Math.abs(p.vx)>=.25){const q=Math.floor(p.passi*.6);passiSpr(c,sx(p.x),pie,r,Math.abs(p.vx)>2.3?q%6:6+q%4,p.verso,p.W,ang);}
+   else if(nuovo&&Math.abs(p.vx)<.25){if(p.fermoT>5)passiSpr(c,sx(p.x),pie,r,10+Math.floor((p.fermoT-5)*8)%11,p.verso,p.W,ang);else fermoSpr(c,sx(p.x),pie,r,p.verso,p.W+Math.sin(G.t*1.96)*.02,ang);}
    else if(Math.abs(p.vx)<.25){const col=p.fermoT>5?Math.floor((p.fermoT-5)*8)%10:[0,1,2,1][Math.floor(G.t*1.5)%4];disegnaCamm(c,sx(p.x),pie,r,col,0,p.verso,p.W+Math.sin(G.t*3)*.01,ang);}
    else disegnaCamm(c,sx(p.x),pie,r,Math.floor(p.passi)%10,Math.abs(p.vx)>2.3?2:1,p.verso,p.W,ang);
    if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.5,0,6.3);c.stroke();}
-   if(G.stella>0){c.strokeStyle=`hsl(${G.t*400%360},95%,62%)`;c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.3,0,6.3);c.stroke();}}}
+   if(G.stella>0){c.strokeStyle=`hsl(${G.t*400%360},95%,62%)`;c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.3,0,6.3);c.stroke();}}};
+ pg(c);if(p.inv>0)tingiRosso(c,pg);
  stancoVis=0;c.restore();if(PROVA)elencoProva(c,c.canvas.clientWidth||c.canvas.width);
  if(p.bolla>0)bollaSapone(c,sx(p.x),sy(p.y),p.R*ts*(1.75+.06*Math.sin(G.t*9)),Math.min(1,p.bolla/.25),ts);
  if(G.boom){const e=(G.t-G.boom.t)/.55;if(e<1)disegnaEspl(c,sx(G.boom.x),sy(G.boom.y),G.boom.r*ts,e);else G.boom=null;}
