@@ -67,6 +67,7 @@ const FOGLISPR={};
 for(const [n,src] of [['stanco','assets/matteo_stanco.webp'],['fermo','assets/matteo_fermo.webp'],['salto','assets/matteo_salto.webp'],['palla','assets/matteo_palla.webp'],['passi','assets/matteo_cammina.webp'],['grasso','assets/matteo_grasso.webp']]){FOGLISPR[n]=new Image();FOGLISPR[n].src=src;}
 /* i disegni sono di tre quarti, il piede dietro sta più in alto: si abbassa lo sprite di SPR_PIEDI raggi perché poggino tutti e due */
 const SPR_GIRO=1.51; /* la palla ruota davvero: un giro ogni 3,8 caselle, la circonferenza del disegno (p.rot va a metà velocità e il raggio disegnato è 1,3 volte quello vero) */
+const SPR_ATTESA=1.5; /* fermandosi resta com'è per questi secondi, poi gira fino a dritto e si apre; se riparte continua da lì */
 const SPR_PIEDI=.13,SPR_K=3.8/122; /* Matteo in piedi è alto 3,8 raggi: più grande dell'urto, che resta quello di prima */
 function fogSpr(c,im,cw,ch,oy,kr,x,yPiedi,r,f,verso,W,ang){
  if(!im||!im.complete)return;const k=r*kr;c.save();c.translate(x,yPiedi+r*SPR_PIEDI);if(ang)c.rotate(ang);c.scale(verso*(1-W*.6),1+W);c.drawImage(im,f*cw,0,cw,ch,-cw/2*k,-oy*k,cw*k,ch*k);c.restore();
@@ -80,6 +81,16 @@ function fermoSpr(c,x,yPiedi,r,verso,W,ang){fogSpr(c,FOGLISPR.fermo,130,126,126,
 function saltoSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.salto,170,200,165,SPR_K,x,yPiedi,r,f,verso,W,ang);}
 /* rotola, 14 fotogrammi: 1-4 si chiude, 10-12 si riapre; la palla è il 9, quello senza la testa, che ruota di continuo (gelSpr) */
 function apreSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.palla,80,80,80,3.35/75,x,yPiedi,r,f,verso,W,ang);}
+/* raggio dell'urto: da super grasso è il cerchio della pancia disegnata. Cresce solo se c'è posto, tenendo fermi i piedi; altrimenti riprova al passo dopo */
+const R_NORMALE=.46,R_GRASSO=.74;
+function aggRaggio(p){const v=G.carica>=1&&matteoNuovo()?R_GRASSO:R_NORMALE;if(p.R===v)return;const d=v-p.R;if(d<0){p.R=v;p.y+=d;p.py+=d;return;}
+ const q={x:p.x,y:p.y+d,px:p.x,py:p.y+d,vx:0,vy:0};urta(q,v);if(Math.hypot(q.x-p.x,q.y-p.y-d)>.12)return;p.R=v;p.x=q.x;p.y=q.y;p.px=q.x;p.py=q.y;}
+/* il Matteo normale, senza colore, skin o foto: usa i fogli nuovi */
+function matteoNuovo(){const a=amico();return !a._img&&a.colore===COLORI[0]&&a.skin==='classica';}
+/* fermandosi la palla finisce di girare fino a dritto: kg è la velocità del giro, T la durata. Se manca quasi un giro intero torna un poco indietro */
+function giroFine(p,kg,T,ri){const e=clamp((p.animT-ri)/T,0,1),q=1-(1-e)*(1-e),a0=-(p.rotF||0)*kg,d=p.dirF||1;let re=((-d*a0)%6.2832+6.2832)%6.2832;if(re>4.5)re-=6.2832;return a0+d*re*q;}
+/* palla del Matteo super grasso: il fotogramma 6 di grasso, con pancia, braccia e gambe, che gira tutto intero attorno al cerchio della pancia, centro (83; 82,2), raggio 50,9. Grande come la palla normale a carica piena */
+function gPallaGira(c,x,yPiedi,r,gi,W){const im=FOGLISPR.grasso,k=r*SPR_K;if(!im||!im.complete)return;c.save();c.translate(x,yPiedi);c.scale(1-W*.3,1+W*.4);c.translate(0,-50.9*k);c.rotate(gi);c.drawImage(im,6*170,0,170,140,-83*k,-82.2*k,170*k,140*k);c.restore();}
 /* grasso, 9 fotogrammi: 0-3 mangia, 5 e 4 la pancia cresce, 6 gonfio al massimo (al posto della bomba), 7-8 si sgonfia */
 function grassoSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.grasso,170,140,140,SPR_K,x,yPiedi,r,f,verso,W,ang);}
 /* passi, 21 fotogrammi: 0-5 corre, 6-9 cammina, 10-20 si gira per noia. Scelti dal foglio dell'utente e messi in ordine perché braccia e gambe si alternino */
@@ -138,7 +149,7 @@ function disegnaPasso(c,x,yPiedi,r,col,riga,verso,W,ang){
 }
 /* palla di gelatina con gli sprite: come disegnaSlime si allunga con la velocità, si schiaccia con W e ondeggia; lo sprite si disegna a strisce orizzontali, ognuna larga e spostata per conto suo */
 function gelSpr(c,x,yPiedi,r,col,verso,W,vx,vy,t,n,gi){
- const FM=FOGLISPR.palla;if(!FM||!FM.complete)return;const k=r*2.6/60,sp=Math.hypot(vx,vy),al=Math.min(.13,sp*.011),fi=Math.atan2(-vy,vx),am=.02+Math.min(.04,sp*.0035)+Math.min(.05,Math.abs(W)*.28),sw=1-W*.7,sh=1+W*.7,s=sh*Math.hypot((1+al)*Math.sin(fi),(1-al)*Math.cos(fi)),h=30*k,nx=n?n.x:0,ny=n?n.y:1;
+ const FM=FOGLISPR.palla;if(!FM||!FM.complete)return;const k=r*2.6/60*(1+.22*G.carica),sp=Math.hypot(vx,vy),al=Math.min(.13,sp*.011),fi=Math.atan2(-vy,vx),am=.02+Math.min(.04,sp*.0035)+Math.min(.05,Math.abs(W)*.28),sw=1-W*.7,sh=1+W*.7,s=sh*Math.hypot((1+al)*Math.sin(fi),(1-al)*Math.cos(fi)),h=30*k,nx=n?n.x:0,ny=n?n.y:1;
  c.save();c.translate(x-nx*r+nx*h*s,yPiedi-r+ny*r-ny*h*s);c.rotate(fi);c.scale(1+al,1-al);c.rotate(-fi);c.scale(sw*verso,sh);c.rotate(gi);
  for(let i=10;i<80;i++){const a=Math.asin(clamp((i+.5-47.8)/30,-1,1)),w=1+am*Math.sin(3*a+t*5)+am*.5*Math.sin(5*a-t*7),o=am*r*.45*Math.sin(2*a+t*6);c.drawImage(FM,col*80,i,80,1,-40.4*k*w+o,(i-47.8)*k,80*k*w,k+.6);}
  c.restore();
@@ -234,14 +245,14 @@ function suMoto(e){
 /* la bolla: Matteo vibra e galleggia leggero per un attimo; una volta per salto e costa un po' di fiato */
 function bolla(){
  const p=P2;if(G.stato!=='gioco'||p.stanco>0||p.bollaUsata||p.bolla>0)return;if(!usaFiato(.25))return;
- p.bolla=.85;p.bollaUsata=true;p.rotola=true;p.ultimoSuolo=null;p.coyote=0;p.vy=Math.max(p.vy,2.3);p.y+=.04;vibra([15,25,15,25,15]);suono(700,.35,'sine',.07,1100);suono(950,.25,'triangle',.04,1500);
+ p.bolla=.85;p.bollaUsata=true;if(!p.rotola)p.rot=0;p.rotola=true;p.ultimoSuolo=null;p.coyote=0;p.vy=Math.max(p.vy,2.3);p.y+=.04;vibra([15,25,15,25,15]);suono(700,.35,'sine',.07,1100);suono(950,.25,'triangle',.04,1500);
  if(!G.dettaBolla){G.dettaBolla=true;avviso('Bolla! Scuotendo il telefono Matteo galleggia per un attimo',2200);}
 }
 /* il lancio è una cannonata: deve passare fossi dove salto, scatto e bolla insieme non arrivano */
 const LANCIO_VX=15,LANCIO_VY=16.5,LANCIO_T=1.6;
 function lancio(d){
  const p=P2;if(G.stato!=='gioco'||!(p.coyote>0||p.ultimoSuolo)||!usaFiato(FIATO_LANCIO))return;
- p.vy=LANCIO_VY;p.vx=d*LANCIO_VX;p.lancio=LANCIO_T;p.verso=d;p.rotola=true;p.coyote=0;p.ultimoSuolo=null;p.y+=.05;p.Wv+=10;polvere();sfx('jump-high')||suono(260,.3,'square',.08,900);vibra(30);
+ p.vy=LANCIO_VY;p.vx=d*LANCIO_VX;p.lancio=LANCIO_T;p.verso=d;if(!p.rotola)p.rot=0;p.rotola=true;p.coyote=0;p.ultimoSuolo=null;p.y+=.05;p.Wv+=10;polvere();sfx('jump-high')||suono(260,.3,'square',.08,900);vibra(30);
  if(!G.lanciato){G.lanciato=true;avviso('Lancio!',900);}
 }
 let provato=false;
@@ -403,7 +414,7 @@ function colpito2(nx,spina){
  togliCuore();sfx('hurt')||suono(150,.25,'square',.1,70);vibra(60);schizzi2(P2.x,P2.y,12,'#d8432e',5);
 }
 function raccogli(o){
- if(o.tipo==='c'){P2.mangia=.5;G.gettoni++;$('gett').textContent=G.gettoni;G.fiato=Math.min(1,(G.fiato||0)+.25);G.carica=Math.min(1,G.carica+.08);aggBarra();if(G.carica>=.25&&!G.avvisato){G.avvisato=true;avviso('Sei esplosivo: cadi da molto in alto o sbatti forte!',2600);}sfx('coin')||suono(880,.09,'triangle',.08,1320);}
+ if(o.tipo==='c'){P2.mangia=.5;P2.Wv-=3;G.gettoni++;$('gett').textContent=G.gettoni;G.fiato=Math.min(1,(G.fiato||0)+.25);G.carica=Math.min(1,G.carica+.08);aggBarra();if(G.carica>=.25&&!G.avvisato){G.avvisato=true;avviso('Sei esplosivo: cadi da molto in alto o sbatti forte!',2600);}sfx('coin')||suono(880,.09,'triangle',.08,1320);}
  else if(o.tipo==='H'){G.cuori++;hud();sfx('gem')||suono(520,.3,'sine',.12,1040);avviso('+1 cuore',900);schizzi2(o.x,o.y,12,'#d8432e',4);}
  else if(o.tipo==='U'){G.scudo=true;sfx('magic')||suono(440,.3,'triangle',.1,880);avviso('Scudo: para il prossimo colpo',1400);}
  else if(o.tipo==='Z'){G.carica=Math.min(1,G.carica+.4);aggBarra();sfx('magic')||suono(300,.3,'square',.08,600);avviso('Esplosione più forte',900);}
@@ -448,15 +459,16 @@ function rompiCrepa(x,y){M.g[y][x]=' ';schizzi2(x,y,10,'#b0643a',6);if(!M.dettaC
 function combo(){if(P2.slancio>0)P2.slancio=Math.max(P2.slancio,.8);G.combo=G.comboT>0?(G.combo||0)+1:1;G.comboT=1.5;if(G.combo>=2){G.gettoni+=G.combo;$('gett').textContent=G.gettoni;G.comboV={n:G.combo,t:G.t};suono(400+G.combo*90,.12,'triangle',.09,800+G.combo*120);}}
 const AIUTI={burrone:'Fosso troppo largo e sponda troppo alta: dai un colpo secco al telefono verso destra per lanciare Matteo',magazzino:'Il peso apre la porta se cade sul pulsante: rompi le casse con lo scatto per liberarlo',crollo:'Il ponte crolla appena ci sali: non fermarti!',valanga:'Lanciati giù per la discesa: a tutta velocità travolgi nemici e casse'};
 function passo2d(h){
- const p=P2;{const bo=G.carica>=1;if(bo&&!p.eraBomba)p.gonfioT=.45;if(!bo&&p.eraBomba)p.sgonfiaT=.6;p.eraBomba=bo;p.gonfioT=Math.max(0,(p.gonfioT||0)-h);p.sgonfiaT=Math.max(0,(p.sgonfiaT||0)-h);p.mangia=Math.max(0,(p.mangia||0)-h);}p.cd=Math.max(0,p.cd-h);if(p.cd===0)$('aSin').classList.add('pronto');p.inv=Math.max(0,p.inv-h);p.buf=Math.max(0,p.buf-h);p.coyote=Math.max(0,p.coyote-h);
+ const p=P2;{const bo=G.carica>=1;if(bo&&!p.eraBomba)p.gonfioT=.45;if(!bo&&p.eraBomba)p.sgonfiaT=.6;p.eraBomba=bo;if(!bo)p.gFermo=false;p.gonfioT=Math.max(0,(p.gonfioT||0)-h);if(p.ultimoSuolo&&p.vy<=.5){p.boomAria=false;p.sgonfiaT=Math.max(0,(p.sgonfiaT||0)-h);}if(bo)p.mangia=0;else if(!p.rotola&&p.ultimoSuolo&&!(p.anim==='apre'&&p.animT<SPR_ATTESA))p.mangia=Math.max(0,(p.mangia||0)-h);}p.cd=Math.max(0,p.cd-h);if(p.cd===0)$('aSin').classList.add('pronto');p.inv=Math.max(0,p.inv-h);p.buf=Math.max(0,p.buf-h);p.coyote=Math.max(0,p.coyote-h);
  if(p.stanco>0){p.stanco-=h;p.rotola=false;p.carica=0;p.vx=0;if(p.stanco<=0){p.stanco=0;G.fiato=Math.max(G.fiato,.4);}}else{G.fiatoT=Math.max(0,(G.fiatoT||0)-h);if(G.fiatoT<=0)G.fiato=Math.min(1,(G.fiato||0)+.07*h);} /* Matteo è grasso: riprende fiato piano, solo dopo 2 secondi senza scatti */
  const tx=p.stanco>0?0:IN.tx;if(Math.abs(tx)>.08)p.verso=Math.sign(tx);
- p.px=p.x;p.py=p.y;const vy0=p.vy;
+ aggRaggio(p);p.px=p.x;p.py=p.y;const vy0=p.vy;
  p.animT+=h;const su0=!!p.ultimoSuolo;
  if(su0&&!(p.stanco>0)&&G.carica<1&&G.fiato<FIATO_SCATTO&&p.scatto<=0)senzaFiato(); /* da stanco si ferma e riposa, non cammina */
  p.carica=Math.abs(tx)>.3?p.carica+h:0;
- if(!p.rotola&&!(p.stanco>0)&&(p.carica>.15||Math.abs(p.vx)>3||p.scatto>0)){p.rotola=true;p.anim='chiude';p.animT=p.scatto>0?.1:0;p.Wv-=6;}
- else if(p.rotola&&su0&&Math.abs(p.vx)<1.2&&Math.abs(tx)<.25&&p.scatto<=0){p.rotola=false;p.anim='apre';p.animT=0;p.carica=0;p.Wv+=4;}
+ if(!p.rotola&&!(p.stanco>0)&&(p.gFermo||(p.anim==='apre'&&p.animT<SPR_ATTESA))&&matteoNuovo()&&(p.carica>.15||Math.abs(p.vx)>1.3||p.scatto>0)){p.rot=p.rotF;p.rotola=true;p.anim='';p.animT=9;p.gFermo=false;}
+ else if(!p.rotola&&!(p.stanco>0)&&(p.carica>.15||Math.abs(p.vx)>3||p.scatto>0)){p.rot=0;p.rotola=true;p.anim='chiude';p.animT=p.scatto>0?.1:0;p.Wv-=6;}
+ else if(p.rotola&&su0&&Math.abs(p.vx)<1.2&&Math.abs(tx)<.25&&p.scatto<=0){p.rotF=p.rot;p.dirF=p.vx<0?-1:1;p.gFermo=G.carica>=1;p.rotola=false;p.anim='apre';p.animT=0;p.carica=0;p.Wv+=matteoNuovo()?1.5:4;}
  /* durante lo scatto non cade, ma la salita frena come sempre e gli urti non la aumentano: niente salti più alti né arrampicate sugli spigoli */
  if(p.scatto>0){p.scatto-=h;p.vx=p.verso*(p.vS||11);p.vyS=Math.max(0,Math.min(p.vy,p.vyS||0)-20*h);p.vy=p.vyS;if(p.scatto<=0)p.vx*=.6;
   const q=Math.round(p.x+p.verso*.8),r=Math.round(p.y);if(cel(q,r)==='C')rompiCassa(q,r);}
@@ -486,11 +498,12 @@ function passo2d(h){
  if(p.buf>0&&p.coyote>0){polvere();p.vy=9.6;p.coyote=0;p.buf=0;p.ultimoSuolo=null;p.Wv+=7;sfx('jump')||suono(330,.14,'triangle',.11,660);}
  const bq=Math.round(p.x),br=Math.round(p.y-p.R+.1);
  if(cel(bq,br)==='B'&&p.vy<=.1){M.molla={k:br+'_'+bq,t:G.t};polvere();p.vy=14;p.ultimoSuolo=null;p.y=br+.1+p.R;p.Wv+=11;sfx('jump-high')||suono(260,.3,'square',.08,900);}
- for(const dx of[-.28,.28]){const q=Math.round(p.x+dx),r=Math.round(p.y-p.R+.15),t=cel(q,r);
+ for(const dx of[-p.R*.6,p.R*.6]){const q=Math.round(p.x+dx),r=Math.round(p.y-p.R+.15),t=cel(q,r);
   if((t==='^'||t==='!')&&M.spine[r+'_'+q].s>.55)colpito2(-Math.sign(p.vx||1),true);}
  const w=clamp(p.W,-.5,.5);p.Wv+=(-160*p.W-11*p.Wv)*h;p.W+=p.Wv*h;p.W=w===p.W?p.W:clamp(p.W,-.5,.5);
- p.rot-=p.vx*h/p.R*.5;p.passi+=Math.abs(p.vx)*h*4.6;
- if(p.ultimoSuolo&&Math.abs(p.vx)<.7){const q=Math.atan2(Math.sin(p.rot),Math.cos(p.rot));p.rot-=q*Math.min(1,h*12);}
+ p.rot-=p.vx*h/R_NORMALE*.5;if(!p.rotola&&(p.gFermo||(p.anim==='apre'&&p.animT<SPR_ATTESA)))p.rotF=p.rot; /* finché scivola la palla continua a girare */
+ p.passi+=Math.abs(p.vx)*h*4.6;
+ if(p.ultimoSuolo&&Math.abs(p.vx)<.7&&!matteoNuovo()){const q=Math.atan2(Math.sin(p.rot),Math.cos(p.rot));p.rot-=q*Math.min(1,h*12);}
  if(p.y<-4){togliCuore();if(G.stato==='gioco'){p.x=p.sx||M.start.x;p.y=(p.sy||M.start.y)+1;p.vx=p.vy=0;p.inv=1.6;p.scatto=0;suono(500,.4,'sine',.1,90);}}
  if(!M.boss&&p.x>M.fine&&G.stato==='gioco'){G.stato='velo';dissolvi(()=>M.prova?finisciProva():entraBoss(M.i));}
 }
@@ -634,14 +647,15 @@ function disegna2d(){
  if(G.carica>=MIN_BOTTO){const k=.15+G.carica*.45+.08*Math.sin(G.t*12),rg=p.R*ts*2.2,cx=sx(p.x),cy=sy(p.y),gr=c.createRadialGradient(cx,cy,p.R*ts*.5,cx,cy,rg);gr.addColorStop(0,`rgba(255,90,20,${k})`);gr.addColorStop(1,'rgba(255,90,20,0)');c.fillStyle=gr;c.beginPath();c.arc(cx,cy,rg,0,6.3);c.fill();}
  c.save();if(p.bolla>0&&!riduci)c.translate(rnd(-1.6,1.6),rnd(-1.6,1.6));
  const pg=c=>{const op={t:G.t,W:p.W,vx:p.vx,vy:p.vy,n:p.ultimoSuolo,stella:G.stella,scudo:G.scudo};
-  const n=p.ultimoSuolo,r=p.R*ts*1.02,pie=sy(p.y-p.R),ang=n?Math.atan2(n.x,n.y):0,am=amico(),nuovo=!am._img&&am.colore===COLORI[0]&&am.skin==='classica';
+  const n=p.ultimoSuolo,r=R_NORMALE*ts*1.02,pie=sy(p.y-p.R),ang=n?Math.atan2(n.x,n.y):0,am=amico(),nuovo=matteoNuovo();
   stancoVis=G.carica>=1?0:p.stanco>0?2:G.fiato<FIATO_SCATTO?1:0;
   if(PROVA)disegnaProva(c,sx(p.x),pie,r,p,n,ang);
   else if(nuovo&&stancoVis===2)stancoSpr(c,sx(p.x),pie,r,1-p.stanco/2,p.verso,ang);
   else if(stancoVis===2)disegnaCamm(c,sx(p.x),pie,r,p.stanco<.35?3:4+Math.floor(G.t*3)%2,3,p.verso,0,ang);
   else if(nuovo&&G.carica>=1){const gt=p.gonfioT||0,dd=Math.abs(p.vx);
-   if(gt>0)grassoSpr(c,sx(p.x),pie,r,gt>.3?5:gt>.15?4:6,p.verso,p.W,ang);
-   else if(p.rotola){const im=FOGLISPR.grasso,k=r*SPR_K;if(im&&im.complete){c.save();c.translate(sx(p.x),pie-66*k);c.rotate(-p.rot*SPR_GIRO);c.scale(1-p.W*.6,1+p.W);c.drawImage(im,6*170,0,170,140,-85*k,-75*k,170*k,140*k);c.restore();}}
+   if(gt>0&&!p.rotola)grassoSpr(c,sx(p.x),pie,r,gt>.3?5:gt>.15?4:6,p.verso,p.W,ang);
+   else if(p.rotola)gPallaGira(c,sx(p.x),pie,r,-p.rot*1.24,p.W);
+   else if(p.gFermo)gPallaGira(c,sx(p.x),pie,r,-p.rotF*1.24,p.W+Math.sin(G.t*2.5)*.02); /* fermandosi resta com'è, girato, finché non riparte */
    else if(!n)grassoSpr(c,sx(p.x),pie,r,6,p.verso,p.W,0);
    else grassoSpr(c,sx(p.x),pie,r,6,p.verso,dd<.25?p.W+Math.sin(G.t*2.5)*.025:p.W,ang+(dd<.25?0:Math.sin(p.passi*.8)*.1));
    if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),pie-r*1.1,r*1.5,0,6.3);c.stroke();}}
@@ -651,9 +665,10 @@ function disegna2d(){
   else if(!nuovo&&p.rotola&&!(p.anim==='chiude'&&p.animT<.2)){
    op.disegno=am.skin==='classica'||!!am.foto;op.foto=am._img;disegnaSlime(c,sx(p.x),sy(p.y),r,-p.rot,op);}
   else{
-   if(nuovo&&(p.sgonfiaT||0)>0)grassoSpr(c,sx(p.x),pie,r,p.sgonfiaT>.3?7:8,p.verso,p.W,n?ang:0);
+   if(nuovo&&p.boomAria)saltoSpr(c,sx(p.x),pie,r,p.vy>6?1:p.vy>3?2:p.vy>1?3:p.vy>-1.5?4:p.vy>-5?5:6,p.verso,0,0); /* sbalzato dall'esplosione: vola con le pose del salto e si sgonfia atterrando */
+   else if(nuovo&&n&&!p.rotola&&(p.sgonfiaT||0)>0)grassoSpr(c,sx(p.x),pie,r,p.sgonfiaT>.3?7:8,p.verso,p.W,ang);
    else if(nuovo&&p.rotola){if(p.anim==='chiude'&&p.animT<.2)apreSpr(c,sx(p.x),pie,r,1+Math.min(3,Math.floor(p.animT/.05)),p.verso,p.W,ang);else gelSpr(c,sx(p.x),pie,r,9,1,p.W,p.vx,p.vy,G.t,n,-p.rot*SPR_GIRO);}
-   else if(nuovo&&p.anim==='apre'&&p.animT<.2)apreSpr(c,sx(p.x),pie,r,10+Math.min(2,Math.floor(p.animT/.067)),p.verso,p.W,ang);
+   else if(nuovo&&p.anim==='apre'&&p.animT<SPR_ATTESA+.47){const t=p.animT-SPR_ATTESA;if(t<.27)gelSpr(c,sx(p.x),pie,r,9,1,p.W,0,0,G.t,n,giroFine(p,SPR_GIRO,.27,SPR_ATTESA));else apreSpr(c,sx(p.x),pie,r,10+Math.min(2,Math.floor((t-.27)/.067)),p.verso,p.W,ang);}
    else if(p.rotola)disegnaPasso(c,sx(p.x),pie,r,Math.min(2,Math.floor(p.animT/.067)),2,p.verso,p.W,ang);
    else if(p.anim==='apre'&&p.animT<.2)disegnaPasso(c,sx(p.x),pie,r,p.animT<.1?2:1,2,p.verso,p.W,ang);
    else if(nuovo&&n&&p.atterra<=0&&(p.mangia||0)>0)grassoSpr(c,sx(p.x),pie,r,Math.min(3,Math.floor((.5-p.mangia)/.125)),p.verso,p.W,ang);
@@ -661,13 +676,14 @@ function disegna2d(){
    else if(nuovo&&!n)saltoSpr(c,sx(p.x),pie,r,p.vy>6?1:p.vy>3?2:p.vy>1?3:p.vy>-1.5?4:p.vy>-5?5:6,p.verso,p.W,0);
    else if(p.atterra>0)disegnaCamm(c,sx(p.x),pie,r,4,3,p.verso,p.W,ang);
    else if(!n)disegnaCamm(c,sx(p.x),pie,r,p.vy>2.5?1:p.vy<-2.5?3:2,3,p.verso,p.W,0);
+   else if(nuovo&&G.carica>.6&&Math.abs(p.vx)>=.25)grassoSpr(c,sx(p.x),pie,r,G.carica>.85?4:5,p.verso,p.W,ang+Math.sin(p.passi*.8)*.08);
    else if(nuovo&&Math.abs(p.vx)>=.25){const q=Math.floor(p.passi*.6);passiSpr(c,sx(p.x),pie,r,Math.abs(p.vx)>2.3?q%6:6+q%4,p.verso,p.W,ang);}
    else if(nuovo&&Math.abs(p.vx)<.25){if(G.carica>.6)grassoSpr(c,sx(p.x),pie,r,G.carica>.85?4:5,p.verso,p.W+Math.sin(G.t*1.96)*.02,ang);else if(p.fermoT>5)passiSpr(c,sx(p.x),pie,r,10+Math.floor((p.fermoT-5)*8)%11,p.verso,p.W,ang);else fermoSpr(c,sx(p.x),pie,r,p.verso,p.W+Math.sin(G.t*1.96)*.02,ang);}
    else if(Math.abs(p.vx)<.25){const col=p.fermoT>5?Math.floor((p.fermoT-5)*8)%10:[0,1,2,1][Math.floor(G.t*1.5)%4];disegnaCamm(c,sx(p.x),pie,r,col,0,p.verso,p.W+Math.sin(G.t*3)*.01,ang);}
    else disegnaCamm(c,sx(p.x),pie,r,Math.floor(p.passi)%10,Math.abs(p.vx)>2.3?2:1,p.verso,p.W,ang);
    if(G.scudo){c.strokeStyle='#7fe0ffcc';c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.5,0,6.3);c.stroke();}
    if(G.stella>0){c.strokeStyle=`hsl(${G.t*400%360},95%,62%)`;c.lineWidth=3;c.beginPath();c.arc(sx(p.x),sy(p.y),p.R*ts*1.3,0,6.3);c.stroke();}}};
- pg(c);{const am=amico();if(p.inv>0)tingiRosso(c,pg);else if(G.carica>=1&&!am._img&&am.colore===COLORI[0]&&am.skin==='classica')tingiRosso(c,pg,.03+.1*(.5+.5*Math.sin(G.t*7)));}
+ pg(c);{if(p.inv>0)tingiRosso(c,pg);else if(G.carica>=1&&matteoNuovo())tingiRosso(c,pg,.03+.1*(.5+.5*Math.sin(G.t*7)));}
  stancoVis=0;c.restore();if(PROVA)elencoProva(c,c.canvas.clientWidth||c.canvas.width);
  if(p.bolla>0)bollaSapone(c,sx(p.x),sy(p.y),p.R*ts*(1.75+.06*Math.sin(G.t*9)),Math.min(1,p.bolla/.25),ts);
  if(G.boom){const e=(G.t-G.boom.t)/.55;if(e<1)disegnaEspl(c,sx(G.boom.x),sy(G.boom.y),G.boom.r*ts,e);else G.boom=null;}
@@ -783,7 +799,7 @@ function esplodi(){
  {const p=P2,R=2.5+f*4;G.boom={x:p.x,y:p.y,t:G.t,r:R};
   M.nemici.forEach(n=>{if(n.vivo&&Math.hypot(n.x-p.x,n.y-p.y)<R)uccidi2(n);});M.colpi=M.colpi.filter(q=>Math.hypot(q.x-p.x,q.y-p.y)>=R);
   const q=Math.ceil(R);for(let y=Math.round(p.y)-q;y<=Math.round(p.y)+q;y++)for(let x=Math.round(p.x)-q;x<=Math.round(p.x)+q;x++)if(cel(x,y)==='C'&&Math.hypot(x-p.x,y-p.y)<R)rompiCassa(x,y);else if(cel(x,y)==='X'&&Math.hypot(x-p.x,y-p.y)<R+.6)rompiCrepa(x,y);
-  schizzi2(p.x,p.y,50,'#ffb13a',9);schizzi2(p.x,p.y,30,'#d8432e',7);p.vy=Math.max(p.vy,8);p.Wv+=12;p.ultimoSuolo=null;p.inv=Math.max(p.inv,.6);
+  schizzi2(p.x,p.y,50,'#ffb13a',9);schizzi2(p.x,p.y,30,'#d8432e',7);p.vy=Math.max(p.vy,8);p.Wv+=12;p.ultimoSuolo=null;p.inv=Math.max(p.inv,.6);p.boomAria=true;
  const b=M.boss;if(b&&b.vita>0&&Math.hypot(b.x-p.x,b.y-p.y)<R+b.r){if(b.stato==='stordito')colpisciBoss(b);else{b.stato='stordito';b.t=b.cfg.stordito;b.vy=0;avviso('Boss stordito: scattagli addosso!',1400);}}
  }
  G.carica=0;aggBarra();
@@ -855,7 +871,7 @@ function banner(t){$('grande').textContent=t;$('grande').hidden=false;$('avviso'
 function iniziaRun(prova){Object.assign(G,{fiato:1,dettoFiato:false,carica:0,avvisato:false,base:0,cuori:MAXC,gettoni:0,uccisi:0,tempo:0,scudo:false,stella:0,avanz:0,scossa:0,jelly:0,visti:G.visti||0});mostra('');giocoUI(true);hud();aggBarra();$('gett').textContent='0';entraCorsa(0,Array.isArray(prova)?prova:null);sveglia();}
 function entraCorsa(i,prova){
  G.modo='2d';G.mondo=i;M=costruisci(i,prova);M.prova=!!prova;goo.length=0;fumi.length=0;polveri.length=0;G.combo=0;G.comboT=0;
- G.fiato=1;Object.assign(P2,{eraBomba:G.carica>=1,gonfioT:0,sgonfiaT:0,mangia:0,stanco:0,slancio:0,x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
+ G.fiato=1;Object.assign(P2,{R:R_NORMALE,boomAria:false,gFermo:false,eraBomba:G.carica>=1,gonfioT:0,sgonfiaT:0,mangia:0,stanco:0,slancio:0,x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
  V.dir=1;V.la=2;V.attesa=0;V.py=P2.y;V.zoom=1;V.ts=V.ts0;V.cx=P2.x+2;V.cy=centroY();$('bossBox').hidden=true;$('nomeTappa').textContent=amico().nome+' · Mondo '+(i+1);$('aSin').classList.add('pronto');
  banner(prova?'Nuova tappa':MONDI[i].nome);
  if(!prova&&i===0)setTimeout(()=>{if(G.modo==='2d'&&G.stato==='gioco'&&G.mondo===0)avviso('Mangia per caricare l\u2019esplosione. Le casse si rompono con lo scatto.',3400);},2200);
@@ -863,7 +879,7 @@ function entraCorsa(i,prova){
 function finisciProva(){incassa();vaiMenu();avviso('Tappa finita!',2600);}
 function entraBoss(i){
  M=costruisciArena(i);G.fiato=1;P2.stanco=0;goo.length=0;fumi.length=0;polveri.length=0;G.scossa=0;
- Object.assign(P2,{x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
+ Object.assign(P2,{R:R_NORMALE,gFermo:false,x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
  $('bossBox').hidden=false;$('bossNome').textContent=BOSS[i].nome;$('bossHp').style.width='100%';$('nomeTappa').textContent='';
  banner(BOSS[i].nome);
  if(i===0)setTimeout(()=>{if(M.boss&&G.stato==='gioco')avviso('Schiva il lancio: quando sbatte è stordito. Le molle portano ai piani alti.',3800);},1700);
