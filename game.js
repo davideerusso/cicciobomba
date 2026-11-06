@@ -66,7 +66,7 @@ let stancoVis=false;
 const FOGLISPR={};
 for(const [n,src] of [['stanco','assets/matteo_stanco.webp'],['fermo','assets/matteo_fermo.webp'],['salto','assets/matteo_salto.webp'],['palla','assets/matteo_palla.webp'],['passi','assets/matteo_cammina.webp']]){FOGLISPR[n]=new Image();FOGLISPR[n].src=src;}
 /* i disegni sono di tre quarti, il piede dietro sta più in alto: si abbassa lo sprite di SPR_PIEDI raggi perché poggino tutti e due */
-const SPR_GIRO=1.15; /* giri del foglio della palla: uno ogni 5 caselle circa. Con la rotazione vera (3,8 caselle) e pochi fotogrammi sembrava troppo veloce e in discesa sfarfallava */
+const SPR_GIRO=1.51; /* la palla ruota davvero: un giro ogni 3,8 caselle, la circonferenza del disegno (p.rot va a metà velocità e il raggio disegnato è 1,3 volte quello vero) */
 const SPR_PIEDI=.13,SPR_K=3.8/122; /* Matteo in piedi è alto 3,8 raggi: più grande dell'urto, che resta quello di prima */
 function fogSpr(c,im,cw,ch,oy,kr,x,yPiedi,r,f,verso,W,ang){
  if(!im||!im.complete)return;const k=r*kr;c.save();c.translate(x,yPiedi+r*SPR_PIEDI);if(ang)c.rotate(ang);c.scale(verso*(1-W*.6),1+W);c.drawImage(im,f*cw,0,cw,ch,-cw/2*k,-oy*k,cw*k,ch*k);c.restore();
@@ -78,7 +78,7 @@ function stancoSpr(c,x,yPiedi,r,e,verso,ang){fogSpr(c,FOGLISPR.stanco,130,126,12
 function fermoSpr(c,x,yPiedi,r,verso,W,ang){fogSpr(c,FOGLISPR.fermo,130,126,126,SPR_K,x,yPiedi,r,0,verso,W,ang);}
 /* salto, 10 fotogrammi, piedi a terra a y=165: 1-3 sale, 4 punto alto, 5-6 cade, 7-9 atterra */
 function saltoSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.salto,170,200,165,SPR_K,x,yPiedi,r,f,verso,W,ang);}
-/* rotola, 14 fotogrammi: 1-4 si chiude, 5-9 palla (gelSpr), 10-12 si riapre */
+/* rotola, 14 fotogrammi: 1-4 si chiude, 10-12 si riapre; la palla è il 7, il più tondo, che ruota di continuo (gelSpr) */
 function apreSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.palla,80,80,80,3.35/75,x,yPiedi,r,f,verso,W,ang);}
 /* passi, 21 fotogrammi: 0-5 corre, 6-9 cammina, 10-20 si gira per noia. Scelti dal foglio dell'utente e messi in ordine perché braccia e gambe si alternino */
 function passiSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.passi,130,126,126,SPR_K,x,yPiedi,r,f,verso,W,ang);}
@@ -135,10 +135,10 @@ function disegnaPasso(c,x,yPiedi,r,col,riga,verso,W,ang){
  c.drawImage(foglioAmico(),col*CELLA,riga*CELLA,CELLA,CELLA,-lato/2,-lato*.97,lato,lato);c.restore();
 }
 /* palla di gelatina con gli sprite: come disegnaSlime si allunga con la velocità, si schiaccia con W e ondeggia; lo sprite si disegna a strisce orizzontali, ognuna larga e spostata per conto suo */
-function gelSpr(c,x,yPiedi,r,col,verso,W,vx,vy,t,n){
- const FM=FOGLISPR.palla;if(!FM||!FM.complete)return;const k=r*2.6/61,sp=Math.hypot(vx,vy),al=Math.min(.2,sp*.016),fi=Math.atan2(-vy,vx),am=.03+Math.min(.06,sp*.005)+Math.min(.08,Math.abs(W)*.4),sw=1-W,sh=1+W,s=sh*Math.hypot((1+al)*Math.sin(fi),(1-al)*Math.cos(fi)),h=32*k,nx=n?n.x:0,ny=n?n.y:1;
- c.save();c.imageSmoothingEnabled=false;c.translate(x-nx*r+nx*h*s,yPiedi-r+ny*r-ny*h*s);c.rotate(fi);c.scale(1+al,1-al);c.rotate(-fi);c.scale(sw*verso,sh);
- for(let i=10;i<80;i++){const a=Math.asin(clamp((i+.5-48)/33,-1,1)),w=1+am*Math.sin(3*a+t*5)+am*.5*Math.sin(5*a-t*7),o=am*r*.45*Math.sin(2*a+t*6);c.drawImage(FM,col*80,i,80,1,-40*k*w+o,(i-48)*k,80*k*w,k+.6);}
+function gelSpr(c,x,yPiedi,r,col,verso,W,vx,vy,t,n,gi){
+ const FM=FOGLISPR.palla;if(!FM||!FM.complete)return;const k=r*2.6/62,sp=Math.hypot(vx,vy),al=Math.min(.2,sp*.016),fi=Math.atan2(-vy,vx),am=.03+Math.min(.06,sp*.005)+Math.min(.08,Math.abs(W)*.4),sw=1-W,sh=1+W,s=sh*Math.hypot((1+al)*Math.sin(fi),(1-al)*Math.cos(fi)),h=31.5*k,nx=n?n.x:0,ny=n?n.y:1;
+ c.save();c.translate(x-nx*r+nx*h*s,yPiedi-r+ny*r-ny*h*s);c.rotate(fi);c.scale(1+al,1-al);c.rotate(-fi);c.scale(sw*verso,sh);c.rotate(gi);
+ for(let i=10;i<80;i++){const a=Math.asin(clamp((i+.5-45.5)/32,-1,1)),w=1+am*Math.sin(3*a+t*5)+am*.5*Math.sin(5*a-t*7),o=am*r*.45*Math.sin(2*a+t*6);c.drawImage(FM,col*80,i,80,1,-40*k*w+o,(i-45.5)*k,80*k*w,k+.6);}
  c.restore();
 }
 /* bolla di sapone iridescente: e è la trasparenza, ts la misura di una casella per lo spessore del bordo */
@@ -643,7 +643,7 @@ function disegna2d(){
   else if(!nuovo&&p.rotola&&!(p.anim==='chiude'&&p.animT<.2)){
    op.disegno=am.skin==='classica'||!!am.foto;op.foto=am._img;disegnaSlime(c,sx(p.x),sy(p.y),r,-p.rot,op);}
   else{
-   if(nuovo&&p.rotola){if(p.anim==='chiude'&&p.animT<.2)apreSpr(c,sx(p.x),pie,r,1+Math.min(3,Math.floor(p.animT/.05)),p.verso,p.W,ang);else{const d=p.vx<0?-1:1,g=(((-p.rot*d*SPR_GIRO)%6.2832)+6.2832)%6.2832;gelSpr(c,sx(p.x),pie,r,5+Math.floor(g/6.2832*5)%5,d,p.W,p.vx,p.vy,G.t,n);}}
+   if(nuovo&&p.rotola){if(p.anim==='chiude'&&p.animT<.2)apreSpr(c,sx(p.x),pie,r,1+Math.min(3,Math.floor(p.animT/.05)),p.verso,p.W,ang);else gelSpr(c,sx(p.x),pie,r,7,1,p.W,p.vx,p.vy,G.t,n,-p.rot*SPR_GIRO);}
    else if(nuovo&&p.anim==='apre'&&p.animT<.2)apreSpr(c,sx(p.x),pie,r,10+Math.min(2,Math.floor(p.animT/.067)),p.verso,p.W,ang);
    else if(p.rotola)disegnaPasso(c,sx(p.x),pie,r,Math.min(2,Math.floor(p.animT/.067)),2,p.verso,p.W,ang);
    else if(p.anim==='apre'&&p.animT<.2)disegnaPasso(c,sx(p.x),pie,r,p.animT<.1?2:1,2,p.verso,p.W,ang);
