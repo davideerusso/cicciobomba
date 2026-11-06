@@ -267,7 +267,7 @@ function note(){IN.tiltOn=false;aggComandi();}
 function aggComandi(){
  $('aSin').textContent='SCATTO';
  if(!IN.tiltOn&&provato)$('noteComandi').textContent='Sensori non disponibili qui: trascina il dito per inclinare il piano, tocca a destra per saltare e a sinistra per scattare.';
- else if(IN.tiltOn)$('noteComandi').textContent='Inclinazione attiva. Tocca a destra per saltare, a sinistra per scattare. Dai un colpo secco al telefono verso un lato per lanciare Matteo, scuotilo per farlo galleggiare.';
+ else if(IN.tiltOn)$('noteComandi').textContent='Inclinazione attiva. Tocca a destra per saltare, a sinistra per scattare.';
 }
 function azione(lato){if(G.stato!=='gioco'||(P2.stanco>0&&lato>0))return;if(lato<0)scatta2();else P2.buf=.13;}
 const tocchi=$('tocchi');
@@ -689,18 +689,11 @@ function disegna2d(){
  if(p.slancio>0&&!riduci){c.strokeStyle='#ffffffaa';c.lineWidth=3;for(let i=0;i<3;i++){const yy=sy(p.y-.3+i*.3),xx=sx(p.x-Math.sign(p.vx)*(.8+i*.25));c.beginPath();c.moveTo(xx,yy);c.lineTo(xx-Math.sign(p.vx)*ts*(.6+i*.2),yy);c.stroke();}}
  for(const q of goo){c.fillStyle=q.c;c.globalAlpha=clamp(q.v*2.4,0,1);c.beginPath();c.arc(sx(q.x),sy(q.y),q.r*ts,0,6.3);c.fill();}c.globalAlpha=1;
 }
-const M0={W:0,Wv:0,t:0};
 function disegnaMenu(dt){
- const c=ctx2,m=MONDI[0],ts=V.ts,W=V.W,H=V.H;V.cx+=dt*.5;
+ const c=ctx2,m=MONDI[0],ts=V.ts,W=V.W,H=V.H;if(!riduci)V.cx+=dt*.5;
  c.setTransform(V.dpr,0,0,V.dpr,0,0);fondale(c,m);
- const r=Math.min(W*.15,H*.2),base=H*.84,cols=Math.ceil(W/ts)+1;
- c.drawImage(ANAN,W*.04,base-ts*1.3,ts*1.3,ts*1.3);ciuffo(c,W*.41+ts/2,base,ts);
- for(let y=0;y*ts<H-base+ts;y++)for(let i=0;i<cols;i++)sp(c,'terrain_sand_block_'+(y?'center':'top'),i*ts,base+y*ts,ts+.8,ts+.8);
- M0.t+=dt;if(!riduci&&(M0.t>2.4)){M0.t=0;M0.Wv+=5;}
- M0.Wv+=(-120*M0.W-7*M0.Wv)*dt;M0.W+=M0.Wv*dt;
- const am=amico(),tm=G.t%8;
- if(!am._img&&am.colore===COLORI[0]&&am.skin==='classica'){const rn=r*.65;if(!riduci&&tm>5.8)passiSpr(c,W*.25,base+2,rn,10+Math.floor((tm-5.8)*5)%11,1,M0.W,0);else fermoSpr(c,W*.25,base+2,rn,1,M0.W+Math.sin(G.t*1.96)*.02,0);}
- else disegnaCamm(c,W*.25,base+2,r*.9,riduci?0:Math.floor(G.t*5)%10,0,1,M0.W,0);
+ const base=H*.86,cols=Math.ceil(W/ts)+2,dx=-(V.cx*ts%ts);
+ for(let y=0;y*ts<H-base+ts;y++)for(let i=0;i<cols;i++)sp(c,'terrain_sand_block_'+(y?'center':'top'),dx+i*ts,base+y*ts,ts+.8,ts+.8);
 }
 
 /* ---------- BOSS 2D SU PIÙ PIANI: si lancia, sbatte, resta stordito ---------- */
@@ -903,6 +896,7 @@ function mostraFine(){
 }
 
 /* ---------- MENU ---------- */
+$('logo').src='assets/logo.webp';
 function anteprima(a,skin){const cv=document.createElement('canvas');cv.width=320;cv.height=160;dipingiPalla(cv,a,skin);const o=document.createElement('canvas');o.width=o.height=112;o.getContext('2d').drawImage(cv,80,0,160,160,0,0,112,112);return o;}
 function disegnaAmici(){const a=$('listaAmici');a.textContent='';
  S.amici.forEach((f,i)=>{const b=document.createElement('button');b.className='scelta'+(i===S.sel?' attiva':'');const s=document.createElement('span');s.textContent=f.nome;b.append(anteprima(f,f.skin),s);b.onclick=()=>{S.sel=i;salva();vestiPalla();disegnaAmici();};a.append(b);caricaFoto(f,()=>{if(f._img&&!f._v){f._v=1;disegnaAmici();}});});

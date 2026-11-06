@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Baloo+2:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="style.css?v=53">
+<link rel="stylesheet" href="style.css?v=54">
 
 <div id="schermo">
 <canvas id="d2" aria-label="Gioco Cicciobomba"></canvas>
@@ -42,12 +42,13 @@
 <div id="grande" hidden></div>
 
 <section id="sMenu">
-  <div id="titolo"><h1>CICCIOBOMBA</h1><p><span id="chi">Matteo</span> ha il corpo rotondo e il potere di rotolare</p><p id="record" hidden></p></div>
-  <div class="dock">
-    <button id="bGioca" class="btn primo">Gioca</button>
-    <div class="riga"><button id="bAmici" class="btn">Amici e skin</button><button id="bGuida" class="btn">Come si gioca</button></div>
-    <small id="noteComandi">Tieni il telefono in orizzontale. Una sola corsa: se finisci i cuori riparti da capo.</small>
+  <h1 class="mTesta"><img id="logo" alt="Cicciobomba" width="1200" height="564"></h1>
+  <div class="mPulsanti">
+    <button id="bAmici" class="mBtn">Amici e skin</button>
+    <button id="bGioca" class="mBtn mGioca">Gioca<small>con <span id="chi">Matteo</span></small></button>
+    <button id="bGuida" class="mBtn">Come si gioca</button>
   </div>
+  <div class="mPiede"><span id="record" hidden></span><small id="noteComandi">Tieni il telefono in orizzontale. Una sola corsa: se finisci i cuori riparti da capo.</small></div>
 </section>
 
 <section id="sGuida" hidden>
@@ -101,6 +102,6 @@
 <div id="erroreT" hidden>Il gioco non è riuscito a partire. Controlla la connessione e ricarica la pagina.</div>
 
 </div>
-<script src="game.js?v=53"></script>
+<script src="game.js?v=54"></script>
 
 </body></html>
