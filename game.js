@@ -2,6 +2,8 @@
 addEventListener("error",e=>{const t=document.getElementById("erroreT");if(t&&e.message&&document.getElementById("gioco")){t.hidden=false;t.textContent="Si è verificato un errore: "+e.message+". Ricarica la pagina.";}});
 (function(){
 const $=id=>document.getElementById(id);
+/* ogni immagine del gioco finisce in IMMAGINI: Gioca aspetta che siano tutte caricate, se no con la rete lenta all'inizio mancano caselle, nemici e Matteo */
+const IMMAGINI=[],Image=function(){const i=new window.Image();IMMAGINI.push(i);return i;};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v, lerp=(a,b,t)=>a+(b-a)*t, rnd=(a,b)=>a+Math.random()*(b-a);
 const riduci=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -560,7 +562,7 @@ function strato(c,f,par,y,h,dritto){const b=2,sw=f.width-2*b,w=h*sw/f.height,pe=
  for(let i=0,x=-o;x<V.W;i++,x+=w){x=Math.floor(x);if(i%2&&!dritto){c.save();c.translate(x+w+3,y);c.scale(-1,1);c.drawImage(f,b,0,sw,f.height,0,0,w+3,h);c.restore();}else c.drawImage(f,b,0,sw,f.height,x,y,w+3,h);}}
 /* la sala del trono di Ananassone, disegnata dall'utente: ferma e grande quanto lo schermo, appoggiata in basso */
 const SALA=new Image();SALA.src='assets/sala_ananas.webp';
-/* le tre casette dell'utente (paesaggio/casette_originale.jpg, scontornate, a metà grandezza e velate come il fondale): solo da guardare, attaccate al terreno ma dietro al gioco.
+/* le tre casette dell'utente (paesaggio/casette_originale.jpg, scontornate, a metà grandezza e velate appena, molto meno del fondale): solo da guardare, attaccate al terreno ma dietro al gioco.
    CASE_R rettangoli nel foglio, CASE_B riga della base (sotto ci sono solo radici e ombra), alte 8 caselle quella in mezzo */
 const CASETTE=new Image();CASETTE.src='assets/casette.webp';const CASE_R=[[0,56,271,453],[275,0,343,509],[622,121,273,388]],CASE_B=[435,498,375],CASA_K=8/509;
 const CASTELLO=new Image();CASTELLO.src='assets/castello.webp'; /* scontornato da paesaggio/castello_originale.png; la porta è a 252 px dal bordo sinistro e la sua soglia a 538 px dall'alto: sotto ci sono solo le radici */
@@ -917,6 +919,8 @@ function disegnaAmici(){const a=$('listaAmici');a.textContent='';
  $('saldo').textContent=S.gettoni;$('togliAmico').hidden=S.sel===0;$('togliFoto').hidden=!f.foto;$('togliFoto').textContent='Togli la foto di '+f.nome;$('fotoTesto').textContent=(f.foto?'Cambia la foto di ':'Metti la foto di ')+f.nome;
 }
 async function bloccaOrizzontale(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();await screen.orientation.lock('landscape');}catch(e){}}
+/* finché le immagini non sono arrivate Gioca è spento e dice Caricamento…; dopo 20 s si accende comunque */
+(function attendi(t0){const b=$('bGioca'),n=IMMAGINI.filter(i=>!i.complete).length;if(n&&performance.now()-t0<20000){b.disabled=true;b.classList.add('carica');b.textContent='Caricamento…';setTimeout(()=>attendi(t0),150);}else{b.disabled=false;b.classList.remove('carica');b.textContent='Gioca';}})(performance.now());
 $('bGioca').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();if((S.guidaVista|0)>=3)iniziaRun();else apriGuida(iniziaRun);};
 $('bGuida').onclick=()=>{audioOn();apriGuida(null);};
 $('bAmici').onclick=()=>{audioOn();disegnaAmici();mostra('sAmici');};
