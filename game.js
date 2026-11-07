@@ -24,7 +24,7 @@ function salva(){try{localStorage.setItem(CHIAVE,JSON.stringify(S));}catch(e){}}
 
 /* ---------- MONDI E TAPPE ---------- */
 const MONDI=[
- {nome:'Isola degli Ananas',cielo:['#ffe382','#27a39b'],legno:'#f4bd3c',vena:'#a96c10',bordo:'#3f9e3a',nebbia:'#1f8f7d',tema:'ananas',kit:'sand',fondo:'ananas_nuovo',retro:'cielo',liquido:'water',decor:['erbananas','grass','rock'],nemico:'ananas',volo:'bee'},
+ {nome:'Isola degli Ananas',cielo:['#ffe382','#27a39b'],legno:'#f4bd3c',vena:'#a96c10',bordo:'#3f9e3a',nebbia:'#1f8f7d',tema:'ananas',kit:'sand',fondo:'ananas_nuovo',retro:'cielo',liquido:'water',decor:['erbananas','grass','rock'],nemico:'pera',volo:'bee'},
 ];
 const BOSS=[
  {nome:'Ananassone',r:1.1,terra:true,vita:6,scatto:14,stordito:1.8,colore:'#f4bd3c',corona:true},
@@ -358,6 +358,8 @@ function costruisci(i,lista){
  m.fine=m.w-6;
  for(let y=0;y<ALTO;y++)for(let x=0;x<m.w;x++)if(g[y][x]===undefined)g[y][x]=' ';
  const dc=MONDI[i].decor;m.decor=[];for(let x=1;x<m.fine-6;x++){ /* niente decori davanti al castello */const h=(x*2654435761>>>0)>>>7;if(h%7<2&&g[2][x]==='#'&&g[3][x]===' '&&!m.oggetti.some(o=>o.x===x&&o.y===3)){let n=dc[(h>>>3)%dc.length],dx=0;if(n==='erbananas'){/* il ciuffo è largo più di 3 caselle: deve stare tutto sul piano, se no rientra un po' a sinistra, o diventa erba */const r=213/68/2,su=v=>{for(let k=Math.floor(x+v-r+.5);k<=Math.floor(x+v+r+.5);k++)if(g[2][k]!=='#'||(g[3][k]||' ')!==' ')return false;return true;};dx=[0,-.5,-1,-1.5,-2,.5,1].find(su);if(dx===undefined){n='grass';dx=0;}}m.decor.push({x,dx,n});}}
+ /* le casette: solo sul pavimento principale, su un tratto pieno per tutta la larghezza e a cielo aperto (libero per 10 caselle sopra, niente stanze chiuse), lontano dalle pareti finte, a 20 caselle una dall'altra; lì niente ciuffi */
+ m.case=[];{let ult=-99,q=0;for(let x=12;x<m.fine-16;x++){if(x-ult<20)continue;const t=q%3,mw=Math.ceil(CASE_R[t][2]*CASA_K/2)+1;let ok=true;for(let k=x-mw;k<=x+mw&&ok;k++){if(g[2][k]!=='#')ok=false;for(let j=3;j<=12&&ok;j++)if((g[j][k]||' ')!==' '||m.fintoSet.has(j+'_'+k))ok=false;}if(!ok)continue;m.case.push({x,t});m.decor=m.decor.filter(d=>Math.abs(d.x-x)>mw+2);ult=x;q++;}}
  return m;
 }
 const cel=(x,y)=>{const r=M.g[y];if(!r)return M.boss&&y>0&&(x===0||x===M.w-1)?'#':' ';return r[x]||' ';}; /* sopra la sala del boss i muri continuano all'infinito, così non se ne vede la fine */
@@ -494,12 +496,14 @@ function passoOggetti(dt){
  for(let i=M.oggetti.length-1;i>=0;i--){const o=M.oggetti[i];if(Math.abs(o.x-p.x)<.75&&Math.abs(o.y-p.y)<.8){raccogli(o);M.oggetti.splice(i,1);}}
  for(const k in M.spine){const a=M.spine[k];if(a.t==='!'){const on=Math.sin(G.t*1.4+a.fase)>0;a.s=lerp(a.s,on?1:.1,1-Math.exp(-dt*12));}}
 }
-function uccidi2(n){combo();n.vivo=false;G.uccisi++;G.gettoni+=2;$('gett').textContent=G.gettoni;if(n.tipo==='e'&&MONDI[M.i||0].nemico==='ananas')M.oggetti.push({tipo:'c',x:n.x,y:n.cade?2:n.y+.1,fase:n.x}); /* l'ananas piccolo lascia una pizza; se muore in aria, la pizza sta a terra */
+function uccidi2(n){combo();n.vivo=false;G.uccisi++;G.gettoni+=2;$('gett').textContent=G.gettoni;if(n.tipo==='e')n.morto=G.t; /* la pera fa vedere un attimo che è stata colpita */
+ if(n.tipo==='e'&&MONDI[M.i||0].nemico==='pera')M.oggetti.push({tipo:'c',x:n.x,y:n.cade?2:n.y+.1,fase:n.x}); /* la pera lascia una pizza; se muore in aria, la pizza sta a terra */
  sfx('bump')||suono(180,.2,'square',.1,60);vibra(25);}
 function passoNemici2(dt){
  const p=P2;
  for(const n of M.nemici){if(!n.vivo||Math.abs(n.x-V.cx)>22)continue;n.fase+=dt;
-  if(n.tipo==='e'&&n.cade){n.vy-=20*dt;n.y+=n.vy*dt;if(n.y<=1.9){n.y=1.9;n.cade=false;}}
+  if(n.tipo==='e'&&n.cade){n.vy-=20*dt;n.y+=n.vy*dt;if(n.y<=1.9){n.y=1.9;n.cade=false;n.alza=G.t;}} /* atterrata resta seduta un attimo e si rialza */
+  else if(n.tipo==='e'&&n.alza&&G.t-n.alza<.6){}
   else if(n.tipo==='e'){n.x+=n.vx*dt;const d=Math.sign(n.vx),av=Math.round(n.x+d*.5),r=Math.round(n.y);if(pieno(cel(av,r))||!(pieno(cel(av,r-1))||cel(av,r-1)==='-'))n.vx*=-1;}
   else if(n.tipo==='r'){const d=p.x-n.x;n.vx=lerp(n.vx,Math.abs(d)<9?Math.sign(d)*2.3:0,1-Math.exp(-dt*2.5));n.vy-=26*dt;n.px=n.x;n.py=n.y;n.x+=n.vx*dt;n.y+=n.vy*dt;urta(n,.42);if(n.y<-4){n.vivo=false;G.uccisi++;}}
   else if(n.tipo==='f'){n.x=n.x0+Math.sin(n.fase*.8)*2.4;n.y=n.y0+Math.sin(n.fase*1.7)*.8;}
@@ -556,12 +560,12 @@ function strato(c,f,par,y,h,dritto){const b=2,sw=f.width-2*b,w=h*sw/f.height,pe=
  for(let i=0,x=-o;x<V.W;i++,x+=w){x=Math.floor(x);if(i%2&&!dritto){c.save();c.translate(x+w+3,y);c.scale(-1,1);c.drawImage(f,b,0,sw,f.height,0,0,w+3,h);c.restore();}else c.drawImage(f,b,0,sw,f.height,x,y,w+3,h);}}
 /* la sala del trono di Ananassone, disegnata dall'utente: ferma e grande quanto lo schermo, appoggiata in basso */
 const SALA=new Image();SALA.src='assets/sala_ananas.webp';
-/* le tre casette dell'utente (paesaggio/casette_originale.jpg, scontornate, a metà grandezza e velate come il fondale): solo sfondo, scorrono a 0,25 con la base nascosta dietro il terreno */
-const CASETTE=new Image();CASETTE.src='assets/casette.webp';const CASE_R=[[0,56,271,453],[275,0,343,509],[622,121,273,388]],CASE_POS=[[.12,1],[.5,0],[.83,2]];
-function filaCase(c){if(!CASETTE.complete)return;const k=V.H*.4/509,per=V.W*2.4,o=((V.cx*V.ts0*.25)%per+per)%per;for(let b=-per;b<V.W+per;b+=per)for(const [f,t] of CASE_POS){const q=CASE_R[t],x=b+f*per-o,w=q[2]*k;if(x+w/2<0||x-w/2>V.W)continue;c.drawImage(CASETTE,q[0],q[1],q[2],q[3],x-w/2,V.H*.75-q[3]*k,w,q[3]*k);}}
+/* le tre casette dell'utente (paesaggio/casette_originale.jpg, scontornate, a metà grandezza e velate come il fondale): solo da guardare, attaccate al terreno ma dietro al gioco.
+   CASE_R rettangoli nel foglio, CASE_B riga della base (sotto ci sono solo radici e ombra), alte 8 caselle quella in mezzo */
+const CASETTE=new Image();CASETTE.src='assets/casette.webp';const CASE_R=[[0,56,271,453],[275,0,343,509],[622,121,273,388]],CASE_B=[435,498,375],CASA_K=8/509;
 const CASTELLO=new Image();CASTELLO.src='assets/castello.webp'; /* scontornato da paesaggio/castello_originale.png; la porta è a 252 px dal bordo sinistro e la sua soglia a 538 px dall'alto: sotto ci sono solo le radici */
 function fondale(c,m){if(G.modo==='2d'&&M&&M.boss&&M.i===0&&SALA.complete){const k=Math.max(V.W/SALA.width,V.H/SALA.height),w=SALA.width*k,h=SALA.height*k;c.drawImage(SALA,(V.W-w)/2,V.H-h,w,h);return;}const h=Math.max(V.H*.66,200),w=h,f=FONDI[m.fondo],nv=FONDI.clouds,r=m.retro&&FONDI[m.retro];c.fillStyle='#c4e2ff';c.fillRect(0,0,V.W,V.H);
- if(m.retro==='cielo'){const hn=V.H*.38,nu=FONDI.cielo_nuvole,gr=c.createLinearGradient(0,hn,0,V.H);gr.addColorStop(0,'#87dcfa');gr.addColorStop(1,'#d0f8ff');c.fillStyle='#87dcfa';c.fillRect(0,0,V.W,hn);c.fillStyle=gr;c.fillRect(0,hn-1,V.W,V.H-hn+1);if(nu.complete&&nu.width)strato(c,nu,.04,0,hn);if(f.complete&&f.width)strato(c,f,.1,V.H*.08,V.H*.92);filaCase(c);return;}
+ if(m.retro==='cielo'){const hn=V.H*.38,nu=FONDI.cielo_nuvole,gr=c.createLinearGradient(0,hn,0,V.H);gr.addColorStop(0,'#87dcfa');gr.addColorStop(1,'#d0f8ff');c.fillStyle='#87dcfa';c.fillRect(0,0,V.W,hn);c.fillStyle=gr;c.fillRect(0,hn-1,V.W,V.H-hn+1);if(nu.complete&&nu.width)strato(c,nu,.04,0,hn);if(f.complete&&f.width)strato(c,f,.1,V.H*.08,V.H*.92);return;}
  if(r){if(r.complete&&r.width)strato(c,r,.05,0,V.H);if(m.oggetti){const k=V.H/434;filaOggetti(c,FILE_OGG[0],.14,k*.85);filaOggetti(c,FILE_OGG[1],.24,k*1.25);}else if(f.complete&&f.width)strato(c,f,.2,V.H-h,h);return;}
  if(nv.complete){const o=((V.cx*V.ts0*.1)%w+w)%w;for(let x=-o;x<V.W;x+=w)c.drawImage(nv,x,V.H-2*h+1,w+1,h);}
  if(f.complete){const o=((V.cx*V.ts0*.2)%w+w)%w;for(let x=-o;x<V.W;x+=w)c.drawImage(f,x,V.H-h,w+1,h);}}
@@ -590,6 +594,7 @@ function disegna2d(){
  c.setTransform(V.dpr,0,0,V.dpr,0,0);fondale(c,m);if(G.scossa>0)c.translate(rnd(-5,5)*G.scossa*2,rnd(-5,5)*G.scossa*2);
  const sx=x=>(x-V.cx)*ts+W/2,sy=y=>H/2-(y-V.cy)*ts,mz=ts+.8,lento=Math.floor(G.t*3)%2,veloce=Math.floor(G.t*7)%2;
  const c0=Math.floor(V.cx-W/2/ts)-1,c1=Math.ceil(V.cx+W/2/ts)+1,y0=Math.floor(V.cy-H/2/ts)-1,y1=Math.ceil(V.cy+H/2/ts)+1;
+ if(CASETTE.complete)for(const h of M.case||[]){if(h.x<c0-4||h.x>c1+4)continue;const q=CASE_R[h.t],k=ts*CASA_K;c.drawImage(CASETTE,q[0],q[1],q[2],q[3],sx(h.x)-q[2]*k/2,sy(2.3)-CASE_B[h.t]*k,q[2]*k,q[3]*k);} /* la base affonda un po' nel pavimento */
  for(const d of M.decor){if(d.x<c0-3||d.x>c1+3)continue;const a=sx(d.x)-ts/2,b=sy(3)-ts/2;if(d.n==='ananas')c.drawImage(ANAN,a,b,ts,ts);else if(d.n==='erbananas')ciuffo(c,sx(d.x+d.dx),sy(2.5),ts);else sp(c,d.n,a,b,ts,ts);}
  if(!M.boss){sp(c,'sign_right',sx(M.start.x+2)-ts/2,sy(3)-ts/2,ts,ts);
  /* il castello-ananas dell'utente: la sua porta, a M.fine, porta nella stanza del boss */
@@ -622,9 +627,12 @@ function disegna2d(){
  for(const o of M.oggetti){if(o.x<c0-1||o.x>c1+1)continue;const a=sx(o.x)-ts/2,b=sy(o.y+Math.sin(G.t*3+o.fase)*.08)-ts/2;
   if(o.tipo==='c'){c.drawImage(PIZZA,a+ts*.03,b+ts*.03,ts*.94,ts*.94);}
   else sp(c,o.tipo==='H'?'heart':'bomb',a,b,ts,ts);}
- for(const n of M.nemici){if(!n.vivo||n.x<c0-1||n.x>c1+1)continue;const a=sx(n.x),b=sy(n.y),z=ts*1.1,pas=Math.floor(G.t*7+n.fase)%2?'_a':'_b';
+ for(const n of M.nemici){if((!n.vivo&&!(n.morto&&G.t-n.morto<.7&&m.nemico==='pera'))||n.x<c0-1||n.x>c1+1)continue;const a=sx(n.x),b=sy(n.y),z=ts*1.1,pas=Math.floor(G.t*7+n.fase)%2?'_a':'_b';
   if(n.tipo==='e'){const pie=n.cade?sy(n.y-.4):sy(Math.round(n.y+.1)-.5),q=Math.sin(G.t*12+n.fase),dv=n.vx>0?1:-1;
-   if(m.nemico==='ananas'&&NEMICO.complete){const hh=ts*1.3,ww=hh*NEMICO.width/NEMICO.height,sal=Math.abs(q)*ts*.08,s=c.imageSmoothingEnabled;c.save();c.translate(a,pie-sal);c.rotate(q*.08);if(dv>0)c.scale(-1,1);c.imageSmoothingEnabled=false;c.drawImage(NEMICO,-ww/2,-hh,ww,hh);c.imageSmoothingEnabled=s;c.restore();}
+   if(m.nemico==='pera'&&PERA.complete){const hh=ts*1.3;if(!n.vivo){const t=G.t-n.morto;c.save();c.globalAlpha=t>.4?Math.max(0,(.7-t)/.3):1;disegnaPera(c,4,a,pie,hh,dv<0);c.restore();} /* colpita: occhi strizzati e sparisce */
+    else if(n.cade)disegnaPera(c,5,a,pie,hh,dv<0); /* cade dall'alto seduta */
+    else if(n.alza&&G.t-n.alza<.6)disegnaPera(c,G.t-n.alza<.3?6:7,a,pie,hh,dv<0); /* atterrata, poi si rialza */
+    else disegnaPera(c,Math.floor(G.t*8+n.fase)%4,a,pie,hh,dv<0);} /* il foglio guarda a destra */
    else sp(c,m.nemico+'_walk'+pas,a-z/2,pie-z,z,z,dv>0);}
   else if(n.tipo==='r')sp(c,'slime_spike_walk'+pas,a-z/2,b+ts*.45-z,z,z,n.vx>0);
   else if(n.tipo==='f')sp(c,m.volo+pas,a-z/2,b-z/2,z,z,Math.cos(n.fase*.8)>0);
@@ -696,7 +704,9 @@ const ARENE=[
  ["#                  #","#                  #","#                  #","#       c  c       #","# c   c x  x c   c #","# x   x      x   x #","#                  #","#      C    C      #","#   B  Cc  cC  B   #","####################","####################"],
 ];
 /* Ananassone con la corazza, disegnato dall'utente: fotogrammi da 231x166 in righe da 8, guarda a destra. 0-3 fermo, 4-11 corre, 9 a testa bassa per la mira, 12-13 pugno, 14-16 stordito, 17-20 cade sconfitto. z è l'altezza da fermo */
-const NEMICO=new Image();NEMICO.src='assets/nemico_ananas.webp'; /* l'ananas arrabbiato del foglio Pineapple Tiles, nemico del mondo 1 */
+/* la pera triste dell'utente, nemico base del mondo 1 (paesaggio/nemico_pera_originale.png): fotogrammi da 70x94 che guardano a destra, centro a 33, piedi a 92. 0-3 cammina, 4 colpita, 5 cade dall'alto, 6 atterrata, 7 si rialza */
+const PERA=new Image();PERA.src='assets/nemico_pera.webp';
+function disegnaPera(c,f,x,y,h,flip){if(!PERA.complete)return false;const k=h/92,s=c.imageSmoothingEnabled;c.save();c.translate(x,y);if(flip)c.scale(-1,1);c.imageSmoothingEnabled=false;c.drawImage(PERA,f*70,0,70,94,-33*k,-92*k,70*k,94*k);c.imageSmoothingEnabled=s;c.restore();return true;}
 const ANAS=new Image();ANAS.src='assets/boss_ananassone.webp';const ANW=231,ANH=166,ANX=116,ANY=164;
 function disegnaAnanas(c,f,z,verso,piedi){if(!ANAS.complete)return false;const k=z/160,oy=piedi?ANY:90;c.save();if(verso<0)c.scale(-1,1);c.drawImage(ANAS,f%8*ANW,Math.floor(f/8)*ANH,ANW,ANH,-ANX*k,-oy*k,ANW*k,ANH*k);c.restore();return true;}
 const BOSPR=[0].map(n=>{const k=document.createElement('canvas');k.width=k.height=240;const c=k.getContext('2d'),o='#2b2b3a';c.lineWidth=10;c.lineJoin='round';c.strokeStyle=o;
@@ -732,7 +742,7 @@ function cadeBoss(b,dt){if(b.cfg.terra){b.y=b.r+1.5;b.vy=0;b.aTerra=true;return;
  if(b.y<b.r+1.5){b.y=b.r+1.5;b.vy=0;b.aTerra=true;}}
 /* tra un attacco e l'altro: Ananassone non si riposa quasi mai */
 const pausaBoss=b=>b.cfg.terra?rnd(.3,.7):rnd(1,1.7);
-/* il pugno di Ananassone: fa tremare tutto e dall'alto cade un ananas nemico in giro per la stanza */
+/* il pugno di Ananassone: fa tremare tutto e dall'alto cade una pera nemica in giro per la stanza */
 function pugnoBoss(b){G.scossa=riduci?0:.45;vibra(90);sfx('hurt')||suono(70,.5,'sawtooth',.14,40);if(M.nemici.filter(q=>q.vivo).length>=4)return;let x;do{x=2+Math.floor(Math.random()*(M.w-4));}while(cassaBoss(x)||Math.abs(x-P2.x)<1.5);M.nemici.push({tipo:'e',x,y:9,px:x,py:9,vx:Math.sign(P2.x-x)*2.2||2.2,vy:0,vivo:true,fase:x,cade:true});}
 function passoBoss(dt){
  const b=M.boss,p=P2;if(!b||b.vita<=0)return;b.t-=dt;b.lampo=Math.max(0,b.lampo-dt);
@@ -763,8 +773,10 @@ function disegnaBoss(c,sx,sy,ts){
  if(b.stato==='mira'&&b.arrivo){const gx=sx(b.arrivo.x),gy=sy(b.arrivo.y),rr=ts*(.5+.06*Math.sin(G.t*12));c.save();c.globalAlpha=.5;c.strokeStyle='#ff3b2e';c.lineWidth=Math.max(2,ts*.1);c.beginPath();c.arc(gx,gy,rr,0,6.3);c.stroke();c.globalAlpha=.18;c.fillStyle='#ff3b2e';c.fill();c.restore();}
  c.save();c.translate(a+(b.stato==='mira'?rnd(-2,2):0),q);
  if(M.i===0&&ANAS.complete){const p=P2,v=b.stato==='carica'||b.stato==='mira'?Math.sign(b.dx)||1:Math.sign(p.x-b.x)||1;
-  const f=b.vita<=0?17+Math.min(3,Math.floor((G.t-b.tm)*7)):b.stato==='carica'?4+Math.floor(G.t*26)%8:b.stato==='pugno'?(b.t>.45?12:13):b.stato==='mira'?(b.t>.45?0:9):b.stato==='stordito'?14+Math.floor(G.t*5)%3:b.cammina?4+Math.floor(G.t*10)%8:Math.floor(G.t*3)%4;
+  const f=b.vita<=0?17+Math.min(3,Math.floor((G.t-b.tm)*7)):b.stato==='carica'?4+Math.floor(G.t*26)%8:b.stato==='pugno'?(b.t>.45?12:13):b.stato==='mira'?(b.t>.45?0:9):b.stato==='stordito'?14+Math.floor(G.t*5)%3:b.cammina?4+Math.floor(G.t*10)%8:0;
   c.translate(0,b.r*ts);if(b.lampo>0&&Math.floor(G.t*24)%2)c.globalAlpha=.35;
+  /* da fermo una sola posa (la 0, la più dritta): il respiro lo fa il codice, gonfiandolo e sgonfiandolo appena dai piedi */
+  if(f===0&&b.vita>0&&(b.stato==='fermo'||(b.stato==='mira'&&b.t>.45))){const r=Math.sin(G.t*2.6);c.scale(1-.012*r,1+.028*r);}
   disegnaAnanas(c,f,z,v,true);c.restore();}
  else{
  if(b.stato==='carica')c.rotate(Math.sin(G.t*30)*.25);else if(b.stato==='stordito')c.rotate(.28*Math.sin(G.t*7));else c.translate(0,Math.sin(G.t*3)*ts*.1);
@@ -815,7 +827,7 @@ function gInclina(c,t){gFondo(c);const s=Math.sin(t*6.283);gTelefono(c,GW/2,40,s
 function gSalto(c,t){gFondo(c);const x=30+t*250,o=clamp((x-105)/90,0,1),u=4*o*(1-o);sp(c,'spikes',135,GS-34,34,34);gTelefono(c,GW/2,36,0,1,o>0&&o<.25);
  const g=o>0&&o<1;disegnaPolvere(c,105,GS,70,o/.5);gCamm(c,x,GS-u*62,GR,g?(o<.5?1:3):Math.floor(t*40)%10,g?3:1,1,0,0);}
 function gScatto(c,t){gFondo(c);const col=t>.32&&t<.45;gTelefono(c,GW/2,36,0,-1,col);const via=t>.44,e=(t-.44)/.25;
- if(!via){if(NEMICO.complete)c.drawImage(NEMICO,229-15,GS-52,30,52);else c.drawImage(ANAN,205,GS-46,48,48);}gBoom2(c,229,GS-22,e);
+ if(!via){if(!disegnaPera(c,Math.floor(t*16)%4,229,GS,50,false))c.drawImage(ANAN,205,GS-46,48,48);}gBoom2(c,229,GS-22,e);
  disegnaFumo(c,84,GS,38,1,(t-.32)/.5);if(t<.32)gCamm(c,30+t*150,GS,GR,Math.floor(t*40)%10,1,1,0,0);else{const x=78+Math.min(1,(t-.32)/.2)*170;gPalla(c,x,GS-GR,GR,x*.09,0,true);}}
 function gBolla(c,t){gFondo(c);const sc=t>.08&&t<.42;gTelefono(c,72+(sc?Math.sin(t*160)*7:0),36,sc?Math.sin(t*130)*.08:0);
  const su=clamp((t-.2)/.45,0,1),giu=clamp((t-.75)/.2,0,1),y=GS-Math.sin(su*1.5708)*62*(1-giu*giu),dent=t>.2&&t<.75,j=dent?Math.sin(t*90)*1.5:0;
