@@ -19,7 +19,7 @@ const puntoX=e=>SC.rot?e.clientY:e.clientX,puntoY=e=>SC.rot?innerWidth-e.clientX
 /* ---------- SALVATAGGIO ---------- */
 const CHIAVE='rotolamici-v1';
 const COLORI=['#3a3029','#3fb6a8','#e8655a','#6d8df0','#b56fd6','#7cc04b','#f08a3c','#e96fa6'];
-let S={record:0,gettoni:0,skin:['classica'],amici:[{nome:'Matteo',colore:COLORI[0],skin:'classica',foto:null}],sel:0,sens:1,audio:true};
+let S={record:0,gettoni:0,consigli:[],skin:['classica'],amici:[{nome:'Matteo',colore:COLORI[0],skin:'classica',foto:null}],sel:0,sens:1,audio:true};
 try{const v=JSON.parse(localStorage.getItem(CHIAVE));if(v&&v.amici&&v.amici.length)S=Object.assign(S,v);}catch(e){}
 S.amici.forEach(a=>{if(a.skin!=='classica')a.skin='classica';});S.sel=0; /* le altre skin e la scelta degli amici non ci sono più: rotola sempre Matteo */
 S.amici.forEach(a=>{if(['#f2b632','#62cf4a','#ffb27a','#f05a58','#b05a2c'].includes(a.colore))a.colore=COLORI[0];});
@@ -249,7 +249,7 @@ function suMoto(e){
 function bolla(){
  const p=P2;if(G.stato!=='gioco'||p.stanco>0||p.bollaUsata||p.bolla>0)return;if(!usaFiato(.25))return;
  p.bolla=.85;p.bollaUsata=true;if(!p.rotola)p.rot=0;p.rotola=true;p.ultimoSuolo=null;p.coyote=0;p.vy=Math.max(p.vy,2.3);p.y+=.04;vibra([15,25,15,25,15]);suono(700,.35,'sine',.07,1100);suono(950,.25,'triangle',.04,1500);
- if(!G.dettaBolla){G.dettaBolla=true;avviso('Bolla! Scuotendo il telefono Matteo galleggia per un attimo',2200);}
+ if(!G.dettaBolla){G.dettaBolla=true;consiglio('bolla','Bolla! Scuotendo il telefono Matteo galleggia per un attimo',2200);}
 }
 /* il lancio è una cannonata: deve passare fossi dove salto, scatto e bolla insieme non arrivano */
 const LANCIO_VX=15,LANCIO_VY=16.5,LANCIO_T=1.6;
@@ -287,7 +287,9 @@ function suFine(e){const p=puntatori.get(e.pointerId);if(!p)return;puntatori.del
  if(stickId===e.pointerId){stickId=null;IN.stickX=IN.stickZ=0;$('stick').hidden=true;$('stickP').style.transform='';}
  else if(!p.mosso&&e.type==='pointerup'&&performance.now()-p.t<320)azione(p.lato);}
 tocchi.addEventListener('pointerup',suFine);tocchi.addEventListener('pointercancel',suFine);
-addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT')return;tasti[e.code]=true;
+addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT')return;
+ if(G.stato==='consiglio'){if(e.code==='ArrowRight'||e.code==='Enter'||e.code==='Space'){e.preventDefault();if(!e.repeat)chiudiConsiglio();}return;}
+ tasti[e.code]=true;
  if(e.code==='Space'){e.preventDefault();if(!e.repeat)azione(1);}
  if((e.code==='KeyQ'||e.code==='KeyE')&&!e.repeat)lancio(e.code==='KeyE'?1:-1);
  if(e.code==='KeyB'&&!e.repeat)bolla();
@@ -391,7 +393,7 @@ const fumi=[];function sbuffo(){const p=P2;fumi.push({x:p.x-p.verso*p.R*.6,y:p.y
 const FIATO_SCATTO=.3,FIATO_LANCIO=.2;
 function aggFiato(){const f=$('fiatoB');if(f){f.style.width=(G.fiato*100)+'%';$('fiato').classList.toggle('basso',G.fiato<FIATO_SCATTO);}}
 function usaFiato(q){if(P2.stanco>0)return false;if(G.carica>=1)return true; /* da bomba non si stanca */if(G.fiato<q){senzaFiato();return false;}G.fiato-=q;G.fiatoT=2;aggFiato();return true;}
-function senzaFiato(){const p=P2;p.stanco=2;p.rotola=false;p.vx=0;p.carica=0;p.scatto=0;p.buf=0;suono(260,.5,'sine',.08,140);vibra(40);if(!G.dettoFiato){G.dettoFiato=true;avviso('Senza fiato! Matteo è grasso: riposa 2 secondi. Mangia la pizza per riprendere fiato',2600);}}
+function senzaFiato(){const p=P2;p.stanco=2;p.rotola=false;p.vx=0;p.carica=0;p.scatto=0;p.buf=0;suono(260,.5,'sine',.08,140);vibra(40);if(!G.dettoFiato){G.dettoFiato=true;consiglio('fiato','Senza fiato! Matteo è grasso: riposa 2 secondi. Mangia la pizza per riprendere fiato',2600);}}
 function scatta2(){if(P2.cd>0||!usaFiato(FIATO_SCATTO))return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.catena=Math.abs(P2.vx)>=8?2:1;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.vyS=Math.max(P2.vy,0);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;if(P2.ultimoSuolo)sbuffo();sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('aSin').classList.remove('pronto');}
 function colpito2(nx,spina){
  if(P2.inv>0||G.stato!=='gioco')return;
@@ -401,7 +403,7 @@ function colpito2(nx,spina){
  togliCuore();sfx('hurt')||suono(150,.25,'square',.1,70);vibra(60);schizzi2(P2.x,P2.y,12,'#d8432e',5);
 }
 function raccogli(o){
- if(o.tipo==='c'){P2.mangia=.5;P2.Wv-=3;G.gettoni++;$('gett').textContent=G.gettoni;G.fiato=Math.min(1,(G.fiato||0)+.25);G.carica=Math.min(1,G.carica+.08);aggBarra();if(G.carica>=.25&&!G.avvisato){G.avvisato=true;avviso('Sei esplosivo: cadi da molto in alto o sbatti forte!',2600);}sfx('coin')||suono(880,.09,'triangle',.08,1320);}
+ if(o.tipo==='c'){P2.mangia=.5;P2.Wv-=3;G.gettoni++;$('gett').textContent=G.gettoni;G.fiato=Math.min(1,(G.fiato||0)+.25);G.carica=Math.min(1,G.carica+.08);aggBarra();if(G.carica>=.25&&!G.avvisato){G.avvisato=true;consiglio('esplosivo','Sei esplosivo: cadi da molto in alto o sbatti forte!',2600);}sfx('coin')||suono(880,.09,'triangle',.08,1320);}
  else if(o.tipo==='H'){G.cuori++;hud();sfx('gem')||suono(520,.3,'sine',.12,1040);avviso('+1 cuore',900);schizzi2(o.x,o.y,12,'#d8432e',4);}
  else if(o.tipo==='Z'){G.carica=Math.min(1,G.carica+.4);aggBarra();sfx('magic')||suono(300,.3,'square',.08,600);avviso('Esplosione più forte',900);}
 }
@@ -495,8 +497,8 @@ function passo2d(h){
 }
 function passoOggetti(dt){
  const p=P2;aggFiato();G.comboT=Math.max(0,(G.comboT||0)-dt);if(M.crolli)passoCrolli(dt);
- for(const q of M.nomi||[])if(!q.detto&&p.x>q.x+1.5&&AIUTI[q.n]){q.detto=true;avviso(AIUTI[q.n],3800);}
- if(!M.boss&&!M.dettaCrepa&&!M.vistaCrepa&&cel(Math.round(p.x+p.verso*1.2),Math.round(p.y))==='X'){M.vistaCrepa=true;avviso('Muro crepato: si apre solo con l’esplosione. Mangia pizza e sbattici contro forte',3000);}
+ for(const q of M.nomi||[])if(!q.detto&&p.x>q.x+1.5&&AIUTI[q.n]){q.detto=true;consiglio('pezzo_'+q.n,AIUTI[q.n],3800);}
+ if(!M.boss&&!M.dettaCrepa&&!M.vistaCrepa&&cel(Math.round(p.x+p.verso*1.2),Math.round(p.y))==='X'){M.vistaCrepa=true;consiglio('crepa','Muro crepato: si apre solo con l’esplosione. Mangia pizza e sbattici contro forte',3000);}
  for(let i=M.oggetti.length-1;i>=0;i--){const o=M.oggetti[i];if(Math.abs(o.x-p.x)<.75&&Math.abs(o.y-p.y)<.8){raccogli(o);M.oggetti.splice(i,1);}}
  for(const k in M.spine){const a=M.spine[k];if(a.t==='!'){const on=Math.sin(G.t*1.4+a.fase)>0;a.s=lerp(a.s,on?1:.1,1-Math.exp(-dt*12));}}
 }
@@ -870,10 +872,13 @@ $('gAvanti').onclick=()=>{if(gPag<GUIDA.length-1){gPag++;pagGuida();}else chiudi
 $('gSalta').onclick=chiudiGuida;
 
 /* ---------- FLUSSO ---------- */
-const sezioni=['sMenu','sAmici','sPausa','sFine','sGuida'];
+const sezioni=['sMenu','sAmici','sPausa','sFine','sGuida','sConsiglio'];
 function mostra(id){sezioni.forEach(s=>$(s).hidden=s!==id);}
 function hud(){const n=Math.max(0,G.cuori);const cu=$('cuori');cu.textContent='';for(let i=0;i<(VITE_INFINITE?1:n);i++){const m=document.createElement('img');m.src=icona('hud_heart');m.alt='';cu.append(m);}if(VITE_INFINITE)cu.append(' ∞');$('icMoneta').src=PIZZA.src;$('cuori').setAttribute('aria-label',n+' cuori');}
 let tAvv=0;function avviso(t,ms){const a=$('avviso');a.textContent=t;a.hidden=false;clearTimeout(tAvv);tAvv=setTimeout(()=>a.hidden=true,ms||2000);}
+/* le spiegazioni compaiono una volta sola, la prima volta che ci si arriva: fermano il gioco in un riquadro e si va avanti con la freccia; poi (S.consigli) non compaiono più */
+function consiglio(k,t){S.consigli=S.consigli||[];if(S.consigli.includes(k)||G.stato!=='gioco')return;S.consigli.push(k);salva();mollaComandi();$('avviso').hidden=true;G.stato='consiglio';$('consTesto').textContent=t;mostra('sConsiglio');}
+function chiudiConsiglio(){if(G.stato!=='consiglio')return;mollaComandi();mostra('');G.stato='gioco';}
 function giocoUI(on){['hud','tocchi','aSin','aDes'].forEach(i=>$(i).hidden=!on);}
 function dissolvi(fn){G.stato='velo';$('velo').classList.add('on');setTimeout(()=>{fn();$('velo').classList.remove('on');},380);}
 function banner(t){$('grande').textContent=t;$('grande').hidden=false;$('avviso').hidden=true;G.pronti=1.4;G.stato='pronti';}
@@ -883,7 +888,7 @@ function entraCorsa(i,prova){
  G.fiato=1;Object.assign(P2,{R:R_NORMALE,boomAria:false,gFermo:false,eraBomba:G.carica>=1,gonfioT:0,sgonfiaT:0,mangia:0,stanco:0,slancio:0,x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
  V.dir=1;V.la=2;V.attesa=0;V.py=P2.y;V.zoom=1;V.ts=V.ts0;V.cx=P2.x+2;V.cy=centroY();$('bossBox').hidden=true;$('nomeTappa').textContent=amico().nome+' · Mondo '+(i+1);$('aSin').classList.add('pronto');
  banner(prova?'Nuova tappa':MONDI[i].nome);
- if(!prova&&i===0)setTimeout(()=>{if(G.modo==='2d'&&G.stato==='gioco'&&G.mondo===0)avviso('Mangia per caricare l\u2019esplosione. Le casse si rompono con lo scatto.',3400);},2200);
+ if(!prova&&i===0)setTimeout(()=>{if(G.modo==='2d'&&G.stato==='gioco'&&G.mondo===0)consiglio('mangia','Mangia per caricare l\u2019esplosione. Le casse si rompono con lo scatto.',3400);},2200);
 }
 function finisciProva(){incassa();vaiMenu();avviso('Tappa finita!',2600);}
 function entraBoss(i){
@@ -891,7 +896,7 @@ function entraBoss(i){
  Object.assign(P2,{R:R_NORMALE,gFermo:false,x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
  $('bossBox').hidden=false;$('bossNome').textContent=BOSS[i].nome;$('bossHp').style.width='100%';$('nomeTappa').textContent='';
  banner(BOSS[i].nome);
- if(i===0)setTimeout(()=>{if(M.boss&&G.stato==='gioco')avviso('Schiva la carica: se sbatte è stordito. Mettiti dietro le casse!',3800);},1700);
+ if(i===0)setTimeout(()=>{if(M.boss&&G.stato==='gioco')consiglio('boss','Schiva la carica: se sbatte è stordito. Mettiti dietro le casse!',3800);},1700);
 }
 function dopoBoss(){const i=G.mondo;G.base=G.avanz;G.cuori++;hud();if(i>=MONDI.length-1){fine(true);return;}dissolvi(()=>entraCorsa(i+1));}
 let lucchetto=null;async function sveglia(){try{if(navigator.wakeLock&&!lucchetto){lucchetto=await navigator.wakeLock.request('screen');lucchetto.addEventListener('release',()=>lucchetto=null);}}catch(e){}}
@@ -932,6 +937,7 @@ $('bGuida').onclick=()=>{audioOn();apriGuida(null);};
 $('bAmici').onclick=()=>{audioOn();disegnaAmici();mostra('sAmici');};
 $('amiciChiudi').onclick=()=>mostra('sMenu');
 $('pausa').onclick=pausa;
+$('consAvanti').onclick=chiudiConsiglio;
 $('bRiprendi').onclick=()=>{mostra('');G.stato='gioco';};
 $('bEsci').onclick=()=>{incassa();vaiMenu();};
 $('sens').addEventListener('input',e=>{S.sens=+e.target.value;salva();});

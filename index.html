@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Baloo+2:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="style.css?v=103">
+<link rel="stylesheet" href="style.css?v=106">
 
 <div id="schermo">
 <canvas id="d2" aria-label="Gioco Cicciobomba"></canvas>
@@ -77,6 +77,12 @@
   <div class="riga"><button id="bAudio" class="btn piccolo">Audio: sì</button><button id="bEsci" class="btn piccolo">Esci</button></div>
 </section>
 
+<section id="sConsiglio" class="tavola centro" hidden>
+  <h2>Consiglio</h2>
+  <p id="consTesto"></p>
+  <button id="consAvanti" class="btn primo" aria-label="Avanti">Avanti ➜</button>
+</section>
+
 <section id="sFine" class="tavola centro" hidden>
   <h2 id="fineTitolo"></h2>
   <p id="fineTesto"></p>
@@ -89,6 +95,6 @@
 <div id="erroreT" hidden>Il gioco non è riuscito a partire. Controlla la connessione e ricarica la pagina.</div>
 
 </div>
-<script src="game.js?v=103"></script>
+<script src="game.js?v=106"></script>
 
 </body></html>

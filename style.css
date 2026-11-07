@@ -82,6 +82,8 @@ input[type=range]{width:100%;accent-color:var(--vernice)}
 #aSin.pronto{border-style:solid;border-color:var(--oro)}
 #stick{position:fixed;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;border:3px solid #fff4df99;pointer-events:none;background:#0000001f}
 #stick i{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px;border-radius:50%;background:var(--panna);opacity:.85}
-#avviso{position:fixed;left:50%;top:27%;transform:translateX(-50%);width:min(340px,calc(100% - 32px));text-align:center;font-weight:800;font-size:19px;line-height:1.2;color:var(--inchiostro);text-shadow:0 0 3px #fff,0 0 6px #fff,0 1px 0 #fff;pointer-events:none}
+/* gli avvisi brevi su un riquadro chiaro, perché si leggano sopra il fondale */
+#avviso{position:fixed;left:50%;top:22%;transform:translateX(-50%);width:max-content;max-width:min(380px,calc(100% - 32px));box-sizing:border-box;padding:8px 14px;text-align:center;font-weight:800;font-size:18px;line-height:1.25;color:var(--notte);background:var(--panna);border:3px solid var(--notte);border-radius:14px;box-shadow:0 4px 0 var(--notte);pointer-events:none}
+#sConsiglio p{margin:10px 0 16px;font-size:19px;font-weight:700;line-height:1.3;text-wrap:balance}
 #grande{position:fixed;left:0;right:0;top:38%;text-align:center;font:400 clamp(30px,5.4vmax,46px)/1.05 var(--display);color:var(--oro);-webkit-text-stroke:2px var(--inchiostro);paint-order:stroke fill;text-shadow:0 4px 0 var(--inchiostro);pointer-events:none;padding:0 16px;text-wrap:balance}
 #erroreT{position:fixed;inset:0;display:grid;place-items:center;padding:24px;text-align:center;font-weight:700;font-size:18px}
