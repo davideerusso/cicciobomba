@@ -27,7 +27,7 @@ function salva(){try{localStorage.setItem(CHIAVE,JSON.stringify(S));}catch(e){}}
 
 /* ---------- MONDI E TAPPE ---------- */
 const MONDI=[
- {nome:'Isola degli Ananas',cielo:['#ffe382','#27a39b'],legno:'#f4bd3c',vena:'#a96c10',bordo:'#3f9e3a',nebbia:'#1f8f7d',tema:'ananas',kit:'sand',fondo:'ananas_nuovo',retro:'cielo',liquido:'water',decor:['erbananas','grass','rock'],nemico:'pera',volo:'bee'},
+ {nome:'Isola degli Ananas',cielo:['#ffe382','#27a39b'],legno:'#f4bd3c',vena:'#a96c10',bordo:'#3f9e3a',nebbia:'#1f8f7d',tema:'ananas',kit:'sand',fondo:'ananas_nuovo',retro:'cielo',liquido:'water',decor:['erbananas','grass','rock'],nemico:'pera',volo:'uccellino'},
 ];
 const BOSS=[
  {nome:'Ananassone',r:1.1,terra:true,vita:6,scatto:14,stordito:1.8,colore:'#f4bd3c',corona:true},
@@ -502,7 +502,7 @@ function passoOggetti(dt){
  for(let i=M.oggetti.length-1;i>=0;i--){const o=M.oggetti[i];if(Math.abs(o.x-p.x)<.75&&Math.abs(o.y-p.y)<.8){raccogli(o);M.oggetti.splice(i,1);}}
  for(const k in M.spine){const a=M.spine[k];if(a.t==='!'){const on=Math.sin(G.t*1.4+a.fase)>0;a.s=lerp(a.s,on?1:.1,1-Math.exp(-dt*12));}}
 }
-function uccidi2(n){combo();n.vivo=false;G.uccisi++;G.gettoni+=2;$('gett').textContent=G.gettoni;if(n.tipo==='e')n.morto=G.t; /* la pera fa vedere un attimo che è stata colpita */
+function uccidi2(n){combo();n.vivo=false;G.uccisi++;G.gettoni+=2;$('gett').textContent=G.gettoni;if(n.tipo==='e'||n.tipo==='f')n.morto=G.t; /* la pera e l'uccellino fanno vedere un attimo che sono stati colpiti */
  if(n.tipo==='e'&&MONDI[M.i||0].nemico==='pera')M.oggetti.push({tipo:'c',x:n.x,y:n.cade?2:n.y+.1,fase:n.x}); /* la pera lascia una pizza; se muore in aria, la pizza sta a terra */
  sfx('bump')||suono(180,.2,'square',.1,60);vibra(25);}
 function passoNemici2(dt){
@@ -633,7 +633,7 @@ function disegna2d(){
  for(const o of M.oggetti){if(o.x<c0-1||o.x>c1+1)continue;const a=sx(o.x)-ts/2,b=sy(o.y+Math.sin(G.t*3+o.fase)*.08)-ts/2;
   if(o.tipo==='c'){c.drawImage(PIZZA,a+ts*.03,b+ts*.03,ts*.94,ts*.94);}
   else sp(c,o.tipo==='H'?'heart':'bomb',a,b,ts,ts);}
- for(const n of M.nemici){if((!n.vivo&&!(n.morto&&G.t-n.morto<.3&&m.nemico==='pera'))||n.x<c0-1||n.x>c1+1)continue;const a=sx(n.x),b=sy(n.y),z=ts*1.1,pas=Math.floor(G.t*7+n.fase)%2?'_a':'_b';
+ for(const n of M.nemici){if((!n.vivo&&!(n.morto&&(n.tipo==='f'?G.t-n.morto<.7&&m.volo==='uccellino':G.t-n.morto<.3&&m.nemico==='pera')))||n.x<c0-1||n.x>c1+1)continue;const a=sx(n.x),b=sy(n.y),z=ts*1.1,pas=Math.floor(G.t*7+n.fase)%2?'_a':'_b';
   if(n.tipo==='e'){const pie=n.cade?sy(n.y-.4):sy(Math.round(n.y+.1)-.5),q=Math.sin(G.t*12+n.fase),dv=n.vx>0?1:-1;
    if(m.nemico==='pera'&&PERA.complete){const hh=ts*1.3;if(!n.vivo){const t=G.t-n.morto;c.save();c.globalAlpha=t>.12?Math.max(0,(.3-t)/.18):1;disegnaPera(c,4,a,pie,hh,dv<0);c.restore();} /* colpita: occhi strizzati e sparisce */
     else if(n.cade)disegnaPera(c,5,a,pie,hh,dv<0); /* cade dall'alto seduta */
@@ -641,7 +641,10 @@ function disegna2d(){
     else disegnaPera(c,Math.floor(G.t*8+n.fase)%4,a,pie,hh,dv<0);} /* il foglio guarda a destra */
    else sp(c,m.nemico+'_walk'+pas,a-z/2,pie-z,z,z,dv>0);}
   else if(n.tipo==='r')sp(c,'slime_spike_walk'+pas,a-z/2,b+ts*.45-z,z,z,n.vx>0);
-  else if(n.tipo==='f')sp(c,m.volo+pas,a-z/2,b-z/2,z,z,Math.cos(n.fase*.8)>0);
+  else if(n.tipo==='f'){const fl=Math.cos(n.fase*.8)<0,hh=ts*1.25; /* il foglio guarda a destra: si gira quando va a sinistra */
+   if(m.volo==='uccellino'&&UCC.complete){if(!n.vivo){const t=G.t-n.morto,q=Math.max(0,t-.15);c.save();c.globalAlpha=t>.5?Math.max(0,(.7-t)/.2):1;disegnaUcc(c,t<.15?4:5,a,b+q*q*ts*16,hh,fl);c.restore();} /* colpito: occhi sgranati, poi cade a pancia in su */
+    else disegnaUcc(c,Math.floor(G.t*10+n.fase)%4,a,b,hh,fl);}
+   else sp(c,m.volo+pas,a-z/2,b-z/2,z,z,Math.cos(n.fase*.8)>0);}
   else if(n.tipo==='g')sp(c,'block_strong_danger',a-ts/2,b-ts/2,mz,mz);
  }
  disegnaBoss(c,sx,sy,ts);
@@ -712,6 +715,9 @@ const ARENE=[
 /* Ananassone con la corazza, disegnato dall'utente: fotogrammi da 231x166 in righe da 8, guarda a destra. 0-3 fermo, 4-11 corre, 9 a testa bassa per la mira, 12-13 pugno, 14-16 stordito, 17-20 cade sconfitto. z è l'altezza da fermo */
 /* la pera triste dell'utente, nemico base del mondo 1 (paesaggio/nemico_pera_originale.png): fotogrammi da 70x94 che guardano a destra, centro a 33, piedi a 92. 0-3 cammina, 4 colpita, 5 cade dall'alto, 6 atterrata, 7 si rialza */
 const PERA=new Image();PERA.src='assets/nemico_pera.webp';
+/* l'uccellino dell'utente, nemico che vola del mondo 1 al posto dell'ape (paesaggio/nemico_uccellino_originale.jpg): fotogrammi da 170x174 che guardano a destra, centrati sul corpo (86, 80), alto 139 in volo. 0-3 sbatte le ali, 4 colpito, 5 cade a pancia in su */
+const UCC=new Image();UCC.src='assets/nemico_uccellino.webp';
+function disegnaUcc(c,f,x,y,h,flip){if(!UCC.complete)return false;const k=h/139,s=c.imageSmoothingEnabled;c.save();c.translate(x,y);if(flip)c.scale(-1,1);c.imageSmoothingEnabled=false;c.drawImage(UCC,f*170,0,170,174,-86*k,-80*k,170*k,174*k);c.imageSmoothingEnabled=s;c.restore();return true;}
 function disegnaPera(c,f,x,y,h,flip){if(!PERA.complete)return false;const k=h/92,s=c.imageSmoothingEnabled;c.save();c.translate(x,y);if(flip)c.scale(-1,1);c.imageSmoothingEnabled=false;c.drawImage(PERA,f*70,0,70,94,-33*k,-92*k,70*k,94*k);c.imageSmoothingEnabled=s;c.restore();return true;}
 const ANAS=new Image();ANAS.src='assets/boss_ananassone.webp';const ANW=231,ANH=166,ANX=116,ANY=164;
 function disegnaAnanas(c,f,z,verso,piedi){if(!ANAS.complete)return false;const k=z/160,oy=piedi?ANY:90;c.save();if(verso<0)c.scale(-1,1);c.drawImage(ANAS,f%8*ANW,Math.floor(f/8)*ANH,ANW,ANH,-ANX*k,-oy*k,ANW*k,ANH*k);c.restore();return true;}
