@@ -65,7 +65,7 @@ const FOGLIO3=new Image();FOGLIO3.src='assets/personaggio3.webp'; /* Matteo stan
 let stancoVis=false;
 /* il Matteo nuovo disegnato dall'utente, con i suoi fogli (una riga di celle, rivolto a destra). Gli amici con colore, skin o foto tengono il disegno di prima */
 const FOGLISPR={};
-for(const [n,src] of [['stanco','assets/matteo_stanco.webp'],['fermo','assets/matteo_fermo.webp'],['salto','assets/matteo_salto.webp'],['palla','assets/matteo_palla.webp'],['passi','assets/matteo_cammina.webp'],['grasso','assets/matteo_grasso.webp']]){FOGLISPR[n]=new Image();FOGLISPR[n].src=src;}
+for(const [n,src] of [['stanco','assets/matteo_stanco.webp'],['fermo','assets/matteo_fermo.webp'],['salto','assets/matteo_salto.webp'],['palla','assets/matteo_palla.webp'],['passi','assets/matteo_cammina.webp'],['grasso','assets/matteo_grasso.webp'],['telefono','assets/matteo_telefono.webp']]){FOGLISPR[n]=new Image();FOGLISPR[n].src=src;}
 /* i disegni sono di tre quarti, il piede dietro sta più in alto: si abbassa lo sprite di SPR_PIEDI raggi perché poggino tutti e due */
 const SPR_GIRO=1.51; /* la palla ruota davvero: un giro ogni 3,8 caselle, la circonferenza del disegno (p.rot va a metà velocità e il raggio disegnato è 1,3 volte quello vero) */
 const SPR_ATTESA=1.5; /* fermandosi resta com'è per questi secondi, poi gira fino a dritto e si apre; se riparte continua da lì */
@@ -96,6 +96,9 @@ function gPallaGira(c,x,yPiedi,r,gi,W){const im=FOGLISPR.grasso,k=r*SPR_K;if(!im
 function grassoSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.grasso,170,140,140,SPR_K,x,yPiedi,r,f,verso,W,ang);}
 /* passi, 21 fotogrammi: 0-5 corre, 6-9 cammina, 10-20 si gira per noia. Scelti dal foglio dell'utente e messi in ordine perché braccia e gambe si alternino */
 function passiSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.passi,130,126,126,SPR_K,x,yPiedi,r,f,verso,W,ang);}
+/* attesa col telefono (paesaggio/matteo_telefono_originale.png, alla scala di matteo_fermo): 0 fermo, 1 lo tiene, 2 lo lancia, 3 lo riprende, 4 lo guarda.
+   Dopo 5 s fermo lo prende e poi lo lancia e lo riprende di continuo, finché Matteo non si muove */
+function telefonoSpr(c,x,yPiedi,r,t,verso,W,ang){const u=(t-.3)%.9,f=t<.3?1:u<.28?2:u<.52?3:4; /* un giro ogni 0,9 s: a 1,15 andava a scatti */fogSpr(c,FOGLISPR.telefono,130,126,126,SPR_K,x,yPiedi,r,f,verso,W,ang);}
 /* ---------- PROVA ANIMAZIONI (?prova=1): sagome segnaposto con nome dello stato, fotogramma e tempo d'uso ---------- */
 const PROVA=/[?&]prova\b/.test(location.search),USO={},POSE={fermo:[4,3,'#7fb0d8'],noia:[8,5,'#7fb0d8'],cammina:[8,10,'#6fc27a'],corre:[8,16,'#3fa04c'],stacco:[2,12,'#e8c84a'],sale:[2,8,'#e8c84a'],punta:[1,1,'#f0a830'],cade:[2,8,'#e08a20'],atterra:[2,12,'#c96a18'],chiude:[3,15,'#b48ae0'],rotola:[8,0,'#8a5ad0'],apre:[3,15,'#b48ae0'],scatto:[4,14,'#e0503c'],lancio:[4,10,'#e03c8c'],bolla:[2,8,'#5ad0e0'],colpito:[2,8,'#ff6060'],schianto:[3,10,'#ff3030'],riposo:[4,3,'#999999'],'stanco fermo':[3,3,'#b0b0a0'],'stanco cammina':[8,8,'#a0b090'],'stanco corre':[8,12,'#90a080']};
 function statoProva(p,n){
@@ -472,7 +475,7 @@ function passo2d(h){
  if(M.pesi)passoPesi(h);if(p.suolo&&M.crolli)calpesta(p.x,p.y-p.R);
  if(p.urtoX&&Math.abs(vx0)>=7&&Math.abs(p.vx)<Math.abs(vx0)*.5)botto();
  if(p.suolo&&!p.ultimoSuolo&&vy0<-12)botto();
- if(p.suolo&&!p.ultimoSuolo&&vy0<-4)p.atterra=.2;p.atterra=Math.max(0,p.atterra-h);p.fermoT=p.suolo&&Math.abs(p.vx)<.25&&!p.rotola?p.fermoT+h:0;if(p.fermoT>6.3)p.fermoT=0;
+ if(p.suolo&&!p.ultimoSuolo&&vy0<-4)p.atterra=.2;p.atterra=Math.max(0,p.atterra-h);p.fermoT=p.suolo&&Math.abs(p.vx)<.25&&!p.rotola?p.fermoT+h:0;if(p.fermoT>6.3&&!(matteoNuovo()&&G.carica<=.6))p.fermoT=0; /* il Matteo nuovo continua col telefono finché non si muove */
  if(p.suolo){p.bollaUsata=false;if(p.lancio<LANCIO_T-.15)p.lancio=0;if(p.bolla>0&&p.suolo.y>.5&&p.vy<=0)p.bolla=0;if(vy0<-7&&!p.ultimoSuolo){p.Wv-=Math.min(14,-vy0*.9);suono(120,.08,'sine',.08);}p.coyote=.1;
   const q=Math.round(p.x),r=Math.round(p.y-p.R-.3);if(p.suolo.y>.9&&cel(q,r)==='#'&&cel(q-1,r)==='#'&&cel(q+1,r)==='#'){p.sx=q;p.sy=r+1.2;}}
  /* cadendo da un punto più alto fa un rimbalzino */
@@ -676,7 +679,7 @@ function disegna2d(){
    else if(!n)disegnaCamm(c,sx(p.x),pie,r,p.vy>2.5?1:p.vy<-2.5?3:2,3,p.verso,p.W,0);
    else if(nuovo&&G.carica>.6&&Math.abs(p.vx)>=.25)grassoSpr(c,sx(p.x),pie,r,G.carica>.85?4:5,p.verso,p.W,ang+Math.sin(p.passi*.8)*.08);
    else if(nuovo&&Math.abs(p.vx)>=.25){const q=Math.floor(p.passi*.6);passiSpr(c,sx(p.x),pie,r,Math.abs(p.vx)>2.3?q%6:6+q%4,p.verso,p.W,ang);}
-   else if(nuovo&&Math.abs(p.vx)<.25){if(G.carica>.6)grassoSpr(c,sx(p.x),pie,r,G.carica>.85?4:5,p.verso,p.W+Math.sin(G.t*1.96)*.02,ang);else if(p.fermoT>5)passiSpr(c,sx(p.x),pie,r,10+Math.floor((p.fermoT-5)*8)%11,p.verso,p.W,ang);else fermoSpr(c,sx(p.x),pie,r,p.verso,p.W+Math.sin(G.t*1.96)*.02,ang);}
+   else if(nuovo&&Math.abs(p.vx)<.25){if(G.carica>.6)grassoSpr(c,sx(p.x),pie,r,G.carica>.85?4:5,p.verso,p.W+Math.sin(G.t*1.96)*.02,ang);else if(p.fermoT>5)telefonoSpr(c,sx(p.x),pie,r,p.fermoT-5,p.verso,p.W,ang);else fermoSpr(c,sx(p.x),pie,r,p.verso,p.W+Math.sin(G.t*1.96)*.02,ang);}
    else if(Math.abs(p.vx)<.25){const col=p.fermoT>5?Math.floor((p.fermoT-5)*8)%10:[0,1,2,1][Math.floor(G.t*1.5)%4];disegnaCamm(c,sx(p.x),pie,r,col,0,p.verso,p.W+Math.sin(G.t*3)*.01,ang);}
    else disegnaCamm(c,sx(p.x),pie,r,Math.floor(p.passi)%10,Math.abs(p.vx)>2.3?2:1,p.verso,p.W,ang);
    }};
