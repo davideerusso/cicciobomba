@@ -36,7 +36,6 @@ body{font-family:var(--testo);font-size:16px}
 .mBtn{--c1:var(--azzurro);--c2:var(--azzurro2);min-height:clamp(46px,14vmin,60px);padding:6px 12px;font:400 clamp(15px,2.3vmax,21px)/1.05 var(--display);color:var(--notte);text-wrap:balance;background:linear-gradient(var(--c1) 50%,var(--c2) 50%);border:3px solid var(--notte);border-radius:16px;box-shadow:0 5px 0 var(--notte),0 0 0 6px #fff,0 11px 0 0 #fff;cursor:pointer;touch-action:manipulation}
 .mBtn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--notte),0 0 0 6px #fff,0 7px 0 0 #fff}
 .mGioca{--c1:var(--scintilla);--c2:var(--scintilla2);min-height:clamp(58px,19vmin,78px);font-size:clamp(25px,4vmax,36px);line-height:1;letter-spacing:.02em}
-.mGioca small{display:block;margin-top:2px;font:800 clamp(13px,1.7vmax,15px)/1.1 var(--testo);letter-spacing:0}
 .mPiede{display:flex;align-items:center;justify-content:center;gap:10px;min-height:0;margin-top:1.6vmin;max-width:100%;font-size:13px;line-height:1.2;font-weight:700;color:#fff}
 .mPiede small{font:inherit;text-align:center;text-wrap:balance;padding:3px 10px;border-radius:10px;background:#1b1464d9}
 #record{flex:none;padding:3px 10px;border-radius:10px;background:var(--notte);color:var(--scintilla);font-weight:800}

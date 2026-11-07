@@ -43,7 +43,10 @@ const ERBANAN=new Image();ERBANAN.src='assets/erbananas.webp'; /* il ciuffo d'an
 /* in grandezza vera, alla scala delle caselle da 68 del paesaggio: così il bordo scuro è spesso come quello del pavimento */
 function ciuffo(c,x,y,ts){const w=ERBANAN.width*ts/68,h=ERBANAN.height*ts/68;if(w)c.drawImage(ERBANAN,x-w/2,y-h,w,h);}
 const PAES=new Image();PAES.src='assets/paesaggio.webp';const PAES_RAMPA=16,PAES_SOTTO=17,PAES_BORDO={m:18,g:19,v:20},PAES_UNIONE=21,PAES_COLONNA=22,PAES_LATO_COLONNA=23,PAES_GROTTA={fondo:24,pav:25,base:26,muro:27,muroPav:28,pavMuro:29,muroBase:30,cielo:31,angolo:32,angoloS:33,muroS:34,muroFondo:35,pavFondo:36,pavFine:37,muroPavS:38,muroBaseS:39,baseBordo:40,pavBordo:41}; /* 17: la terra sotto una rampa a scalini, con la buccia della rampa dopo nell'angolo; 18-20: dove il piano finisce a sinistra, ai piedi di un muro più alto (m), con un gradino in giù (g) o sul vuoto (v); a destra si capovolgono, il bordo sul vuoto al contrario; 21: il muro accanto al bordo sul vuoto, dove le due linee si uniscono; 22: sotto una colonna, con il piano che arriva dai due lati; 23: il piano ai lati di quella colonna, senza l'uncino; 24-29: la grotta, sfondo, pavimento, la casella sotto il pavimento che torna gialla, il muro a sinistra (a destra si capovolge), e l'angolo: il muro alla quota del pavimento, la prima casella di pavimento accanto al muro e (30) il muro sotto, dove la sfumatura gira; 31: l'interno sotto il soffitto */
-function paes(c,i,x,y,w,h,flip,capo){const s=c.imageSmoothingEnabled;c.imageSmoothingEnabled=false;if(flip||capo){c.save();c.translate(flip?x+w:x,capo?y+h:y);c.scale(flip?-1:1,capo?-1:1);c.drawImage(PAES,i*68,0,68,68,0,0,w,h);c.restore();}else c.drawImage(PAES,i*68,0,68,68,x,y,w,h);c.imageSmoothingEnabled=s;}
+/* nella sala del boss il terreno è più marrone, per stare bene con la sala del trono: una copia del foglio moltiplicata per SALA_TINTA */
+const SALA_TINTA='#d9a578';let PAES_SALA=null;
+function paesSala(){if(PAES_SALA||!PAES.complete||!PAES.width)return PAES_SALA;const k=document.createElement('canvas');k.width=PAES.width;k.height=PAES.height;const c=k.getContext('2d');c.drawImage(PAES,0,0);c.globalCompositeOperation='multiply';c.fillStyle=SALA_TINTA;c.fillRect(0,0,k.width,k.height);c.globalCompositeOperation='destination-in';c.drawImage(PAES,0,0);return PAES_SALA=k;}
+function paes(c,i,x,y,w,h,flip,capo){const s=c.imageSmoothingEnabled,im=G.modo==='2d'&&M&&M.boss&&paesSala()||PAES;c.imageSmoothingEnabled=false;if(flip||capo){c.save();c.translate(flip?x+w:x,capo?y+h:y);c.scale(flip?-1:1,capo?-1:1);c.drawImage(im,i*68,0,68,68,0,0,w,h);c.restore();}else c.drawImage(im,i*68,0,68,68,x,y,w,h);c.imageSmoothingEnabled=s;}
 function sp(c,n,x,y,w,h,flip){if(n.startsWith('terrain_sand_')&&PAES.complete){const t=n.slice(13);if(t==='ramp_short_b'){paes(c,PAES_RAMPA,x,y,w,h,flip);return;}if(t in PIX){paes(c,PIX[t],x,y,w,h);return;}}
  const q=KMAP[n],im=q&&q[2]?KIT2:KIT;if(!q||!im.complete)return;if(flip){c.save();c.translate(x+w,y);c.scale(-1,1);c.drawImage(im,q[0],q[1],96,96,0,0,w,h);c.restore();}else c.drawImage(im,q[0],q[1],96,96,x,y,w,h);}
 const ANAN=document.createElement('canvas');ANAN.width=ANAN.height=96;(function(){const c=ANAN.getContext('2d'),o='#2b2b3a';c.lineWidth=6;c.lineJoin='round';c.strokeStyle=o;c.fillStyle='#39b86b';
@@ -199,7 +202,7 @@ function caricaFoto(a,dopo){if(!a.foto||a._img){dopo&&dopo();return;}const i=new
 /* ---------- PALLA DIPINTA (skin e foto) ---------- */
 const cvPalla=document.createElement('canvas');cvPalla.width=1024;cvPalla.height=512;
 function amico(){return S.amici[S.sel]||S.amici[0];}
-function vestiPalla(){const a=amico();caricaFoto(a,()=>{dipingiPalla(cvPalla,a,a.skin);});$('chi').textContent=a.nome;}
+function vestiPalla(){const a=amico();caricaFoto(a,()=>{dipingiPalla(cvPalla,a,a.skin);});}
 
 /* ---------- AUDIO ---------- */
 let AC=null;
@@ -357,7 +360,7 @@ function costruisci(i,lista){
  const dc=MONDI[i].decor;m.decor=[];for(let x=1;x<m.fine-6;x++){ /* niente decori davanti al castello */const h=(x*2654435761>>>0)>>>7;if(h%7<2&&g[2][x]==='#'&&g[3][x]===' '&&!m.oggetti.some(o=>o.x===x&&o.y===3)){let n=dc[(h>>>3)%dc.length],dx=0;if(n==='erbananas'){/* il ciuffo è largo più di 3 caselle: deve stare tutto sul piano, se no rientra un po' a sinistra, o diventa erba */const r=213/68/2,su=v=>{for(let k=Math.floor(x+v-r+.5);k<=Math.floor(x+v+r+.5);k++)if(g[2][k]!=='#'||(g[3][k]||' ')!==' ')return false;return true;};dx=[0,-.5,-1,-1.5,-2,.5,1].find(su);if(dx===undefined){n='grass';dx=0;}}m.decor.push({x,dx,n});}}
  return m;
 }
-const cel=(x,y)=>{const r=M.g[y];return r?(r[x]||' '):' ';};
+const cel=(x,y)=>{const r=M.g[y];if(!r)return M.boss&&y>0&&(x===0||x===M.w-1)?'#':' ';return r[x]||' ';}; /* sopra la sala del boss i muri continuano all'infinito, così non se ne vede la fine */
 const pieno=t=>t==='#'||t==='C'||t==='D'||t==='x'||t==='y'||t==='X';
 function urta(o,R){
  o.suolo=null;
@@ -690,11 +693,11 @@ function disegnaMenu(dt){
 
 /* ---------- BOSS 2D SU PIÙ PIANI: si lancia, sbatte, resta stordito ---------- */
 const ARENE=[
- ["####################","#                  #","#                  #","#       c  c       #","# c   c x  x c   c #","# x   x      x   x #","#                  #","#      C    C      #","#!  B  Cc!!cC  B  !#","####################","####################"],
+ ["#                  #","#                  #","#                  #","#       c  c       #","# c   c x  x c   c #","# x   x      x   x #","#                  #","#      C    C      #","#   B  Cc  cC  B   #","####################","####################"],
 ];
-/* Ananassone con la corazza, disegnato dall'utente: fotogrammi da 232x166 in righe da 8, guarda a destra. 0-3 fermo, 4-11 corre, 9 a testa bassa per la mira, 12-13 pugno, 14-16 stordito, 17-20 cade sconfitto. z è l'altezza da fermo */
+/* Ananassone con la corazza, disegnato dall'utente: fotogrammi da 231x166 in righe da 8, guarda a destra. 0-3 fermo, 4-11 corre, 9 a testa bassa per la mira, 12-13 pugno, 14-16 stordito, 17-20 cade sconfitto. z è l'altezza da fermo */
 const NEMICO=new Image();NEMICO.src='assets/nemico_ananas.webp'; /* l'ananas arrabbiato del foglio Pineapple Tiles, nemico del mondo 1 */
-const ANAS=new Image();ANAS.src='assets/boss_corazza.webp';const ANW=232,ANH=166,ANX=117,ANY=164;
+const ANAS=new Image();ANAS.src='assets/boss_ananassone.webp';const ANW=231,ANH=166,ANX=116,ANY=164;
 function disegnaAnanas(c,f,z,verso,piedi){if(!ANAS.complete)return false;const k=z/160,oy=piedi?ANY:90;c.save();if(verso<0)c.scale(-1,1);c.drawImage(ANAS,f%8*ANW,Math.floor(f/8)*ANH,ANW,ANH,-ANX*k,-oy*k,ANW*k,ANH*k);c.restore();return true;}
 const BOSPR=[0].map(n=>{const k=document.createElement('canvas');k.width=k.height=240;const c=k.getContext('2d'),o='#2b2b3a';c.lineWidth=10;c.lineJoin='round';c.strokeStyle=o;
  if(n===0)c.drawImage(ANAN,0,0,240,240);
@@ -924,7 +927,7 @@ function centroY(){return V.H/V.ts/2-.3;} /* il pavimento resta sempre in basso 
 function telecamera2d(dt){
  const p=P2;
  if(M.boss){ /* ferma: tutta la stanza sta nello schermo, così il boss si vede sempre. Vicina come nella corsa, se la larghezza lo permette */
-  V.ts=Math.min(V.ts0,V.W/M.w);V.cx=(M.w-1)/2;const k=1-Math.exp(-dt*4),q=V.H/V.ts/2-.9;V.cy=lerp(V.cy,clamp(q+Math.max(0,p.y-5.5),q,Math.max(q,10.5-V.H/V.ts/2)),k);return;}
+  V.ts=Math.min(V.ts0,V.W/M.w);V.cx=(M.w-1)/2;V.cy=V.H/V.ts/2-.9;return;} /* ferma anche in verticale: saltando la visuale non si sposta */
  /* cambia lato solo se il personaggio va davvero dall'altra parte per un attimo */
  const d=Math.abs(p.vx)>1?Math.sign(p.vx):V.dir;V.attesa=d!==V.dir?V.attesa+dt:0;if(V.attesa>.7){V.dir=d;V.attesa=0;}
  const meta=V.dir*(Math.min(V.W/V.ts*.16,3)+Math.abs(p.vx)*.3),max=(1.5+Math.abs(p.vx)*.35)*dt;V.la+=clamp(meta-V.la,-max,max);
