@@ -354,7 +354,7 @@ function costruisci(i,lista){
  pezzo(["                ","                ","################"]);
  m.fine=m.w-6;
  for(let y=0;y<ALTO;y++)for(let x=0;x<m.w;x++)if(g[y][x]===undefined)g[y][x]=' ';
- const dc=MONDI[i].decor;m.decor=[];for(let x=1;x<m.w-8;x++){const h=(x*2654435761>>>0)>>>7;if(h%7<2&&g[2][x]==='#'&&g[3][x]===' '&&!m.oggetti.some(o=>o.x===x&&o.y===3)){let n=dc[(h>>>3)%dc.length],dx=0;if(n==='erbananas'){/* il ciuffo è largo più di 3 caselle: deve stare tutto sul piano, se no rientra un po' a sinistra, o diventa erba */const r=213/68/2,su=v=>{for(let k=Math.floor(x+v-r+.5);k<=Math.floor(x+v+r+.5);k++)if(g[2][k]!=='#'||(g[3][k]||' ')!==' ')return false;return true;};dx=[0,-.5,-1,-1.5,-2,.5,1].find(su);if(dx===undefined){n='grass';dx=0;}}m.decor.push({x,dx,n});}}
+ const dc=MONDI[i].decor;m.decor=[];for(let x=1;x<m.fine-6;x++){ /* niente decori davanti al castello */const h=(x*2654435761>>>0)>>>7;if(h%7<2&&g[2][x]==='#'&&g[3][x]===' '&&!m.oggetti.some(o=>o.x===x&&o.y===3)){let n=dc[(h>>>3)%dc.length],dx=0;if(n==='erbananas'){/* il ciuffo è largo più di 3 caselle: deve stare tutto sul piano, se no rientra un po' a sinistra, o diventa erba */const r=213/68/2,su=v=>{for(let k=Math.floor(x+v-r+.5);k<=Math.floor(x+v+r+.5);k++)if(g[2][k]!=='#'||(g[3][k]||' ')!==' ')return false;return true;};dx=[0,-.5,-1,-1.5,-2,.5,1].find(su);if(dx===undefined){n='grass';dx=0;}}m.decor.push({x,dx,n});}}
  return m;
 }
 const cel=(x,y)=>{const r=M.g[y];return r?(r[x]||' '):' ';};
@@ -481,6 +481,7 @@ function passo2d(h){
  p.passi+=Math.abs(p.vx)*h*4.6;
  if(p.ultimoSuolo&&Math.abs(p.vx)<.7&&!matteoNuovo()){const q=Math.atan2(Math.sin(p.rot),Math.cos(p.rot));p.rot-=q*Math.min(1,h*12);}
  if(p.y<-4){togliCuore();if(G.stato==='gioco'){p.x=p.sx||M.start.x;p.y=(p.sy||M.start.y)+1;p.vx=p.vy=0;p.inv=1.6;p.scatto=0;suono(500,.4,'sine',.1,90);}}
+ if(!M.boss){const d=M.fine+.6-p.x,ap=d<6&&d>-3?1:0;if(ap&&!M.portaSuono){M.portaSuono=true;sfx('door')||suono(140,.5,'sawtooth',.06,70);}M.porta=lerp(M.porta||0,ap,1-Math.exp(-h*3));} /* la porta del castello si apre quando Matteo si avvicina */
  if(!M.boss&&p.x>M.fine&&G.stato==='gioco'){G.stato='velo';dissolvi(()=>M.prova?finisciProva():entraBoss(M.i));}
 }
 function passoOggetti(dt){
@@ -550,8 +551,14 @@ function stratoPonti(c,f,par,y,h){const k=h/f.height,pe=(f.width-1)*k,w=f.width*
 /* uno strato del fondale largo quanto l'immagine, ripetuto e specchiato una volta sì e una no perché i bordi non si raccordano; con dritto ricomincia sempre uguale */
 function strato(c,f,par,y,h,dritto){const b=2,sw=f.width-2*b,w=h*sw/f.height,pe=dritto?w:2*w,o=((V.cx*V.ts0*par)%pe+pe)%pe; /* senza le due colonne di bordo e con 3 px di sovrapposizione, se no tra una copia e l'altra resta una riga chiara */
  for(let i=0,x=-o;x<V.W;i++,x+=w){x=Math.floor(x);if(i%2&&!dritto){c.save();c.translate(x+w+3,y);c.scale(-1,1);c.drawImage(f,b,0,sw,f.height,0,0,w+3,h);c.restore();}else c.drawImage(f,b,0,sw,f.height,x,y,w+3,h);}}
-function fondale(c,m){const h=Math.max(V.H*.66,200),w=h,f=FONDI[m.fondo],nv=FONDI.clouds,r=m.retro&&FONDI[m.retro];c.fillStyle='#c4e2ff';c.fillRect(0,0,V.W,V.H);
- if(m.retro==='cielo'){const hn=V.H*.38,nu=FONDI.cielo_nuvole,gr=c.createLinearGradient(0,hn,0,V.H);gr.addColorStop(0,'#87dcfa');gr.addColorStop(1,'#d0f8ff');c.fillStyle='#87dcfa';c.fillRect(0,0,V.W,hn);c.fillStyle=gr;c.fillRect(0,hn-1,V.W,V.H-hn+1);if(nu.complete&&nu.width)strato(c,nu,.04,0,hn);if(f.complete&&f.width)strato(c,f,.1,V.H*.08,V.H*.92);return;}
+/* la sala del trono di Ananassone, disegnata dall'utente: ferma e grande quanto lo schermo, appoggiata in basso */
+const SALA=new Image();SALA.src='assets/sala_ananas.webp';
+/* le tre casette dell'utente (paesaggio/casette_originale.jpg, scontornate, a metà grandezza e velate come il fondale): solo sfondo, scorrono a 0,25 con la base nascosta dietro il terreno */
+const CASETTE=new Image();CASETTE.src='assets/casette.webp';const CASE_R=[[0,56,271,453],[275,0,343,509],[622,121,273,388]],CASE_POS=[[.12,1],[.5,0],[.83,2]];
+function filaCase(c){if(!CASETTE.complete)return;const k=V.H*.4/509,per=V.W*2.4,o=((V.cx*V.ts0*.25)%per+per)%per;for(let b=-per;b<V.W+per;b+=per)for(const [f,t] of CASE_POS){const q=CASE_R[t],x=b+f*per-o,w=q[2]*k;if(x+w/2<0||x-w/2>V.W)continue;c.drawImage(CASETTE,q[0],q[1],q[2],q[3],x-w/2,V.H*.75-q[3]*k,w,q[3]*k);}}
+const CASTELLO=new Image();CASTELLO.src='assets/castello.webp'; /* scontornato da paesaggio/castello_originale.png; la porta è a 252 px dal bordo sinistro e la sua soglia a 538 px dall'alto: sotto ci sono solo le radici */
+function fondale(c,m){if(G.modo==='2d'&&M&&M.boss&&M.i===0&&SALA.complete){const k=Math.max(V.W/SALA.width,V.H/SALA.height),w=SALA.width*k,h=SALA.height*k;c.drawImage(SALA,(V.W-w)/2,V.H-h,w,h);return;}const h=Math.max(V.H*.66,200),w=h,f=FONDI[m.fondo],nv=FONDI.clouds,r=m.retro&&FONDI[m.retro];c.fillStyle='#c4e2ff';c.fillRect(0,0,V.W,V.H);
+ if(m.retro==='cielo'){const hn=V.H*.38,nu=FONDI.cielo_nuvole,gr=c.createLinearGradient(0,hn,0,V.H);gr.addColorStop(0,'#87dcfa');gr.addColorStop(1,'#d0f8ff');c.fillStyle='#87dcfa';c.fillRect(0,0,V.W,hn);c.fillStyle=gr;c.fillRect(0,hn-1,V.W,V.H-hn+1);if(nu.complete&&nu.width)strato(c,nu,.04,0,hn);if(f.complete&&f.width)strato(c,f,.1,V.H*.08,V.H*.92);filaCase(c);return;}
  if(r){if(r.complete&&r.width)strato(c,r,.05,0,V.H);if(m.oggetti){const k=V.H/434;filaOggetti(c,FILE_OGG[0],.14,k*.85);filaOggetti(c,FILE_OGG[1],.24,k*1.25);}else if(f.complete&&f.width)strato(c,f,.2,V.H-h,h);return;}
  if(nv.complete){const o=((V.cx*V.ts0*.1)%w+w)%w;for(let x=-o;x<V.W;x+=w)c.drawImage(nv,x,V.H-2*h+1,w+1,h);}
  if(f.complete){const o=((V.cx*V.ts0*.2)%w+w)%w;for(let x=-o;x<V.W;x+=w)c.drawImage(f,x,V.H-h,w+1,h);}}
@@ -581,8 +588,12 @@ function disegna2d(){
  const sx=x=>(x-V.cx)*ts+W/2,sy=y=>H/2-(y-V.cy)*ts,mz=ts+.8,lento=Math.floor(G.t*3)%2,veloce=Math.floor(G.t*7)%2;
  const c0=Math.floor(V.cx-W/2/ts)-1,c1=Math.ceil(V.cx+W/2/ts)+1,y0=Math.floor(V.cy-H/2/ts)-1,y1=Math.ceil(V.cy+H/2/ts)+1;
  for(const d of M.decor){if(d.x<c0-3||d.x>c1+3)continue;const a=sx(d.x)-ts/2,b=sy(3)-ts/2;if(d.n==='ananas')c.drawImage(ANAN,a,b,ts,ts);else if(d.n==='erbananas')ciuffo(c,sx(d.x+d.dx),sy(2.5),ts);else sp(c,d.n,a,b,ts,ts);}
- if(!M.boss){sp(c,'sign_right',sx(M.start.x+2)-ts/2,sy(3)-ts/2,ts,ts);sp(c,'sign_exit',sx(M.fine-3)-ts/2,sy(3)-ts/2,ts,ts);
- sp(c,'door_open',sx(M.fine+1)-ts*.8,sy(3)-ts*1.1,ts*1.6,ts*1.6);sp(c,'door_open_top',sx(M.fine+1)-ts*.8,sy(4)-ts*1.1,ts*1.6,ts*1.6);}
+ if(!M.boss){sp(c,'sign_right',sx(M.start.x+2)-ts/2,sy(3)-ts/2,ts,ts);
+ /* il castello-ananas dell'utente: la sua porta, a M.fine, porta nella stanza del boss */
+ if(CASTELLO.complete){const k=9.5*ts/CASTELLO.height,ox=sx(M.fine+.6)-252*k,oy=sy(2.4)-538*k,X=v=>ox+v*k,Y=v=>oy+v*k,a=M.porta||0;c.drawImage(CASTELLO,ox,oy,CASTELLO.width*k,CASTELLO.height*k);
+  /* i due battenti (212-254 e 254-295, dall'alto 405 alla soglia 537) girano verso dentro e dietro c'è il buio */
+  if(a>.01){c.save();c.beginPath();c.moveTo(X(212),Y(537));c.lineTo(X(212),Y(445));c.ellipse(X(253.5),Y(445),41.5*k,36*k,0,Math.PI,0);c.lineTo(X(295),Y(537));c.closePath();c.clip();c.fillStyle='#140c06';c.fillRect(X(210),Y(400),87*k,140*k);
+   const l=42*k*(1-a*.8);c.drawImage(CASTELLO,212,405,42,132,X(212),Y(405),l,132*k);c.drawImage(CASTELLO,254,405,41,132,X(295)-l,Y(405),l,132*k);c.fillStyle='rgba(20,12,6,'+(a*.45)+')';c.fillRect(X(212),Y(405),l,132*k);c.fillRect(X(295)-l,Y(405),l,132*k);c.restore();}}}
  for(const f of M.finti||[]){if(f[2]<c0||f[0]>c1)continue;for(let y=f[1];y<=f[3];y++)for(let x=f[0];x<=f[2];x++)if(!pieno(cel(x,y))){const a=sx(x)-ts/2,b=sy(y)-ts/2;paes(c,pieno(cel(x,y+1))?PAES_GROTTA.cielo:PAES_GROTTA.fondo,a,b,mz,mz);}}
  for(let y=Math.max(y0,-20);y<=y1;y++)for(let x=c0;x<=c1;x++){const a=sx(x)-ts/2,b=sy(y)-ts/2;
   if(y<=0&&cel(x,0)!=='#'){if(M.boss&&(x<0||x>=M.w))continue;sp(c,m.liquido+(y===0?(lento?'_top':'_top_low'):''),a,b,mz,mz);continue;}
