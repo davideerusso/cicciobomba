@@ -14,10 +14,12 @@ body{font-family:var(--testo);font-size:16px}
 #d2{position:absolute;inset:0;width:100%;height:100%;display:block}
 #velo{position:fixed;inset:0;background:var(--inchiostro);opacity:0;pointer-events:none;transition:opacity .34s}#velo.on{opacity:1}
 #tocchi{position:fixed;inset:0;touch-action:none}
-.btn{font:800 18px/1.1 var(--testo);color:var(--inchiostro);background:var(--legno);border:3px solid var(--inchiostro);border-radius:14px;padding:13px 18px;box-shadow:0 5px 0 var(--inchiostro);cursor:pointer;touch-action:manipulation}
-.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--inchiostro)}
-.btn.primo{background:var(--vernice);color:var(--panna);font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.02em}
-.btn.piccolo{font-size:15px;padding:8px 12px;box-shadow:0 3px 0 var(--inchiostro)}
+/* tutti i pulsanti come quelli del menu: due toni, bordo blu notte e orlo bianco da adesivo; i principali gialli come Gioca */
+.btn{--c1:var(--azzurro);--c2:var(--azzurro2);font:400 19px/1.1 var(--display);color:var(--notte);background:linear-gradient(var(--c1) 50%,var(--c2) 50%);border:3px solid var(--notte);border-radius:16px;padding:12px 18px;box-shadow:0 5px 0 var(--notte),0 0 0 5px #fff,0 10px 0 0 #fff;cursor:pointer;touch-action:manipulation}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--notte),0 0 0 5px #fff,0 6px 0 0 #fff}
+.btn.primo{--c1:var(--scintilla);--c2:var(--scintilla2);font-size:24px;letter-spacing:.02em}
+.btn.piccolo{font-size:16px;padding:7px 12px;border-radius:13px;box-shadow:0 3px 0 var(--notte),0 0 0 4px #fff,0 7px 0 0 #fff}
+.btn.piccolo:active{box-shadow:0 1px 0 var(--notte),0 0 0 4px #fff,0 5px 0 0 #fff}
 .btn[disabled]{opacity:.5;cursor:default}
 :focus-visible{outline:3px solid var(--oro);outline-offset:2px}
 #sGuida{position:fixed;inset:0;box-sizing:border-box;background:var(--legno);color:var(--inchiostro);padding:calc(var(--st) + 10px) max(16px,var(--sr)) calc(var(--sb) + 12px) max(16px,var(--sl));display:flex;flex-direction:column;gap:8px;justify-content:center;overflow:hidden}
@@ -41,9 +43,10 @@ body{font-family:var(--testo);font-size:16px}
 .mPiede small{font:inherit;text-align:center;text-wrap:balance;padding:3px 10px;border-radius:10px;background:#1b1464d9}
 #record{flex:none;padding:3px 10px;border-radius:10px;background:var(--notte);color:var(--scintilla);font-weight:800}
 @media (prefers-reduced-motion:reduce){#logo{animation:none}}
+#bRiprendi{margin-bottom:12px} /* in pausa Riprendi sta un po' staccato da Audio ed Esci */
 .riga{display:flex;gap:10px}.riga>.btn{flex:1;min-width:0}
 .tavola{position:fixed;left:0;right:0;bottom:0;max-height:72%;overflow-y:auto;touch-action:pan-y;margin:0 auto;max-width:520px;box-sizing:border-box;background:var(--legno);color:var(--inchiostro);border:3px solid var(--inchiostro);border-bottom:0;border-radius:22px 22px 0 0;padding:16px max(16px,var(--sr)) calc(var(--sb) + 18px) max(16px,var(--sl));display:flex;flex-direction:column;gap:14px}
-.tavola.centro{top:50%;bottom:auto;left:50%;right:auto;transform:translate(-50%,-50%);width:min(400px,calc(100% - 32px));border-bottom:3px solid var(--inchiostro);border-radius:22px;max-height:88%;padding-bottom:18px;text-align:center}
+.tavola.centro{top:50%;bottom:auto;left:50%;right:auto;transform:translate(-50%,-50%);width:min(400px,calc(100% - 32px));border-bottom:3px solid var(--inchiostro);border-radius:22px;max-height:88%;padding-bottom:26px;text-align:center} /* sotto c'è l'orlo bianco dei pulsanti */
 .tavola h2{margin:0;font:400 25px/1.1 var(--display);text-wrap:balance}
 .tavola h3{margin:0;font-size:16px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .tavola p{margin:0;line-height:1.35}
@@ -53,13 +56,13 @@ body{font-family:var(--testo);font-size:16px}
 .scelta{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 3px;background:var(--panna);color:var(--inchiostro);border:3px solid var(--inchiostro);border-radius:12px;font:700 14px/1.1 var(--testo);cursor:pointer;min-width:0;touch-action:manipulation}
 .scelta.attiva{background:var(--oro);box-shadow:0 0 0 2px var(--inchiostro)}
 .scelta canvas{width:56px;height:56px;border-radius:50%;border:2px solid var(--inchiostro)}
+.scelta canvas.matteo{border:0;border-radius:0;width:60px;height:60px} /* Matteo col telefono, senza il cerchio della palla */
 .scelta span{overflow-wrap:anywhere}
 .scelta i{font-style:normal;font-size:13px;font-variant-numeric:tabular-nums}
 .campo{display:flex;flex-direction:column;gap:8px}
 .campo label{font-weight:800}
 input[type=text]{font:700 17px var(--testo);padding:9px 11px;border:3px solid var(--inchiostro);border-radius:10px;background:var(--panna);color:var(--inchiostro);min-width:0;width:100%;box-sizing:border-box;-webkit-user-select:text;user-select:text}
 input[type=range]{width:100%;accent-color:var(--vernice)}
-.fotobtn{text-align:center;display:block}
 #foto{position:absolute;width:1px;height:1px;opacity:0}
 #hud{position:fixed;top:0;left:0;right:0;padding:calc(var(--st) + 10px) max(12px,var(--sr)) 0 max(12px,var(--sl));display:flex;flex-direction:column;gap:6px;pointer-events:none;font-weight:800;color:var(--inchiostro);text-shadow:0 0 3px #fff,0 0 6px #fff,0 1px 0 #fff}
 .hudriga{display:flex;align-items:center;justify-content:space-between;gap:10px}

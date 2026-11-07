@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Baloo+2:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="style.css?v=97">
+<link rel="stylesheet" href="style.css?v=103">
 
 <div id="schermo">
 <canvas id="d2" aria-label="Gioco Cicciobomba"></canvas>
@@ -44,7 +44,7 @@
 <section id="sMenu">
   <h1 class="mTesta"><img id="logo" alt="Cicciobomba" width="1200" height="564"></h1>
   <div class="mPulsanti">
-    <button id="bAmici" class="mBtn">Amici e skin</button>
+    <button id="bAmici" class="mBtn">Skin</button>
     <button id="bGioca" class="mBtn mGioca">Gioca</button>
     <button id="bGuida" class="mBtn">Come si gioca</button>
   </div>
@@ -62,20 +62,7 @@
 </section>
 
 <section id="sAmici" class="tavola" hidden>
-  <div class="intesta"><h2>Amici e skin</h2><button id="amiciChiudi" class="btn piccolo">Fatto</button></div>
-  <h3>Chi rotola</h3>
-  <div id="listaAmici" class="griglia"></div>
-  <form id="nuovoAmico" class="campo">
-    <label for="nomeNuovo">Aggiungi un amico</label>
-    <div class="riga">
-      <input id="nomeNuovo" type="text" maxlength="14" placeholder="Nome" autocomplete="off">
-      <button class="btn piccolo" type="submit" style="flex:0 0 auto">Aggiungi</button>
-    </div>
-  </form>
-  <label class="btn piccolo fotobtn" for="foto"><span id="fotoTesto">Metti la foto sulla sfera</span></label>
-  <input id="foto" type="file" accept="image/*">
-  <button id="togliFoto" class="btn piccolo" hidden>Togli la foto</button>
-  <button id="togliAmico" class="btn piccolo" hidden>Togli questo amico</button>
+  <div class="intesta"><h2>Skin</h2><button id="amiciChiudi" class="btn piccolo">Fatto</button></div>
   <div class="intesta"><h3>Skin</h3><span style="font-weight:800"><span id="saldo">0</span> bocconi</span></div>
   <div id="listaSkin" class="griglia"></div>
 </section>
@@ -102,6 +89,6 @@
 <div id="erroreT" hidden>Il gioco non è riuscito a partire. Controlla la connessione e ricarica la pagina.</div>
 
 </div>
-<script src="game.js?v=97"></script>
+<script src="game.js?v=103"></script>
 
 </body></html>

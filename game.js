@@ -21,6 +21,7 @@ const CHIAVE='rotolamici-v1';
 const COLORI=['#3a3029','#3fb6a8','#e8655a','#6d8df0','#b56fd6','#7cc04b','#f08a3c','#e96fa6'];
 let S={record:0,gettoni:0,skin:['classica'],amici:[{nome:'Matteo',colore:COLORI[0],skin:'classica',foto:null}],sel:0,sens:1,audio:true};
 try{const v=JSON.parse(localStorage.getItem(CHIAVE));if(v&&v.amici&&v.amici.length)S=Object.assign(S,v);}catch(e){}
+S.amici.forEach(a=>{if(a.skin!=='classica')a.skin='classica';});S.sel=0; /* le altre skin e la scelta degli amici non ci sono più: rotola sempre Matteo */
 S.amici.forEach(a=>{if(['#f2b632','#62cf4a','#ffb27a','#f05a58','#b05a2c'].includes(a.colore))a.colore=COLORI[0];});
 function salva(){try{localStorage.setItem(CHIAVE,JSON.stringify(S));}catch(e){}}
 
@@ -170,9 +171,7 @@ function disegnaPalla(c,x,y,r,rot,W,aTerra,foto){
 }
 /* ---------- SKIN ---------- */
 const SKIN=[
- {id:'classica',nome:'Classica',costo:0},{id:'anguria',nome:'Anguria',costo:60},{id:'pallone',nome:'Pallone',costo:90},
- {id:'biglia',nome:'Biglia',costo:130},{id:'basket',nome:'Basket',costo:170},{id:'pianeta',nome:'Pianeta',costo:230},
- {id:'oro',nome:'Oro',costo:400,metallo:.85,ruvido:.25}
+ {id:'classica',nome:'Classica',costo:0} /* le altre palle (anguria, pallone, biglia, basket, pianeta, oro) l'utente le ha tolte: i loro disegni restano in dipingiSkin */
 ];
 function dipingiSkin(c,w,h,id,colore){
  c.save();
@@ -914,12 +913,16 @@ function mostraFine(){
 /* ---------- MENU ---------- */
 $('logo').src='assets/logo.webp';
 function anteprima(a,skin){const cv=document.createElement('canvas');cv.width=320;cv.height=160;dipingiPalla(cv,a,skin);const o=document.createElement('canvas');o.width=o.height=112;o.getContext('2d').drawImage(cv,80,0,160,160,0,0,112,112);return o;}
-function disegnaAmici(){const a=$('listaAmici');a.textContent='';
- S.amici.forEach((f,i)=>{const b=document.createElement('button');b.className='scelta'+(i===S.sel?' attiva':'');const s=document.createElement('span');s.textContent=f.nome;b.append(anteprima(f,f.skin),s);b.onclick=()=>{S.sel=i;salva();vestiPalla();disegnaAmici();};a.append(b);caricaFoto(f,()=>{if(f._img&&!f._v){f._v=1;disegnaAmici();}});});
+/* nelle anteprime Matteo (senza foto e col colore di partenza) non è una palla: lancia il telefono come quando aspetta fermo */
+const ANTE=[];function anteMatteo(){const o=document.createElement('canvas');o.width=o.height=112;o.className='matteo';ANTE.push(o);if(!giraAnte.va){giraAnte.va=1;requestAnimationFrame(giraAnte);}return o;}
+function giraAnte(){if($('sAmici').hidden||!ANTE.length){ANTE.length=0;giraAnte.va=0;return;}const im=FOGLISPR.telefono,u=(performance.now()/1000)%.9,f=u<.28?2:u<.52?3:4,k=112/126;
+ ANTE.forEach(o=>{const c=o.getContext('2d');c.clearRect(0,0,112,112);if(im.complete)c.drawImage(im,f*130,0,130,126,(112-130*k)/2,0,130*k,112);});requestAnimationFrame(giraAnte);}
+const eMatteo=f=>!f.foto&&f.colore===COLORI[0];
+function disegnaAmici(){ANTE.length=0; /* la schermata ha solo le skin: niente lista amici, foto o pulsanti */
  const l=$('listaSkin');l.textContent='';const f=amico();
- SKIN.forEach(k=>{const b=document.createElement('button'),ha=S.skin.includes(k.id);b.className='scelta'+(f.skin===k.id?' attiva':'');const s=document.createElement('span');s.textContent=k.nome;const c=document.createElement('i');c.textContent=ha?(f.skin===k.id?'Indossata':'Tua'):k.costo+' bocconi';b.append(anteprima(f,k.id),s,c);
+ SKIN.forEach(k=>{const b=document.createElement('button'),ha=S.skin.includes(k.id);b.className='scelta'+(f.skin===k.id?' attiva':'');const s=document.createElement('span');s.textContent=k.nome;const c=document.createElement('i');c.textContent=ha?(f.skin===k.id?'Indossata':'Tua'):k.costo+' bocconi';b.append(eMatteo(f)&&k.id==='classica'?anteMatteo():anteprima(f,k.id),s,c);
   b.onclick=()=>{if(!ha){if(S.gettoni<k.costo){c.textContent='Ne servono '+(k.costo-S.gettoni);return;}S.gettoni-=k.costo;S.skin.push(k.id);suono(660,.25,'triangle',.1,1320);}f.skin=k.id;salva();vestiPalla();disegnaAmici();};l.append(b);});
- $('saldo').textContent=S.gettoni;$('togliAmico').hidden=S.sel===0;$('togliFoto').hidden=!f.foto;$('togliFoto').textContent='Togli la foto di '+f.nome;$('fotoTesto').textContent=(f.foto?'Cambia la foto di ':'Metti la foto di ')+f.nome;
+ $('saldo').textContent=S.gettoni;
 }
 async function bloccaOrizzontale(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();await screen.orientation.lock('landscape');}catch(e){}}
 /* finché le immagini non sono arrivate Gioca è spento e dice Caricamento…; dopo 20 s si accende comunque */
@@ -928,10 +931,6 @@ $('bGioca').onclick=()=>{audioOn();chiediSensori();bloccaOrizzontale();if((S.gui
 $('bGuida').onclick=()=>{audioOn();apriGuida(null);};
 $('bAmici').onclick=()=>{audioOn();disegnaAmici();mostra('sAmici');};
 $('amiciChiudi').onclick=()=>mostra('sMenu');
-$('nuovoAmico').addEventListener('submit',e=>{e.preventDefault();const n=$('nomeNuovo').value.trim();if(!n)return;S.amici.push({nome:n,colore:COLORI[S.amici.length%COLORI.length],skin:'classica',foto:null});S.sel=S.amici.length-1;$('nomeNuovo').value='';$('nomeNuovo').blur();salva();vestiPalla();disegnaAmici();});
-$('togliAmico').onclick=()=>{if(S.sel===0)return;S.amici.splice(S.sel,1);S.sel=0;salva();vestiPalla();disegnaAmici();};
-$('togliFoto').onclick=()=>{const a=amico();a.foto=null;a._img=null;a._v=0;salva();vestiPalla();disegnaAmici();};
-$('foto').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{const c=document.createElement('canvas'),q=Math.min(im.width,im.height);c.width=c.height=320;c.getContext('2d').drawImage(im,(im.width-q)/2,(im.height-q)/2,q,q,0,0,320,320);const a=amico();a.foto=c.toDataURL('image/jpeg',.8);a._img=null;a._v=0;URL.revokeObjectURL(u);salva();vestiPalla();disegnaAmici();};im.src=u;e.target.value='';});
 $('pausa').onclick=pausa;
 $('bRiprendi').onclick=()=>{mostra('');G.stato='gioco';};
 $('bEsci').onclick=()=>{incassa();vaiMenu();};
