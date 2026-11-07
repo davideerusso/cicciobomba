@@ -66,7 +66,7 @@ const FOGLIO3=new Image();FOGLIO3.src='assets/personaggio3.webp'; /* Matteo stan
 let stancoVis=false;
 /* il Matteo nuovo disegnato dall'utente, con i suoi fogli (una riga di celle, rivolto a destra). Gli amici con colore, skin o foto tengono il disegno di prima */
 const FOGLISPR={};
-for(const [n,src] of [['stanco','assets/matteo_stanco.webp'],['fermo','assets/matteo_fermo.webp'],['salto','assets/matteo_salto.webp'],['palla','assets/matteo_palla.webp'],['passi','assets/matteo_cammina.webp'],['grasso','assets/matteo_grasso.webp'],['telefono','assets/matteo_telefono.webp']]){FOGLISPR[n]=new Image();FOGLISPR[n].src=src;}
+for(const [n,src] of [['stanco','assets/matteo_stanco.webp'],['fermo','assets/matteo_fermo.webp'],['salto','assets/matteo_salto.webp'],['palla','assets/matteo_palla.webp'],['passi','assets/matteo_cammina.webp'],['grasso','assets/matteo_grasso.webp'],['telefono','assets/matteo_telefono.webp'],['sedere','assets/matteo_sedere.webp']]){FOGLISPR[n]=new Image();FOGLISPR[n].src=src;}
 /* i disegni sono di tre quarti, il piede dietro sta più in alto: si abbassa lo sprite di SPR_PIEDI raggi perché poggino tutti e due */
 const SPR_GIRO=1.51; /* la palla ruota davvero: un giro ogni 3,8 caselle, la circonferenza del disegno (p.rot va a metà velocità e il raggio disegnato è 1,3 volte quello vero) */
 const SPR_ATTESA=1.5; /* fermandosi resta com'è per questi secondi, poi gira fino a dritto e si apre; se riparte continua da lì */
@@ -99,6 +99,9 @@ function grassoSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.grasso,170,140,
 function passiSpr(c,x,yPiedi,r,f,verso,W,ang){fogSpr(c,FOGLISPR.passi,130,126,126,SPR_K,x,yPiedi,r,f,verso,W,ang);}
 /* attesa col telefono (paesaggio/matteo_telefono_originale.png, alla scala di matteo_fermo): 0 fermo, 1 lo tiene, 2 lo lancia, 3 lo riprende, 4 lo guarda.
    Dopo 5 s fermo lo prende e poi lo lancia e lo riprende di continuo, finché Matteo non si muove */
+/* bolla del Matteo nuovo (paesaggio/matteo_sedere_originale.webp, alla scala di matteo_fermo, celle 140x150 appoggiate in basso): invece della bolla di sapone gli si gonfia il sedere.
+   0 salta, 1-3 il sedere cresce, 4-6 è una palla e galleggia */
+function sedereSpr(c,x,yPiedi,r,t,verso,W){const f=t<.06?0:t<.12?1:t<.18?2:t<.25?3:[4,5,6,5][Math.floor((t-.25)*12)%4];fogSpr(c,FOGLISPR.sedere,140,150,147,SPR_K,x,yPiedi,r,f,verso,W,0);}
 function telefonoSpr(c,x,yPiedi,r,t,verso,W,ang){const u=(t-.3)%.9,f=t<.3?1:u<.28?2:u<.52?3:4; /* un giro ogni 0,9 s: a 1,15 andava a scatti */fogSpr(c,FOGLISPR.telefono,130,126,126,SPR_K,x,yPiedi,r,f,verso,W,ang);}
 /* ---------- PROVA ANIMAZIONI (?prova=1): sagome segnaposto con nome dello stato, fotogramma e tempo d'uso ---------- */
 const PROVA=/[?&]prova\b/.test(location.search),USO={},POSE={fermo:[4,3,'#7fb0d8'],noia:[8,5,'#7fb0d8'],cammina:[8,10,'#6fc27a'],corre:[8,16,'#3fa04c'],stacco:[2,12,'#e8c84a'],sale:[2,8,'#e8c84a'],punta:[1,1,'#f0a830'],cade:[2,8,'#e08a20'],atterra:[2,12,'#c96a18'],chiude:[3,15,'#b48ae0'],rotola:[8,0,'#8a5ad0'],apre:[3,15,'#b48ae0'],scatto:[4,14,'#e0503c'],lancio:[4,10,'#e03c8c'],bolla:[2,8,'#5ad0e0'],colpito:[2,8,'#ff6060'],schianto:[3,10,'#ff3030'],riposo:[4,3,'#999999'],'stanco fermo':[3,3,'#b0b0a0'],'stanco cammina':[8,8,'#a0b090'],'stanco corre':[8,12,'#90a080']};
@@ -654,11 +657,12 @@ function disegna2d(){
  if(G.carica>=MIN_BOTTO){const k=.15+G.carica*.45+.08*Math.sin(G.t*12),rg=p.R*ts*2.2,cx=sx(p.x),cy=sy(p.y),gr=c.createRadialGradient(cx,cy,p.R*ts*.5,cx,cy,rg);gr.addColorStop(0,`rgba(255,90,20,${k})`);gr.addColorStop(1,'rgba(255,90,20,0)');c.fillStyle=gr;c.beginPath();c.arc(cx,cy,rg,0,6.3);c.fill();}
  c.save();if(p.bolla>0&&!riduci)c.translate(rnd(-1.6,1.6),rnd(-1.6,1.6));
  const pg=c=>{const op={t:G.t,W:p.W,vx:p.vx,vy:p.vy,n:p.ultimoSuolo};
-  const n=p.ultimoSuolo,r=R_NORMALE*ts*1.02,pie=sy(p.y-p.R),ang=n?Math.atan2(n.x,n.y):0,am=amico(),nuovo=matteoNuovo();
+  const n=p.ultimoSuolo,pie=sy(p.y-p.R),ang=n?Math.atan2(n.x,n.y):0,am=amico(),nuovo=matteoNuovo(),r=R_NORMALE*ts*1.02*(nuovo&&G.carica>=1&&p.bolla>0?1+.25*Math.min(1,(.85-p.bolla)/.15):1); /* da bomba, nella bolla, cresce tutto un po' */
   stancoVis=G.carica>=1?0:p.stanco>0?2:G.fiato<FIATO_SCATTO?1:0;
   if(PROVA)disegnaProva(c,sx(p.x),pie,r,p,n,ang);
   else if(nuovo&&stancoVis===2)stancoSpr(c,sx(p.x),pie,r,1-p.stanco/2,p.verso,ang);
   else if(stancoVis===2)disegnaCamm(c,sx(p.x),pie,r,p.stanco<.35?3:4+Math.floor(G.t*3)%2,3,p.verso,0,ang);
+  else if(nuovo&&p.bolla>0&&G.carica<1)sedereSpr(c,sx(p.x),pie,r,.85-p.bolla,p.verso,p.W);
   else if(nuovo&&G.carica>=1){const gt=p.gonfioT||0,dd=Math.abs(p.vx);
    if(gt>0&&!p.rotola)grassoSpr(c,sx(p.x),pie,r,gt>.3?5:gt>.15?4:6,p.verso,p.W,ang);
    else if(p.rotola)gPallaGira(c,sx(p.x),pie,r,-p.rot*1.24,p.W);
@@ -689,7 +693,7 @@ function disegna2d(){
    }};
  pg(c);{if(p.inv>0)tingiRosso(c,pg);else if(G.carica>=1&&matteoNuovo())tingiRosso(c,pg,.03+.1*(.5+.5*Math.sin(G.t*7)));}
  stancoVis=0;c.restore();if(PROVA)elencoProva(c,c.canvas.clientWidth||c.canvas.width);
- if(p.bolla>0)bollaSapone(c,sx(p.x),sy(p.y),p.R*ts*(1.75+.06*Math.sin(G.t*9)),Math.min(1,p.bolla/.25),ts);
+ if(p.bolla>0&&!matteoNuovo())bollaSapone(c,sx(p.x),sy(p.y),p.R*ts*(1.75+.06*Math.sin(G.t*9)),Math.min(1,p.bolla/.25),ts);
  if(G.boom){const e=(G.t-G.boom.t)/.55;if(e<1)disegnaEspl(c,sx(G.boom.x),sy(G.boom.y),G.boom.r*ts,e);else G.boom=null;}
  for(const f of M.finti||[]){if(f[2]<c0||f[0]>c1)continue;const dentro=p.x>f[0]-.7&&p.x<f[2]+.7&&p.y>f[1]-.7&&p.y<f[3]+.7;f.a=lerp(f.a===undefined?1:f.a,dentro?.05:1,.15);
   const g=clamp((1-f.a)/.7,0,1);if(g>.01){c.globalAlpha=g;/* pavimento con sotto la casella che torna gialla; il soffitto resta giallo; i muri ai lati solo se la grotta ha il pavimento: nei tunnel aperti sotto si vede solo l'interno */
