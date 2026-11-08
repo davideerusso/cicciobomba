@@ -65,7 +65,7 @@ P.put(7, 10, 'O'); P.put(7, 9, 'C'); P.put(7, 11, 'C')   # il peso è chiuso tra
 P.fila(6, 18, 27, 'x')                                  # assi che crollano: il peso, se va piano, cade di sotto
 P.put(6, 32, ' '); P.put(6, 33, ' ')                    # buco sopra il pulsante
 P.put(3, 32, 'P'); P.put(3, 33, 'P')
-P.put(7, 30, 'B')
+P.put(7, 35, 'B')                                       # oltre il buco: sul percorso del peso farebbe volare via Matteo mentre spinge
 P.put(9, 22, 'f'); P.put(9, 9, 'f')                     # mosche sopra il piano
 for x in (8, 16, 24): P.put(3, x, 'e')                  # corridoio pieno
 P.put(3, 28, 'r'); P.fila(3, 20, 21, '^')
@@ -92,14 +92,6 @@ P.put(3, 45, 'H'); P.put(3, 47, 'c'); P.fila(5, 45, 49, 'c'); P.put(3, 49, 'c')
 P.fila(9, 45, 49, 'c'); P.put(9, 47, 'e')
 P.fila(3, 54, 56, '!'); P.put(3, 58, 'e')
 P.fila(6, 2, 5, '-'); P.put(7, 3, 'H'); P.fila(7, 4, 5, 'c')          # in alto: ci si arriva solo con salto e bolla
-P.fine()
-
-# 3b. BURRONE: fosso largo con l'altra sponda alta; salto, scatto e bolla non bastano, serve il lancio
-P = Pezzo('burrone', 47, 14)
-P.fila(2, 0, 12, '#'); P.fila(3, 5, 7, 'c')             # pizza per il fiato del lancio
-P.blocco(25, 2, 40, 8)                                  # sponda alta 6 caselle oltre 12 di vuoto
-scendi(P, 41, 8, 6)
-P.fila(9, 27, 33, 'c'); P.put(9, 36, 'e')
 P.fine()
 
 # 4. TORRE: si sale a zigzag tra assi e blocchi che crollano; in cima si va a destra

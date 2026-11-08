@@ -74,14 +74,18 @@ input[type=range]{width:100%;accent-color:var(--vernice)}
 .barra>div{height:100%;width:0;background:var(--oro)}
 #bossBox{position:absolute;left:50%;transform:translateX(-50%);top:calc(var(--st) + 8px);width:min(34%,270px)}#bossNome{text-align:center;font:400 15px/1.1 var(--display);color:var(--inchiostro)}
 .bossbar .barra>div{background:var(--vernice)}
-.area{position:fixed;bottom:calc(var(--sb) + 16px);width:76px;height:76px;border-radius:50%;border:3px dashed #fff4df88;display:grid;place-items:center;font-weight:800;font-size:14px;color:var(--panna);pointer-events:none;background:#00000026;text-shadow:0 1px 0 var(--ombra)}
 #hud .dx{display:flex;align-items:center;gap:10px}#carica{width:150px;display:flex;align-items:center;gap:3px;pointer-events:none}#carica .barra{flex:1;height:12px;background:#fff8}#caricaB{background:var(--vernice)!important}#carica.piena .barra{animation:lampeggia .25s infinite alternate}@keyframes lampeggia{to{background:var(--oro)}}
 #lampo{position:fixed;inset:0;background:#ffb13a;opacity:0;pointer-events:none;transition:opacity .4s}#lampo.on{opacity:.3;transition:none}
-#aSin.bomba{background:#d8432eaa;border:3px solid var(--oro)}
-#aSin{left:max(18px,var(--sl))}#aDes{right:max(18px,var(--sr))}
-#aSin.pronto{border-style:solid;border-color:var(--oro)}
-#stick{position:fixed;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;border:3px solid #fff4df99;pointer-events:none;background:#0000001f}
-#stick i{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px;border-radius:50%;background:var(--panna);opacity:.85}
+/* i pulsanti in partita, traslucidi e con le icone a tratto sottile: frecce unite in basso a sinistra, due cerchi sfalsati a destra. Li disegna solo il CSS, i tocchi li legge #tocchi */
+#comandi{--t:clamp(64px,20vmin,88px);--f:calc(var(--t)*1.16);--b:calc(var(--sb) + 14px);--m:max(18px,var(--sl));--n:max(22px,var(--sr));position:fixed;inset:0;pointer-events:none}
+.tasto{position:absolute;box-sizing:border-box;display:grid;place-items:center;color:#fff;background:#1c163a4d;transition:background .08s}
+.tasto svg{width:54%;height:54%;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 1px #0006);transition:transform .08s,opacity .15s}
+.tasto.premuto{background:#1c163a99}.tasto.premuto svg{transform:scale(.88)}
+.freccia{bottom:var(--b);width:var(--f);height:var(--t)}.tondo{width:var(--t);height:var(--t);border-radius:50%}
+#tSin{left:var(--m);border-radius:calc(var(--t)*.42) 0 0 calc(var(--t)*.42)}
+#tDes{left:calc(var(--m) + var(--f) + 2px);border-radius:0 calc(var(--t)*.42) calc(var(--t)*.42) 0}#tDes svg{scale:-1 1}
+#tSalto{right:var(--n);bottom:calc(var(--b) + var(--t)*.78)}#tScatto{right:calc(var(--n) + var(--t)*.76);bottom:var(--b)}
+#tScatto:not(.pronto) svg{opacity:.35}
 /* gli avvisi brevi su un riquadro chiaro, perché si leggano sopra il fondale */
 #avviso{position:fixed;left:50%;top:22%;transform:translateX(-50%);width:max-content;max-width:min(380px,calc(100% - 32px));box-sizing:border-box;padding:8px 14px;text-align:center;font-weight:800;font-size:18px;line-height:1.25;color:var(--notte);background:var(--panna);border:3px solid var(--notte);border-radius:14px;box-shadow:0 4px 0 var(--notte);pointer-events:none}
 #sConsiglio p{margin:10px 0 16px;font-size:19px;font-weight:700;line-height:1.3;text-wrap:balance}
