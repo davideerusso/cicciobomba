@@ -155,10 +155,10 @@ P.fine()
 # ---------- MONDO 2: ABISSO ----------
 # Una sola mappa a U, sott'acqua: si cade nel pozzo di sinistra, si passa dal fondo e si risale nuotando in quello di destra.
 # Caratteri in più: S partenza, F uscita verso il boss, ~ pelo dell'acqua, * riccio di mare, u corrente che spinge su,
-# m medusa, V buio della grotta; f è il pesce ed e il granchietto.
+# m medusa; f è il pesce ed e il granchietto.
 SY = 112
-P = Pezzo('abisso', 88, 124)
-P.blocco(0, 2, 87, SY)
+P = Pezzo('abisso', 72, 124)
+P.blocco(0, 2, 71, SY)
 P.blocco(2, 3, 25, SY, ' '); P.blocco(34, 3, 57, SY, ' '); P.blocco(26, 3, 33, 9, ' ')
 P.blocco(0, SY + 1, 1, 124); P.blocco(26, SY + 1, 33, SY + 10)
 P.blocco(2, SY - 2, 12, SY + 1); P.blocco(21, SY - 2, 25, SY + 1)   # fuori dalla stanza del boss: la terra con la pozza in cui buttarsi
@@ -190,9 +190,9 @@ P.blocco(47, 84, 57, 85); metti('m', (40, 82)); metti('H', (36, 79)); metti('*',
 P.blocco(36, 90, 38, 104, 'u'); metti('c', (37, 94), (37, 98), (37, 102))
 metti('f', (47, 94), (50, 103)); metti('m', (53, 98)); metti('*', (44, 90), (48, 99), (42, 104), (54, 92)); metti('c', (46, 108), (50, 108), (54, 108))
 P.put(SY, 40, ' ')
-# la spiaggia e la grotta del boss
-metti('e', (66, SY + 1), (75, SY + 1)); metti('c', (62, SY + 2), (63, SY + 2), (70, SY + 3), (71, SY + 3)); metti('H', (73, SY + 4))
-P.blocco(79, SY + 4, 87, SY + 10); P.blocco(85, SY + 1, 87, SY + 3); P.blocco(80, SY + 1, 84, SY + 3, 'V'); P.put(SY + 1, 81, 'F')
+# la spiaggia
+metti('c', (62, SY + 2), (63, SY + 2), (65, SY + 3)); metti('H', (66, SY + 3))
+P.put(SY + 1, 69, 'F')                                   # la porta di legno della Baia d'Oriente: da lì si va dal boss
 P.fine()
 
 if __name__ == '__main__':
