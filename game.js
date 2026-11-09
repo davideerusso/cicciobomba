@@ -713,7 +713,8 @@ function nuoto(h,tx){
  else{p.vy-=ACQ_G*h;if(p.vy<-ACQ_CADE)p.vy=lerp(p.vy,-ACQ_CADE,1-Math.exp(-h*6));if(IN.salto||tasti.Space)bracciata();if(cel(Math.round(p.x),Math.round(p.y))==='u')p.vy=Math.min(p.vy+20*h,7);}
  p.rotola=p.scatto>0;p.anim='';
  p.vx+=tx*24*h;p.vx*=Math.exp(-(Math.abs(tx)<.1?3:.6)*h);p.vx=clamp(p.vx,-6.5,6.5);
- p.x+=p.vx*h;p.y+=p.vy*h;p.urtoX=0;urta(p,p.R);
+ const vx1=p.vx;p.x+=p.vx*h;p.y+=p.vy*h;p.urtoX=0;urta(p,p.R);
+ if(p.urtoX&&Math.abs(vx1)>=3&&[-.4,0,.4].some(d=>cel(Math.round(p.x-p.urtoX*.9),Math.round(p.y+d))==='X'))botto(); /* sott'acqua lo scatto va solo in basso: i muri crepati esplodono nuotandoci contro con slancio, se si è carichi */
  if(p.suolo&&vy0<-12){p.scatto=0;botto();}
  const cx=Math.round(p.x),cy=Math.round(p.y);for(let y=cy-1;y<=cy+1;y++)for(let x=cx-1;x<=cx+1;x++)if(cel(x,y)==='*'&&distMatteo(x,y)<p.R+.34)colpito2(Math.sign(p.x-x)||1,true);
  if(!M.fondo&&p.y<11&&G.stato==='gioco'){M.fondo=true;avviso('Sei sul fondo: vai a destra e risali!',2400);consiglio('risali','Sei arrivato in fondo! Vai a destra e risali nuotando: tieni premuto SALTO, le correnti ti aiutano');}
