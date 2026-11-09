@@ -732,7 +732,8 @@ function mareSpr(n){if(MARE_C[n])return MARE_C[n];const S=120,C=telaM(S,S),c=C.g
  else{const r=rnMare(n==='corallo0'?23:51),seg=[],ram=(x,y,a,l,d)=>{const X=x+Math.cos(a)*l,Y=y+Math.sin(a)*l;seg.push([x,y,X,Y,d]);if(d>0){ram(X,Y,a-.35-r()*.3,l*.76,d-1);ram(X,Y,a+.35+r()*.3,l*.76,d-1);}};ram(60,118,-1.57,28,3);const col=n==='corallo0'?'#ff6f8f':'#ffb347';for(const[k,ag]of[['#4a1730',7],[col,0]]){c.strokeStyle=k;for(const q of seg){c.lineWidth=q[4]*3+5+ag;c.beginPath();c.moveTo(q[0],q[1]);c.lineTo(q[2],q[3]);c.stroke();}}}
  return MARE_C[n]=C;}
 function mareCasella(c,t,x,y,a,b,z,ts){
- if(t==='#'){const sab=M.boss||(y>=M.livello-2&&(x>=M.spiaggia||x<26));c.drawImage(mareTile(maschera(x,y),(x*7+y*13>>>0)%3,sab?1:0),a,b,z,z);return true;}
+ if(t==='#'&&!M.boss&&x<26&&y>=M.livello-3)return false; /* la terra prima del tuffo è ancora l'isola degli ananas: la disegna il codice del mondo 1 */
+ if(t==='#'){const sab=M.boss||(y>=M.livello-2&&x>=M.spiaggia);c.drawImage(mareTile(maschera(x,y),(x*7+y*13>>>0)%3,sab?1:0),a,b,z,z);return true;}
  if(t==='*'){const k=ts*(1.08+.05*Math.sin(G.t*3+x+y));c.drawImage(mareSpr('riccio'),a+ts/2-k/2,b+ts/2-k/2,k,k);return true;}
  if(t==='u'){c.strokeStyle='#ffffff99';c.lineWidth=Math.max(1,ts*.04);for(let i=0;i<2;i++){const u=(G.t*1.4+i*.5+(x*.37+y*.61))%1;c.beginPath();c.arc(a+ts*(.3+.4*Math.sin(x+i*2)*.5+.2),b+ts*(1-u),ts*.07*(1+u),0,6.3);c.stroke();}return true;}
  if(t==='V'){c.fillStyle='#1a0f12';c.fillRect(a,b,z,z);return true;}return false;}
@@ -742,14 +743,14 @@ function mareDavanti(c,sx,sy,ts,c0,c1,y0,y1){
  for(const d of M.alghe){if(d.x<c0-2||d.x>c1+2||d.y<y0-4||d.y>y1+1)continue;const a=sx(d.x),b=sy(d.y+.5);
   if(d.t===0){c.lineCap='round';for(const[k,ag]of[['#123f33',ts*.2],['#3fc27f',ts*.1]]){c.strokeStyle=k;c.lineWidth=ag;for(const j of[-.22,.05,.28]){const h=ts*(1.25+Math.abs(j)*1.5),o=Math.sin(G.t*1.5+d.f+j*5)*ts*.26;c.beginPath();c.moveTo(a+j*ts,b);c.quadraticCurveTo(a+j*ts-o,b-h*.55,a+j*ts+o,b-h);c.stroke();}}}
   else{const k=ts*(d.t===4?1.1:1.45);c.drawImage(mareSpr(['','','corallo0','corallo1','spugna'][d.t]),a-k/2,b-k*.97,k,k);}}
- sp(c,'sign_right',sx(M.spiaggia+3)-ts/2,sy(Math.floor(M.livello)+1)-ts/2,ts,ts);sp(c,'sign_right',sx(9)-ts/2,sy(Math.floor(M.livello)+2)-ts/2,ts,ts);
+ sp(c,'sign_right',sx(M.spiaggia+3)-ts/2,sy(Math.floor(M.livello)+1)-ts/2,ts,ts);sp(c,'sign_right',sx(9)-ts/2,sy(Math.floor(M.livello)+2)-ts/2,ts,ts);ciuffo(c,sx(5.5),sy(Math.floor(M.livello)+1.5),ts);ciuffo(c,sx(23),sy(Math.floor(M.livello)+1.5),ts);
 }
 const SPIAGGIA=new Image();SPIAGGIA.src='assets/spiaggia_boss.webp'; /* il fondale dell'utente per la stanza del boss del mare: fermo, grande quanto lo schermo, centrato in modo che l'orizzonte stia sopra il pavimento */
 function fondaleMare(c){const W=V.W,H=V.H,ts=V.ts,gr=(y0,y1,a,b)=>{const g=c.createLinearGradient(0,y0,0,y1);g.addColorStop(0,a);g.addColorStop(1,b);return g;};
  if(M.boss&&SPIAGGIA.complete&&SPIAGGIA.width){const k=Math.max(W/SPIAGGIA.width,H/SPIAGGIA.height),w=SPIAGGIA.width*k,h=SPIAGGIA.height*k;c.drawImage(SPIAGGIA,(W-w)/2,(H-h)/2,w,h);return;}
  if(M.boss){c.fillStyle=gr(0,H*.62,'#6fd0f5','#d9f5ff');c.fillRect(0,0,W,H*.63);c.fillStyle='#fff3bd';c.beginPath();c.arc(W*.8,H*.2,H*.09,0,6.3);c.fill();c.fillStyle='#ffffffd0';[[.2,.17,.11],[.32,.2,.08],[.58,.12,.09]].forEach(q=>{c.beginPath();c.ellipse(W*q[0],H*q[1],W*q[2],H*.035,0,0,6.3);c.fill();});c.fillStyle=gr(H*.62,H*.8,'#3cc0d8','#2a8fc0');c.fillRect(0,H*.62,W,H*.2);c.fillStyle='#f7dea3';c.fillRect(0,H*.8,W,H*.2);return;}
  const lv=M.livello,ys=H/2-(lv-V.cy)*ts,col=y=>{const d=clamp((lv-(V.cy+(H/2-y)/ts))/lv,0,1),q=[70+(10-70)*d,205+(32-205)*d,230+(92-230)*d].map(Math.round);return'rgb('+q+')';};
- if(ys>0){c.fillStyle=gr(0,Math.max(1,ys),'#7fd4f7','#dff6ff');c.fillRect(0,0,W,ys+1);}
+ if(ys>0){if(V.cx<ACQ_MEZZO)fondale(c,MONDI[0]);else{c.fillStyle=gr(0,Math.max(1,ys),'#7fd4f7','#dff6ff');c.fillRect(0,0,W,ys+1);}} /* sopra la pozza si vede ancora il fondale degli ananas */
  if(ys<H){const a=Math.max(0,ys);c.fillStyle=gr(a,H,col(a),col(H));c.fillRect(0,a,W,H-a);
   if(!mareSpr.lon){const C=telaM(720,720),k=C.getContext('2d'),r=rnMare(9);k.fillStyle='#fff';for(let i=0;i<16;i++){const x=r()*720,y=r()*720,w=50+r()*110,h=24+r()*70;for(const o of[-720,0,720])for(const u of[-720,0,720]){k.beginPath();k.ellipse(x+o,y+u,w,h,r()*.0,0,6.3);k.fill();}}mareSpr.lon=C;}
   c.save();c.beginPath();c.rect(0,a,W,H-a);c.clip();c.globalAlpha=.07;const ox=((V.cx*ts*.25)%720+720)%720,oy=((V.cy*ts*.25)%720+720)%720;for(let x=-ox;x<W;x+=720)for(let y=oy-720;y<H;y+=720)c.drawImage(mareSpr.lon,x,y);

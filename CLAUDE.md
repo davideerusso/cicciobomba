@@ -65,7 +65,7 @@ Gioco per browser pensato per il telefono in orizzontale, pubblicato con GitHub 
 - Per provare dei pezzi a parte da console: `__rotolamici.iniziaRun(['nome',...])` (alla fine torna al menu). La Spremiananas è stata tolta perché non piaceva: non rimetterla.
 
 ## Livello 2 (Abisso Salato)
-- Battuto Ananassone si resta nella stanza con lui a terra: si apre un'uscita nel muro destro con una freccia (`apriUscita`, `M.uscita`). Si esce a piedi e si arriva sulla terra a sinistra dell'Abisso: il livello, col suo titolo, comincia quando ci si butta nella pozza (`M.iniziato`).
+- Battuto Ananassone si resta nella stanza con lui a terra: si apre un'uscita nel muro destro con una freccia (`apriUscita`, `M.uscita`). Si esce a piedi e si arriva sulla terra a sinistra dell'Abisso: il livello, col suo titolo, comincia quando ci si butta nella pozza (`M.iniziato`). Fino al tuffo lo stile resta quello degli ananas: terreno del mondo 1, fondale `MONDI[0]` e ciuffi; quello del mare comincia sott'acqua.
 - È `CORSE[1]`, una sola mappa a U (`abisso`, generata in fondo a `tools/livello1.py`): si cade nel pozzo di sinistra, si passa dal fondo e si risale in quello di destra; dal pelo dell'acqua (`~`, `M.livello`) un balzo porta sulla spiaggia (`M.spiaggia`) e la grotta (`F`) porta da Lele Volley. Anche qui i segreti non si elencano nelle risposte.
 - La stanza del boss del mare ha solo il pavimento, che continua oltre lo schermo (`cel`): niente muri, blocchi né molle. A sinistra c'è un limite invisibile (`CAMPO_S`), a destra la rete.
 - Il fondale della stanza del boss è `spiaggia_boss.webp` dell'utente, fermo e centrato (`SPIAGGIA`, in `fondaleMare`).
