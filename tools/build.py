@@ -7,7 +7,7 @@ Uso: python3 tools/build.py
 import base64, os, re
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TIPI = {'.webp': 'image/webp', '.png': 'image/png', '.mp3': 'audio/mpeg'}
+TIPI = {'.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.mp3': 'audio/mpeg'}
 
 
 def leggi(rel):
