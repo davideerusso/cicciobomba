@@ -1,4 +1,4 @@
-"""Livello 1 definitivo (Isola degli Ananas). y come nel gioco: la riga di terra è y=2.
+"""Livelli: il 1 definitivo (Isola degli Ananas) e, in fondo, il 2 (Abisso). y come nel gioco: la riga di terra è y=2.
 Caratteri: # terra, - asse attraversabile, / % rampe, B molla, C cassa, ^ spine, ! spine a tempo,
 c pizza, H cuore, e nemico, r riccio, f mosca, g cannone,
 O peso, P pulsante, D porta, x blocco che crolla, y botola (sembra terra), X muro crepato.
@@ -150,6 +150,48 @@ P.col(58, 3, 7, 'X'); P.fila(8, 58, 62, '#'); P.col(62, 3, 7, '#')
 P.put(3, 59, 'H'); P.put(3, 61, 'c'); P.fila(5, 59, 61, 'c')
 P.fila(4, 52, 53, '-'); P.fila(6, 55, 56, '-')
 P.put(3, 66, 'e')
+P.fine()
+
+# ---------- MONDO 2: ABISSO ----------
+# Una sola mappa a U, sott'acqua: si cade nel pozzo di sinistra, si passa dal fondo e si risale nuotando in quello di destra.
+# Caratteri in più: S partenza, F uscita verso il boss, ~ pelo dell'acqua, * riccio di mare, u corrente che spinge su,
+# m medusa, V buio della grotta; f è il pesce ed e il granchietto.
+SY = 112
+P = Pezzo('abisso', 88, 124)
+P.blocco(0, 2, 87, SY)
+P.blocco(2, 3, 25, SY, ' '); P.blocco(34, 3, 57, SY, ' '); P.blocco(26, 3, 33, 9, ' ')
+P.blocco(0, SY + 1, 1, 124); P.blocco(26, SY + 1, 33, SY + 10)
+P.put(SY + 5, 13, 'S'); P.put(SY, 5, '~')
+def metti(t, *pos):
+    for x, y in pos: P.put(y, x, t)
+# la caduta
+metti('c', (13, 110), (13, 107), (13, 104))
+P.blocco(2, 99, 8, 100); P.blocco(19, 99, 25, 100); metti('f', (13, 95))
+P.blocco(10, 89, 17, 90); metti('*', (13, 91)); metti('c', (5, 93), (22, 93), (5, 90), (22, 90))
+P.blocco(2, 79, 15, 80); metti('f', (20, 75)); metti('c', (20, 84), (20, 81))
+P.blocco(9, 71, 25, 72); metti('*', (10, 73), (14, 73)); metti('c', (5, 74), (5, 70))
+P.blocco(2, 60, 9, 61); P.blocco(16, 60, 25, 61); P.fila(61, 10, 15, 'C'); metti('c', (12, 65), (13, 65))
+P.blocco(2, 38, 9, 59); P.blocco(18, 38, 25, 59)
+metti('*', (10, 54), (17, 50), (10, 46), (17, 42)); metti('m', (13, 48)); metti('c', (14, 56), (13, 44))
+metti('f', (7, 33), (19, 30), (11, 26)); metti('*', (13, 34), (6, 28), (21, 24)); metti('c', (14, 31), (8, 24), (18, 21))
+P.blocco(26, 28, 27, 31, 'X'); P.blocco(28, 28, 31, 31, ' '); metti('H', (30, 30)); metti('c', (29, 29), (31, 29))
+P.blocco(2, 14, 10, 15); P.blocco(17, 14, 25, 15); P.fila(15, 11, 16, 'C'); metti('c', (13, 18), (14, 18))
+metti('f', (14, 7)); metti('c', (8, 5), (20, 5), (24, 7)); metti('*', (30, 9))
+# la risalita
+P.blocco(52, 3, 54, 20, 'u'); metti('c', (53, 12), (53, 16), (45, 6), (40, 8))
+P.blocco(34, 16, 46, 17); metti('f', (41, 12)); metti('*', (46, 18))
+P.blocco(47, 26, 57, 27); metti('f', (41, 22)); metti('c', (40, 24), (40, 28), (44, 31)); metti('*', (47, 28), (36, 21))
+P.blocco(34, 34, 50, 35); metti('f', (54, 31)); metti('c', (54, 37), (54, 34))
+P.blocco(34, 42, 41, 62); P.blocco(50, 42, 57, 62); P.blocco(45, 42, 46, 50, 'u')
+metti('*', (42, 54), (49, 50), (42, 46), (49, 58)); metti('m', (46, 53), (44, 59)); metti('c', (45, 52), (46, 56))
+P.blocco(34, 74, 46, 75); metti('f', (40, 68), (52, 71)); metti('*', (47, 76), (38, 66)); metti('c', (52, 66), (52, 70), (52, 74), (52, 78))
+P.blocco(47, 84, 57, 85); metti('m', (40, 82)); metti('H', (36, 79)); metti('*', (38, 78), (38, 81), (41, 78)); metti('c', (43, 84), (43, 88))
+P.blocco(36, 90, 38, 104, 'u'); metti('c', (37, 94), (37, 98), (37, 102))
+metti('f', (47, 94), (50, 103)); metti('m', (53, 98)); metti('*', (44, 90), (48, 99), (42, 104), (54, 92)); metti('c', (46, 108), (50, 108), (54, 108))
+P.put(SY, 40, ' ')
+# la spiaggia e la grotta del boss
+metti('e', (66, SY + 1), (75, SY + 1)); metti('c', (62, SY + 2), (63, SY + 2), (70, SY + 3), (71, SY + 3)); metti('H', (73, SY + 4))
+P.blocco(79, SY + 4, 87, SY + 10); P.blocco(85, SY + 1, 87, SY + 3); P.blocco(80, SY + 1, 84, SY + 3, 'V'); P.put(SY + 1, 81, 'F')
 P.fine()
 
 if __name__ == '__main__':

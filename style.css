@@ -72,7 +72,7 @@ input[type=range]{width:100%;accent-color:var(--vernice)}
 #pausa{pointer-events:auto;width:44px;height:44px;padding:0;font-size:17px}
 .barra{height:10px;border:2px solid var(--inchiostro);background:#0003;border-radius:8px;overflow:hidden}
 .barra>div{height:100%;width:0;background:var(--oro)}
-#bossBox{position:absolute;left:50%;transform:translateX(-50%);top:calc(var(--st) + 8px);width:min(34%,270px)}#bossNome{text-align:center;font:400 15px/1.1 var(--display);color:var(--inchiostro)}
+#bossBox{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--sb,0px) + 10px);width:min(34%,270px)}#bossNome{text-align:center;font:400 15px/1.1 var(--display);color:var(--inchiostro)}
 .bossbar .barra>div{background:var(--vernice)}
 #hud .dx{display:flex;align-items:center;gap:10px}#carica{width:150px;display:flex;align-items:center;gap:3px;pointer-events:none}#carica .barra{flex:1;height:12px;background:#fff8}#caricaB{background:var(--vernice)!important}#carica.piena .barra{animation:lampeggia .25s infinite alternate}@keyframes lampeggia{to{background:var(--oro)}}
 #lampo{position:fixed;inset:0;background:#ffb13a;opacity:0;pointer-events:none;transition:opacity .4s}#lampo.on{opacity:.3;transition:none}
