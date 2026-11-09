@@ -358,7 +358,7 @@ const FIATO_SCATTO=.3,FIATO_BOLLA=.25;
 function aggFiato(){const f=$('fiatoB');if(f){f.style.width=(G.fiato*100)+'%';$('fiato').classList.toggle('basso',G.fiato<FIATO_SCATTO);}}
 function usaFiato(q){if(P2.stanco>0)return false;if(G.carica>=1)return true; /* da bomba non si stanca */if(G.fiato<q){senzaFiato();return false;}G.fiato-=q;G.fiatoT=2;aggFiato();return true;}
 function senzaFiato(){const p=P2;p.stanco=2;p.rotola=false;p.vx=0;p.carica=0;p.scatto=0;p.buf=0;suono(260,.5,'sine',.08,140);vibra(40);if(!G.dettoFiato){G.dettoFiato=true;consiglio('fiato','Senza fiato! Matteo è grasso: riposa 2 secondi. Mangia la pizza per riprendere fiato',2600);}}
-function scatta2(){if(P2.cd>0||!usaFiato(FIATO_SCATTO))return;const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.catena=Math.abs(P2.vx)>=8?2:1;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.vyS=Math.max(P2.vy,0);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;if(P2.ultimoSuolo)sbuffo();sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('tScatto').classList.remove('pronto');}
+function scatta2(){if(P2.cd>0||!usaFiato(FIATO_SCATTO))return;if(inVolley()){P2.volT=.36;P2.volTipo=P2.ultimoSuolo?0:1;}const d=Math.abs(IN.tx)>.15?Math.sign(IN.tx):P2.verso;P2.verso=d;P2.catena=Math.abs(P2.vx)>=8?2:1;P2.vS=Math.max(11,Math.abs(P2.vx)+3);P2.vyS=Math.max(P2.vy,0);P2.scatto=.24;P2.cd=1.1;P2.Wv-=7;if(P2.ultimoSuolo)sbuffo();sfx('throw')||suono(220,.18,'sawtooth',.1,800);vibra(15);$('tScatto').classList.remove('pronto');}
 function colpito2(nx,spina){
  if(P2.inv>0||G.stato!=='gioco')return;
  /* se è una bomba, le spine e i nemici con le spine la fanno esplodere: niente cuore perso */
@@ -421,6 +421,7 @@ function passo2d(h){
  if(!p.rotola&&!(p.stanco>0)&&(p.gFermo||(p.anim==='apre'&&p.animT<SPR_ATTESA))&&matteoNuovo()&&(p.carica>.15||Math.abs(p.vx)>1.3||p.scatto>0)){p.rot=p.rotF;p.rotola=true;p.anim='';p.animT=9;p.gFermo=false;}
  else if(!p.rotola&&!(p.stanco>0)&&(p.carica>.15||Math.abs(p.vx)>3||p.scatto>0)){p.rot=0;p.rotola=true;p.anim='chiude';p.animT=p.scatto>0?.1:0;p.Wv-=6;}
  else if(p.rotola&&su0&&Math.abs(p.vx)<1.2&&Math.abs(tx)<.25&&p.scatto<=0){p.rotF=p.rot;p.dirF=p.vx<0?-1:1;p.gFermo=G.carica>=1;p.rotola=false;p.anim='apre';p.animT=0;p.carica=0;p.Wv+=matteoNuovo()?1.5:4;}
+ if(inVolley()){p.rotola=false;p.anim='';}
  /* durante lo scatto non cade, ma la salita frena come sempre e gli urti non la aumentano: niente salti più alti né arrampicate sugli spigoli */
  if(p.scatto>0){p.scatto-=h;p.vx=p.verso*(p.vS||11);p.vyS=Math.max(0,Math.min(p.vy,p.vyS||0)-20*h);p.vy=p.vyS;if(p.scatto<=0)p.vx*=.6;
   const q=Math.round(p.x+p.verso*.8),r=Math.round(p.y);if(cel(q,r)==='C')rompiCassa(q,r);}
@@ -428,14 +429,14 @@ function passo2d(h){
   /* in pendenza accelera la gravità: inclinare in discesa aggiunge poco, in salita aiuta a salire */
   const su=su0,n=p.ultimoSuolo,pend=su&&n.y<.95,giu=pend?Math.sign(n.x):0;p.vx+=tx*(!p.rotola?16:pend?(Math.sign(tx)===giu?6:24):su?30:15)*h;
   /* lanciato da una discesa conserva la velocità: niente freno né tetto finché dura lo slancio */
-  const k=Math.exp(-(p.slancio>0?.15:pend?.6:Math.abs(tx)<.1&&su?3.2:su?1.4:.2)*h);p.vx*=k;const tetto=p.rotola?5.5+Math.max(0,Math.abs(tx)-.5)*12:3.4;if(Math.abs(p.vx)>tetto&&!(p.slancio>0))p.vx=lerp(p.vx,Math.sign(p.vx)*tetto,1-Math.exp(-h*8));
+  const k=Math.exp(-(p.slancio>0?.15:pend?.6:Math.abs(tx)<.1&&su?3.2:su?1.4:.2)*h);p.vx*=k;const tetto=p.rotola?5.5+Math.max(0,Math.abs(tx)-.5)*12:inVolley()?5.2:3.4;if(Math.abs(p.vx)>tetto&&!(p.slancio>0))p.vx=lerp(p.vx,Math.sign(p.vx)*tetto,1-Math.exp(-h*8));
   if(p.bolla>0){p.bolla-=h;p.vy+=(2.3-p.vy)*Math.min(1,h*5);p.vx*=Math.exp(-.6*h);}else p.vy-=(pend?14:20)*h;
  }
  p.x+=p.vx*h;p.y+=p.vy*h;p.x=Math.max(p.R,p.x);
  const n0=p.ultimoSuolo;if(n0&&n0.y<.95&&Math.sign(n0.x)===Math.sign(p.vx)&&Math.abs(p.vx)>6&&p.rotola)p.slancio=1.1;else if(p.slancio>0)p.slancio=Math.abs(p.vx)<4?0:p.slancio-h;
  if(p.slancio>0){const q=Math.round(p.x+Math.sign(p.vx)*.8),r=Math.round(p.y);if(cel(q,r)==='C')rompiCassa(q,r);}
  const vx0=p.vx;p.urtoX=0;urta(p,p.R);
- if(M.boss&&M.boss.cfg.palla){const q=clamp(p.x,CAMPO_S+p.R,RETE-p.R);if(q!==p.x){if((q-p.x)*p.vx<0)p.vx=0;p.x=q;}} /* né la rete né il bordo sinistro invisibile si passano, nemmeno saltando */
+ if(M.boss&&M.boss.cfg.palla){p.volT=Math.max(0,(p.volT||0)-h);const q=clamp(p.x,CAMPO_S+p.R,RETE-p.R);if(q!==p.x){if((q-p.x)*p.vx<0)p.vx=0;p.x=q;}} /* né la rete né il bordo sinistro invisibile si passano, nemmeno saltando */
  /* in discesa resta attaccato alla rampa invece di decollare */
  if(!p.suolo&&p.ultimoSuolo&&p.vy<=1&&p.scatto<=0)for(let d=.04;d<=.45;d+=.04){const q={x:p.x,y:p.y-d,px:p.x,py:p.py,vx:0,vy:0};urta(q,p.R);if(q.suolo){const n=q.suolo,v=Math.hypot(p.vx,p.vy),dir=Math.sign(p.vx*n.y-p.vy*n.x)||1;p.y=q.y;p.suolo=n;p.vx=n.y*v*dir;p.vy=-n.x*v*dir;break;}}
  if(M.pesi)passoPesi(h);if(p.suolo&&M.crolli)calpesta(p.x,p.y-p.R);
@@ -641,6 +642,7 @@ function disegna2d(){
   if(PROVA)disegnaProva(c,sx(p.x),pie,r,p,n,ang);
   else if(nuovo&&stancoVis===2)stancoSpr(c,sx(p.x),pie,r,1-p.stanco/2,p.verso,ang);
   else if(stancoVis===2)disegnaCamm(c,sx(p.x),pie,r,p.stanco<.35?3:4+Math.floor(G.t*3)%2,3,p.verso,0,ang);
+  else if(inVolley())disegnaMatteoVolley(c,sx(p.x),pie,ts,p,n);
   else if(nuovo&&p.bolla>0&&G.carica<1)sedereSpr(c,sx(p.x),pie,r,.85-p.bolla,p.verso,p.W);
   else if(nuovo&&G.carica>=1){const gt=p.gonfioT||0,dd=Math.abs(p.vx);
    if(gt>0&&!p.rotola)grassoSpr(c,sx(p.x),pie,r,gt>.3?5:gt>.15?4:6,p.verso,p.W,ang);
@@ -825,7 +827,12 @@ const BRIC=new Image();BRIC.src='assets/boss_ricezione.png'; /* quando riceve (p
 const BSTO=new Image();BSTO.src='assets/boss_stordito.png'; /* stordito (paesaggio/boss_stordito_originale.png): 4 fotogrammi da 260x254 nell'ordine 8-11 di disegnaSchiacc, ingranditi di 1,35: 8 colpito in faccia, 9 si tiene il naso, 10 e 11 intontito, con le stelle già disegnate */
 const BSCH=new Image();BSCH.src='assets/boss_schiacciata.png'; /* la schiacciata (paesaggio/boss_schiacciata_originale.png): 4 fotogrammi da 240x254 nell'ordine 12-15 di disegnaSchiacc, ingranditi di 1,45: 12 e 13 carica in volo, 14 colpisce, 15 riatterra */
 const BKO=new Image();BKO.src='assets/boss_sconfitto.png'; /* sconfitto (paesaggio/boss_sconfitto_originale.png): 4 fotogrammi da 280x254 nell'ordine 16-19 di disegnaSchiacc, ingranditi di 1,4: 16 cade, 17 a terra sudato, 18 dorme, 19 KO */
-function disegnaSchiacc(c,f,ts,v){if(f>15){if(!BKO.complete)return;const k=1.4*3.2*BZ*ts/310,b=[222,219,239,228][f-16];c.save();if(v<0)c.scale(-1,1);c.drawImage(BKO,(f-16)*280,0,280,254,-140*k,-b*k,280*k,254*k);c.restore();return;}if(f>11){if(!BSCH.complete)return;const k=1.45*3.2*BZ*ts/310,b=[248,244,248,254][f-12];c.save();if(v<0)c.scale(-1,1);c.drawImage(BSCH,(f-12)*240,0,240,254,-120*k,-b*k,240*k,254*k);c.restore();return;}if(f>7){if(!BSTO.complete)return;const k=1.35*3.2*BZ*ts/310,b=[245,254,254,254][f-8];c.save();if(v<0)c.scale(-1,1);c.drawImage(BSTO,(f-8)*260,0,260,254,-130*k,-b*k,260*k,254*k);c.restore();return;}if(f>4){if(!BRIC.complete)return;const k=1.32*3.2*BZ*ts/310,b=[282,285,320][f-5];c.save();if(v<0)c.scale(-1,1);c.drawImage(BRIC,(f-5)*300,0,300,339,-150*k,-b*k,300*k,339*k);c.restore();return;}if(!BPAL.complete)return;const k=3.2*BZ*ts/310;c.save();if(v<0)c.scale(-1,1);c.drawImage(BPAL,f*240,0,240,434,-120*k,-431*k,240*k,434*k);c.restore();}
+const BPAS=new Image();BPAS.src='assets/boss_passi.png'; /* i passettini (paesaggio/boss_passi_originale.png): 4 fotogrammi da 242x254 allineati sulla testa, nell'ordine 20-23 di disegnaSchiacc, ingranditi di 1,3 */
+/* prova: nella stanza di Lele Volley Matteo resta in piedi, guarda la rete e usa le pose da pallavolo dell'utente. Con false torna alle animazioni di prima */
+const MATTEO_VOLLEY=false,inVolley=()=>MATTEO_VOLLEY&&!!(M&&M.boss&&M.boss.cfg.palla)&&matteoNuovo();
+const MV_R=new Image();MV_R.src='assets/matteo_volley_ricezione.png';const MV_S=new Image();MV_S.src='assets/matteo_volley_schiaccia.png';const MV_B=[438,442,489,281,278,282,288]; /* 0-2 bagher, lampo, allungato (celle da 440); 3-6 carica, carica alta, colpo, in guardia (celle da 300); MV_B i piedi */
+function disegnaMatteoVolley(c,x,pie,ts,p,n){const t=p.volT||0,mosso=n&&Math.abs(p.vx)>.4,f=t>0?(p.volTipo?(t>.3?4:t>.1?5:n?6:5):(t>.3?0:t>.12?1:2)):!n?(p.vy>0?4:3):6,r=f<3,im=r?MV_R:MV_S,k=ts*(r?.00505:.00758),C=r?440:300,i=r?f:f-3;if(!im.complete)return;c.save();c.translate(x,pie-(mosso?Math.abs(Math.sin(G.t*11))*ts*.06:0));if(mosso)c.rotate(Math.sin(G.t*11)*.05);else if(f===6){const q=Math.sin(G.t*2.6);c.scale(1-.012*q,1+.028*q);}c.drawImage(im,i*C,0,C,572,-C/2*k,-MV_B[f]*k,C*k,572*k);c.restore();}
+function disegnaSchiacc(c,f,ts,v){if(f>19){if(!BPAS.complete)return;const k=1.3*3.2*BZ*ts/310,b=[254,254,251,251][f-20];c.save();if(v<0)c.scale(-1,1);c.drawImage(BPAS,(f-20)*242,0,242,254,-121*k,-b*k,242*k,254*k);c.restore();return;}if(f>15){if(!BKO.complete)return;const k=1.4*3.2*BZ*ts/310,b=[222,219,239,228][f-16];c.save();if(v<0)c.scale(-1,1);c.drawImage(BKO,(f-16)*280,0,280,254,-140*k,-b*k,280*k,254*k);c.restore();return;}if(f>11){if(!BSCH.complete)return;const k=1.45*3.2*BZ*ts/310,b=[248,244,248,254][f-12];c.save();if(v<0)c.scale(-1,1);c.drawImage(BSCH,(f-12)*240,0,240,254,-120*k,-b*k,240*k,254*k);c.restore();return;}if(f>7){if(!BSTO.complete)return;const k=1.35*3.2*BZ*ts/310,b=[245,254,254,254][f-8];c.save();if(v<0)c.scale(-1,1);c.drawImage(BSTO,(f-8)*260,0,260,254,-130*k,-b*k,260*k,254*k);c.restore();return;}if(f>4){if(!BRIC.complete)return;const k=1.32*3.2*BZ*ts/310,b=[282,285,320][f-5];c.save();if(v<0)c.scale(-1,1);c.drawImage(BRIC,(f-5)*300,0,300,339,-150*k,-b*k,300*k,339*k);c.restore();return;}if(!BPAL.complete)return;const k=3.2*BZ*ts/310;c.save();if(v<0)c.scale(-1,1);c.drawImage(BPAL,f*240,0,240,434,-120*k,-431*k,240*k,434*k);c.restore();}
 /* Lele Volley batte a pallavolo: alza la palla e la schiaccia dove sta andando Matteo. Rimbalza una volta e sparisce; le casse la fermano */
 const PALLA_IMG=new Image();PALLA_IMG.src='assets/palla.png'; /* la palla dell'utente (paesaggio/palla_originale.png), scontornata e quadrata: si fa ruotare dal suo centro */
 const BATT_T=1.5,PALLA_G=16,PALLA_Y=1.95,RETE=9.5,CAMPO_S=.5,BZ=.72; /* BZ: quanto è rimpicciolito il boss rispetto ai suoi fogli; RETE: Matteo a sinistra, il boss a destra */
@@ -870,10 +877,10 @@ function disegnaBoss(c,sx,sy,ts){
   /* da fermo una sola posa (la 0, la più dritta): il respiro lo fa il codice, gonfiandolo e sgonfiandolo appena dai piedi */
   if(f===0&&b.vita>0&&(b.stato==='fermo'||(b.stato==='mira'&&b.t>.45))){const r=Math.sin(G.t*2.6);c.scale(1-.012*r,1+.028*r);}
   disegnaAnanas(c,f,z,v,true);c.restore();}
- else if(M.i===1){const v=b.stato==='carica'||b.stato==='mira'||b.stato==='battuta'?Math.sign(b.dx)||1:Math.sign(P2.x-b.x)||1,t=b.t,bt=b.stato==='battuta',corre=b.stato==='carica'||b.cammina,vel=b.stato==='carica'?22:9;
-  const hop=bt?(t>1.02?0:t>.5?Math.sin((1.02-t)/.52*1.57)*3.3:t>.32?3.3:t>.06?3.3*(t-.06)/.26:0):0,el=b.cfg.stordito-t,f=b.vita<=0?16+(G.t-b.tm<.3?0:G.t-b.tm<.8?1:G.t-b.tm<1.5?2:3):b.lampo>0?8:bt?(t>1.2?5:t>1.02?6:t>.86?7:t>.68?12:t>.5?13:t>.32?14:15):b.stato==='stordito'?(el<.16?8:el<.4?9:10+Math.floor((el-.4)*3)%2):4; /* riceve col bagher (5, 6), si allunga (7), salta fino alla palla caricando il colpo (12, 13), la colpisce davanti a sé (14), riatterra (15) */
-  c.translate(0,b.r*ts-hop*BZ*ts-(corre?Math.abs(Math.sin(G.t*vel))*ts*.12:0));if(b.lampo>0&&Math.floor(G.t*24)%2)c.globalAlpha=.35;
-  if(b.vita<=0){}else if(f===10||f===11)c.rotate(Math.sin(G.t*3.5)*.03);else if(corre)c.rotate(Math.sin(G.t*vel)*.05);else if(f===4){const r=Math.sin(G.t*2.6);c.scale(1-.012*r,1+.028*r);}
+ else if(M.i===1){const v=b.stato==='carica'||b.stato==='mira'||b.stato==='battuta'?Math.sign(b.dx)||1:Math.sign(P2.x-b.x)||1,t=b.t,bt=b.stato==='battuta',corre=b.stato==='carica'||(b.stato==='fermo'&&b.cammina),vel=b.stato==='carica'?22:9;
+  const hop=bt?(t>1.02?0:t>.5?Math.sin((1.02-t)/.52*1.57)*3.3:t>.32?3.3:t>.06?3.3*(t-.06)/.26:0):0,el=b.cfg.stordito-t,f=b.vita<=0?16+(G.t-b.tm<.3?0:G.t-b.tm<.8?1:G.t-b.tm<1.5?2:3):b.lampo>0?8:bt?(t>1.2?5:t>1.02?6:t>.86?7:t>.68?12:t>.5?13:t>.32?14:15):b.stato==='stordito'?(el<.16?8:el<.4?9:10+Math.floor((el-.4)*3)%2):corre?20+Math.floor(G.t*9)%4:4; /* riceve col bagher (5, 6), si allunga (7), salta fino alla palla caricando il colpo (12, 13), la colpisce davanti a sé (14), riatterra (15) */
+  c.translate(0,b.r*ts-hop*BZ*ts-(corre?Math.abs(Math.sin(G.t*vel))*ts*.04:0));if(b.lampo>0&&Math.floor(G.t*24)%2)c.globalAlpha=.35;
+  if(b.vita<=0){}else if(f===10||f===11)c.rotate(Math.sin(G.t*3.5)*.03);else if(corre)c.rotate(Math.sin(G.t*vel)*.025);else if(f===4){const r=Math.sin(G.t*2.6);c.scale(1-.012*r,1+.028*r);}
   disegnaSchiacc(c,f,ts,v);if(bt&&!b.fatto){const k=ts*.9,u=clamp((1.2-t)/.18,0,1),w=clamp((1.02-t)/.52,0,1),q=t>1.2?(t-1.2)/.3:0,X=t>1.02?1.55+q*.4:1.55-.13*w,Y=t>1.2?1.65+q*5:t>1.02?1.65+u*.1:1.75-.21*w+3*Math.sin(w*3.1416);c.translate(v*ts*X*BZ,-ts*Y*BZ);c.rotate(-G.t*8);c.drawImage(PALLA_IMG,-k/2,-k/2,k,k);}c.restore();}
  else{
  if(b.stato==='carica')c.rotate(Math.sin(G.t*30)*.25);else if(b.stato==='stordito')c.rotate(.28*Math.sin(G.t*7));else c.translate(0,Math.sin(G.t*3)*ts*.1);
