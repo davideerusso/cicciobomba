@@ -236,7 +236,7 @@ function bolla(){
  if(!G.dettaBolla){G.dettaBolla=true;consiglio('bolla2','Bolla! Premendo salto mentre sei in aria Matteo galleggia per un attimo');}
 }
 /* salto: a terra salta, in aria fluttua. Se non può fluttuare (bolla già usata o poco fiato) il tocco resta in memoria e salta appena tocca terra: senza fiato non si deve fermare a mezz'aria */
-function azione(lato){if(G.stato!=='gioco')return;const p=P2;if(inAcqua()){if(lato<0)scattoGiu();else bracciata();return;}if(lato<0){scatta2();return;}if(p.stanco>0)return;
+function azione(lato){if(G.stato==='ora'){if(lato<0){G.stato='gioco';$('avviso').hidden=true;$('tScatto').classList.remove('ora');scatta2();}return;}if(G.stato!=='gioco')return;const p=P2;if(inAcqua()){if(lato<0)scattoGiu();else bracciata();return;}if(lato<0){scatta2();return;}if(p.stanco>0)return;
  if(p.coyote>0||p.bollaUsata||p.bolla>0||(G.carica<1&&G.fiato<FIATO_BOLLA))p.buf=.13;else bolla();}
 /* vale tutto lo schermo: ogni dito prende il pulsante più vicino della sua metà, così non si sbaglia guardando il gioco */
 const tocchi=$('tocchi'),FRECCE=['tSin','tDes'],AZIONI=['tScatto','tSalto'];
@@ -496,7 +496,8 @@ function passoNemici2(dt){
    else colpito2(Math.sign(p.x-n.x)||1,n.tipo==='r');
   }
  }
- for(let i=M.colpi.length-1;i>=0;i--){const c=M.colpi[i];if(c.palla){c.vy-=(c.g||PALLA_G)*dt; /* con la gravità in proporzione la curva resta uguale, solo percorsa più in fretta */c.rot+=c.vx*dt*1.4;if(c.y<PALLA_Y&&c.vy<0){c.y=PALLA_Y;c.vy=-c.vy*.55;c.vx*=.8;c.rimb++;suono(180,.1,'sine',.09,90);if(c.rimb>1){M.colpi.splice(i,1);continue;}}}c.x+=c.vx*dt;c.y+=(c.vy||0)*dt;c.v-=dt;if(c.v<0||(c.palla?'#C'.includes(cel(Math.round(c.x),Math.round(c.y))):pieno(cel(Math.round(c.x),Math.round(c.y))))){M.colpi.splice(i,1);continue;}if(c.palla&&c.rinvio){const b=M.boss;if(b&&b.vita>0&&Math.hypot(c.x-b.x,c.y-b.y)<b.r+.6){M.colpi.splice(i,1);palloneAlBoss(b,c);}continue;}if(c.palla&&p.scatto>0&&distMatteo(c.x,c.y,true)<1.5){ribatti(c);continue;}if(distMatteo(c.x,c.y)<(c.palla?p.R+.4:.7)&&p.scatto<=0)colpito2(Math.sign(c.vx)||1); /* la palla fa male finché è in gioco, anche dopo il primo rimbalzo: si tocca solo con lo scatto */}
+ for(let i=M.colpi.length-1;i>=0;i--){const c=M.colpi[i];if(c.palla){c.vy-=(c.g||PALLA_G)*dt; /* con la gravità in proporzione la curva resta uguale, solo percorsa più in fretta */c.rot+=c.vx*dt*1.4;if(c.y<PALLA_Y&&c.vy<0){c.y=PALLA_Y;c.vy=-c.vy*.55;c.vx*=.8;c.rimb++;suono(180,.1,'sine',.09,90);if(c.rimb>1){M.colpi.splice(i,1);continue;}}}c.x+=c.vx*dt;c.y+=(c.vy||0)*dt;c.v-=dt;if(c.v<0||(c.palla?'#C'.includes(cel(Math.round(c.x),Math.round(c.y))):pieno(cel(Math.round(c.x),Math.round(c.y))))){M.colpi.splice(i,1);continue;}if(c.palla&&c.rinvio){const b=M.boss;if(b&&b.vita>0&&Math.hypot(c.x-b.x,c.y-b.y)<b.r+.6){M.colpi.splice(i,1);palloneAlBoss(b,c);}continue;}if(c.palla&&M.tut===2&&distMatteo(c.x,c.y,true)<1.4){M.tut=3;p.cd=0;G.fiato=Math.max(G.fiato,.5);G.stato='ora';avviso('ORA! Premi SCATTO',600000);$('tScatto').classList.add('pronto','ora');return;} /* il tutorial ferma il gioco quando la palla è a portata */
+  if(c.palla&&p.scatto>0&&distMatteo(c.x,c.y,true)<1.5){ribatti(c);continue;}if(distMatteo(c.x,c.y)<(c.palla?p.R+.4:.7)&&p.scatto<=0)colpito2(Math.sign(c.vx)||1); /* la palla fa male finché è in gioco, anche dopo il primo rimbalzo: si tocca solo con lo scatto */}
  passoGoo(dt);
 }
 function passoGoo(dt){for(let i=goo.length-1;i>=0;i--){const q=goo[i];q.v-=dt;q.vy-=(M.acqua&&q.y<M.livello?-4:16)*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;if(q.v<=0)goo.splice(i,1);}}
@@ -843,14 +844,14 @@ function alzaTiro(x0,y0,tx,ty,T){const f=(RETE-x0)/(tx-x0);if(!(f>0&&f<1))return
 /* quanto dista un punto da Matteo: in palla è un cerchio, in piedi conta tutta la sua altezza, testa compresa. Con sempre vale l'altezza anche durante lo scatto, per ribattere */
 function distMatteo(x,y,sempre){const p=P2;if(p.rotola&&!sempre)return Math.hypot(x-p.x,y-p.y);const su=p.y-p.R+1.45;return Math.hypot(x-p.x,y-clamp(y,p.y,su));}
 function miraPalla(p){const base=p.x+p.vx*.35,o=Math.random()<.3?0:rnd(2,5)*(Math.random()<.5?-1:1);let t=base+o;if(t<1.5||t>RETE-.6)t=base-o;return clamp(t,1.5,RETE-.6);}
-function battuta(b){const p=P2,v=b.dx,sc=b.sc||0,x0=b.x+v*.92,y0=b.y-b.r+3.4,tx=miraPalla(p),ty=Math.max(p.y,PALLA_Y),T=alzaTiro(x0,y0,tx,ty,clamp(Math.abs(tx-x0)/11,.6,1.1)*(b.forte?.78:1)*(1-.07*sc)),w=velFase(b);M.colpi.push({palla:true,g:PALLA_G*w*w,x:x0,y:y0,vx:(tx-x0)/T*w,vy:(ty-y0+.5*PALLA_G*T*T)/T*w,v:3.2,rot:0,rimb:0,tx,ty,sc});sfx('throw')||suono(240,.16,'square',.1,120);G.scossa=riduci?0:.12;}
+function battuta(b){const p=P2,v=b.dx,sc=b.sc||0,x0=b.x+v*.92,y0=b.y-b.r+3.4,tx=M.tut===2?clamp(p.x+p.vx*.35,1.5,RETE-.6):miraPalla(p),ty=Math.max(p.y,PALLA_Y),T=alzaTiro(x0,y0,tx,ty,clamp(Math.abs(tx-x0)/11,.6,1.1)*(b.forte?.78:1)*(1-.07*sc)),w=velFase(b);M.colpi.push({palla:true,g:PALLA_G*w*w,x:x0,y:y0,vx:(tx-x0)/T*w,vy:(ty-y0+.5*PALLA_G*T*T)/T*w,v:3.2,rot:0,rimb:0,tx,ty,sc});sfx('throw')||suono(240,.16,'square',.1,120);G.scossa=riduci?0:.12;}
 /* lo scatto vicino alla palla la ribatte verso il boss: se va a segno costa zero fiato */
 function ribatti(c){const b=M.boss,T=alzaTiro(c.x,c.y,b.x,b.y,clamp(Math.abs(b.x-c.x)/9,.9,1.2));c.rinvio=true;c.rimb=0;c.sc=(c.sc||0)+1;{const w=velFase(b);c.g=PALLA_G*w*w;c.vx=(b.x-c.x)/T*w;c.vy=(b.y-c.y+.5*PALLA_G*T*T)/T*w;}c.v=3;G.fiato=Math.min(1,G.fiato+FIATO_SCATTO);G.fiatoT=0;aggFiato();P2.cd=.2;P2.Wv+=6;schizzi2(c.x,c.y,10,'#fff3bd',5);sfx('bump')||suono(520,.12,'square',.1,260);vibra(30);G.scossa=riduci?0:.1;}
 /* la palla ribattuta arriva al boss: ogni vita persa allunga lo scambio di una ribattuta (da 1 con tutte le vite a 6 all'ultima); prima di allora la riceve e rilancia */
-function palloneAlBoss(b,c){const serve=b.cfg.vita-b.vita;if(c.sc<=serve){b.stato='battuta';b.t=1.2;b.fatto=false;b.ricevuta=false;b.sc=c.sc;b.forte=false;avviso('Scambio '+c.sc+' di '+(serve+1),1200);return;}colpisciBoss(b);if(b.vita>0){b.stato='stordito';b.t=b.cfg.stordito;}}
+function palloneAlBoss(b,c){const serve=b.cfg.vita-b.vita;if(c.sc<=serve){b.stato='battuta';b.t=1.2;b.fatto=false;b.ricevuta=false;b.sc=c.sc;b.forte=false;avviso('Scambio '+c.sc+' di '+(serve+1),1200);return;}colpisciBoss(b);if(b.vita>0){b.stato='stordito';b.t=b.cfg.stordito;}if(M.tut===3){M.tut=0;consiglio('lele_3','Colpito! Solo ribattendo la palla con lo SCATTO gli fai male. A ogni vita persa lo scambio si allunga: lui riceve e rilancia, tu continua a ribattere. Se la palla ti tocca senza scatto perdi un cuore.');}}
 function reteVolley(c,sx,sy,ts){const x=sx(RETE),y0=sy(1.5),y1=sy(5),w=ts*.17,l=ts*.26;c.fillStyle='#fffdf2cc';c.fillRect(x-l,y1,l*2,ts*1.75);c.strokeStyle='#1f2a55';c.lineWidth=Math.max(1,ts*.03);c.beginPath();for(let i=0;i<=7;i++){const y=y1+ts*.25*i;c.moveTo(x-l,y);c.lineTo(x+l,y);}for(let i=0;i<=2;i++){const q=x-l+l*i;c.moveTo(q,y1);c.lineTo(q,y1+ts*1.75);}c.stroke();c.fillStyle='#6b4a2b';c.strokeStyle='#2c1a0d';c.lineWidth=Math.max(2,ts*.05);c.fillRect(x-w/2,y1-ts*.15,w,y0-y1+ts*.15);c.strokeRect(x-w/2,y1-ts*.15,w,y0-y1+ts*.15);}
 function passoBoss(dt){
- const b=M.boss,p=P2;if(!b||b.vita<=0)return;b.t-=dt*velFase(b);b.frase=Math.max(0,(b.frase||0)-dt);b.lampo=Math.max(0,b.lampo-dt);
+ const b=M.boss,p=P2;if(!b||b.vita<=0)return;if(M.tut===1){M.tut=2;consiglio('lele_1','Lele schiaccia dove vedi il cerchio rosso. Mettiti lì sotto e preparati a ribattere la palla!');return;}b.t-=dt*velFase(b);b.frase=Math.max(0,(b.frase||0)-dt);b.lampo=Math.max(0,b.lampo-dt);
  const dx=p.x-b.x,dy=p.y-b.y,d=Math.hypot(dx,dy)||1;
  if(b.stato==='fermo'){cadeBoss(b,dt);const mx=b.cfg.palla?b.meta-b.x:dx,v=Math.abs(mx)>(b.cfg.palla?.2:.6)&&!(b.cfg.palla&&M.colpi.some(c=>c.rinvio))?Math.sign(mx):0;b.cammina=0;
   if(b.aTerra&&v&&(b.cfg.terra?!cassaBoss(Math.round(b.x+v*(b.r+.15))):!pieno(cel(Math.round(b.x+v*(b.r+.15)),Math.round(b.y))))){b.x=clamp(b.x+v*(b.cfg.terra?3:1.4)*dt*velFase(b),b.cfg.palla?RETE+2:1.5+b.r,M.w-1.5-b.r);b.cammina=v;}
@@ -1024,8 +1025,7 @@ function entraBoss(i){
  $('bossBox').hidden=false;$('bossNome').textContent=BOSS[i].nome;$('bossHp').style.width='100%';$('nomeTappa').textContent='';
  /* si entra rotolando da sinistra; nella stanza con i muri si apre un varco che si richiude dietro a Matteo */
  M.intro=true;M.introT=0;Object.assign(P2,{x:INTRO_DA,px:INTRO_DA,y:1.5+P2.R,py:1.5+P2.R,rotola:true,anim:'',animT:9,rot:0});if(!BOSS[i].palla)[2,3,4].forEach(y=>M.g[y][0]=' ');
- banner(BOSS[i].nome);if(BOSS[i].palla)G.pronti+=SFIDA_T;
- if(i===1)setTimeout(()=>{if(M.boss&&G.stato==='gioco')consiglio('boss3','Premi SCATTO quando la palla ti arriva vicino: la ribatti e lo colpisci. Più è ferito, più scambi servono',3800);},4200);
+ banner(BOSS[i].nome);if(BOSS[i].palla){G.pronti+=SFIDA_T;M.tut=(S.consigli||[]).includes('lele_3')?0:1;} /* il tutorial di Lele: una volta sola */
  if(i===0)setTimeout(()=>{if(M.boss&&G.stato==='gioco')consiglio('boss','Schiva la carica: se sbatte è stordito. Mettiti dietro le casse!',3800);},1700);
 }
 /* battuto il boss si resta nella stanza, con lui a terra: si apre un'uscita a destra e una freccia la indica; fuori c'è la pozza del mondo dopo */
@@ -1066,6 +1066,8 @@ async function bloccaOrizzontale(){try{if(!document.fullscreenElement&&document.
 /* finché le immagini non sono arrivate Gioca è spento e dice Caricamento…; dopo 20 s si accende comunque */
 (function attendi(t0){const b=$('bGioca'),n=IMMAGINI.filter(i=>!i.complete).length;if(n&&performance.now()-t0<20000){b.disabled=true;b.classList.add('carica');b.textContent='Caricamento…';setTimeout(()=>attendi(t0),150);}else{b.disabled=false;b.classList.remove('carica');b.textContent='Gioca';if(PARTENZA||BOSS_SUBITO)setTimeout(()=>iniziaRun(),0);}})(performance.now()); /* con ?livello=2 si entra subito nel livello, senza menu; l'audio si accende al primo tocco */
 if(PARTENZA||BOSS_SUBITO)['pointerdown','keydown'].forEach(e=>addEventListener(e,()=>audioOn(),{once:true}));
+/* il browser concede lo schermo intero solo dopo un tocco: nei link diretti non c'è Gioca, quindi si entra al primo tocco. Serve pointerup, sul telefono pointerdown non basta */
+if(PARTENZA||BOSS_SUBITO)addEventListener('pointerup',()=>bloccaOrizzontale(),{once:true});
 $('bGioca').onclick=()=>{audioOn();bloccaOrizzontale();if((S.guidaVista|0)>=4||PARTENZA||BOSS_SUBITO)iniziaRun();else apriGuida(iniziaRun);};
 $('bGuida').onclick=()=>{audioOn();apriGuida(null);};
 $('bAmici').onclick=()=>{audioOn();disegnaAmici();mostra('sAmici');};
