@@ -161,7 +161,8 @@ P = Pezzo('abisso', 88, 124)
 P.blocco(0, 2, 87, SY)
 P.blocco(2, 3, 25, SY, ' '); P.blocco(34, 3, 57, SY, ' '); P.blocco(26, 3, 33, 9, ' ')
 P.blocco(0, SY + 1, 1, 124); P.blocco(26, SY + 1, 33, SY + 10)
-P.put(SY + 5, 13, 'S'); P.put(SY, 5, '~')
+P.blocco(2, SY - 2, 12, SY + 1); P.blocco(21, SY - 2, 25, SY + 1)   # fuori dalla stanza del boss: la terra con la pozza in cui buttarsi
+P.put(SY + 2, 4, 'S'); P.put(SY, 16, '~')
 def metti(t, *pos):
     for x, y in pos: P.put(y, x, t)
 # la caduta
