@@ -716,9 +716,9 @@ function nuoto(h,tx){
  p.Wv+=(-160*p.W-11*p.Wv)*h;p.W=clamp(p.W+p.Wv*h,-.5,.5);p.passi+=Math.abs(p.vx)*h*4.6;p.ultimoSuolo=null;
 }
 const telaM=(w,h)=>{const k=document.createElement('canvas');k.width=w;k.height=h;return k;},rnMare=s=>{let r=s;return()=>(r=r*16807%2147483647)/2147483647;};
-const MARE_L=68,MARE_C={},MARE_PAL=[{base:'#6d5a96',ombra:'#57477f',chiaro:'#8a76b4',crosta:'#ff8a7a',crostaC:'#ffc9ae',linea:'#1f1740'},{base:'#f0c877',ombra:'#dcae5c',chiaro:'#fbe3a6',crosta:'#fff0c4',crostaC:'#fffbe6',linea:'#8a5a22'}];
+const MARE_L=68,MARE_C={},MARE_PAL=[{base:'#6d5a96',ombra:'#57477f',chiaro:'#8a76b4',crosta:'#ff8a7a',crostaC:'#ffc9ae',linea:'#1f1740'}];
 const maschera=(x,y)=>(solidoK(x,y+1)?1:0)|(solidoK(x+1,y)?2:0)|(solidoK(x,y-1)?4:0)|(solidoK(x-1,y)?8:0);
-/* mk: quali vicini sono pieni (1 sopra, 2 destra, 4 sotto, 8 sinistra); v variante; pal 0 roccia, 1 sabbia */
+/* mk: quali vicini sono pieni (1 sopra, 2 destra, 4 sotto, 8 sinistra); v variante; pal palette */
 function mareTile(mk,v,pal){const k=pal+'_'+mk+'_'+v;if(MARE_C[k])return MARE_C[k];const L=MARE_L,C=telaM(L,L),c=C.getContext('2d'),P=MARE_PAL[pal],su=mk&1,de=mk&2,gi=mk&4,si=mk&8,e=3,x0=si?-12:e,x1=de?L+12:L-e,y0=su?-12:e,y1=gi?L+12:L-e,R=[!su&&!si,!su&&!de,!gi&&!de,!gi&&!si].map(b=>b?16:0),r=rnMare(mk*31+v*7+pal*5+11);
  const via=()=>{c.beginPath();c.moveTo(x0+R[0],y0);c.arcTo(x1,y0,x1,y1,R[1]);c.arcTo(x1,y1,x0,y1,R[2]);c.arcTo(x0,y1,x0,y0,R[3]);c.arcTo(x0,y0,x1,y0,R[0]);c.closePath();};
  c.save();via();c.fillStyle=P.base;c.fill();c.clip();for(let i=0;i<9;i++){c.fillStyle=i%2?P.ombra:P.chiaro;c.beginPath();c.ellipse(r()*L,r()*L,4+r()*9,3+r()*6,r()*3,0,6.3);c.fill();}
@@ -730,9 +730,12 @@ function mareSpr(n){if(MARE_C[n])return MARE_C[n];const S=120,C=telaM(S,S),c=C.g
  else if(n==='spugna'){const r=rnMare(77),b=[];for(let i=0;i<9;i++)b.push([30+r()*60,70+r()*40,13+r()*11]);for(const[col,ag]of[['#1f4a3a',5],['#7fd6a0',0]]){c.fillStyle=col;for(const q of b){c.beginPath();c.arc(q[0],q[1],q[2]+ag,0,6.3);c.fill();}}c.fillStyle='#2f8a68';for(const q of b){c.beginPath();c.arc(q[0],q[1],3,0,6.3);c.fill();}}
  else{const r=rnMare(n==='corallo0'?23:51),seg=[],ram=(x,y,a,l,d)=>{const X=x+Math.cos(a)*l,Y=y+Math.sin(a)*l;seg.push([x,y,X,Y,d]);if(d>0){ram(X,Y,a-.35-r()*.3,l*.76,d-1);ram(X,Y,a+.35+r()*.3,l*.76,d-1);}};ram(60,118,-1.57,28,3);const col=n==='corallo0'?'#ff6f8f':'#ffb347';for(const[k,ag]of[['#4a1730',7],[col,0]]){c.strokeStyle=k;for(const q of seg){c.lineWidth=q[4]*3+5+ag;c.beginPath();c.moveTo(q[0],q[1]);c.lineTo(q[2],q[3]);c.stroke();}}}
  return MARE_C[n]=C;}
+/* i cubi di sabbia dell'utente: sopra la superficie, sotto il pezzo che la continua, più in basso il colore in cui finisce */
+const SAB_SU=new Image();SAB_SU.src='assets/sabbia_sopra.png';const SAB_GIU=new Image();SAB_GIU.src='assets/sabbia_sotto.png';
+function sabbia(c,x,y,a,b,z){const im=!solidoK(x,y+1)?SAB_SU:!solidoK(x,y+2)?SAB_GIU:null;if(!im){c.fillStyle='#d49b66';c.fillRect(a,b,z,z);return;}const s=c.imageSmoothingEnabled;c.imageSmoothingEnabled=false;c.drawImage(im,a,b,z,z);c.imageSmoothingEnabled=s;}
 function mareCasella(c,t,x,y,a,b,z,ts){
  if(t==='#'&&!M.boss&&x<26&&y>=M.livello-3)return false; /* la terra prima del tuffo è ancora l'isola degli ananas: la disegna il codice del mondo 1 */
- if(t==='#'){const sab=M.boss||(y>=M.livello-2&&x>=M.spiaggia);c.drawImage(mareTile(maschera(x,y),(x*7+y*13>>>0)%3,sab?1:0),a,b,z,z);return true;}
+ if(t==='#'){if(M.boss||(y>=M.livello-2&&x>=M.spiaggia))sabbia(c,x,y,a,b,z);else c.drawImage(mareTile(maschera(x,y),(x*7+y*13>>>0)%3,0),a,b,z,z);return true;}
  if(t==='*'){const k=ts*(1.08+.05*Math.sin(G.t*3+x+y));c.drawImage(mareSpr('riccio'),a+ts/2-k/2,b+ts/2-k/2,k,k);return true;}
  if(t==='u'){c.strokeStyle='#ffffff99';c.lineWidth=Math.max(1,ts*.04);for(let i=0;i<2;i++){const u=(G.t*1.4+i*.5+(x*.37+y*.61))%1;c.beginPath();c.arc(a+ts*(.3+.4*Math.sin(x+i*2)*.5+.2),b+ts*(1-u),ts*.07*(1+u),0,6.3);c.stroke();}return true;}
  if(t==='V'){c.fillStyle='#1a0f12';c.fillRect(a,b,z,z);return true;}return false;}
