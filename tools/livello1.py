@@ -171,7 +171,7 @@ P.blocco(2, 99, 8, 100); P.blocco(19, 99, 25, 100); metti('f', (13, 95))
 P.blocco(10, 89, 17, 90); metti('*', (13, 91)); metti('c', (5, 93), (22, 93), (5, 90), (22, 90))
 P.blocco(2, 79, 15, 80); metti('f', (20, 75)); metti('c', (20, 84), (20, 81))
 P.blocco(9, 71, 25, 72); metti('*', (10, 73), (14, 73)); metti('c', (5, 74), (5, 70))
-P.blocco(2, 60, 9, 61); P.blocco(16, 60, 25, 61); P.fila(61, 10, 15, 'C'); metti('c', (12, 65), (13, 65))
+P.blocco(2, 60, 9, 61); P.blocco(18, 60, 25, 61); P.fila(57, 10, 17, 'C'); metti('c', (12, 65), (13, 65))   # le casse più in basso, dentro il corridoio: in cima le pareti finiscono con gli spigoli arrotondati
 P.blocco(2, 38, 9, 59); P.blocco(18, 38, 25, 59)
 metti('*', (10, 54), (17, 50), (10, 46), (17, 42)); metti('m', (13, 48)); metti('c', (14, 56), (13, 44))
 metti('f', (7, 33), (19, 30), (11, 26)); metti('*', (13, 34), (6, 28), (21, 24)); metti('c', (14, 31), (8, 24), (18, 21))
