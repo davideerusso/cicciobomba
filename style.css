@@ -21,6 +21,9 @@ body{font-family:var(--testo);font-size:16px}
 .btn.piccolo{font-size:16px;padding:7px 12px;border-radius:13px;box-shadow:0 3px 0 var(--notte),0 0 0 4px #fff,0 7px 0 0 #fff}
 .btn.piccolo:active{box-shadow:0 1px 0 var(--notte),0 0 0 4px #fff,0 5px 0 0 #fff}
 .btn[disabled]{opacity:.5;cursor:default}
+/* nei riquadri (pausa, fine, consiglio, skin, mappa) il rilievo è un bordo più spesso in basso e non un'ombra spostata: sul fondo chiaro l'ombra sembrava un secondo pulsante sotto il primo */
+.tavola .btn,.mCarta .btn{border-bottom-width:7px;box-shadow:0 0 0 4px #fff}
+.tavola .btn:active,.mCarta .btn:active{transform:translateY(4px);border-bottom-width:3px;box-shadow:0 0 0 4px #fff}
 :focus-visible{outline:3px solid var(--oro);outline-offset:2px}
 #sGuida{position:fixed;inset:0;box-sizing:border-box;background:var(--legno);color:var(--inchiostro);padding:calc(var(--st) + 10px) max(16px,var(--sr)) calc(var(--sb) + 12px) max(16px,var(--sl));display:flex;flex-direction:column;gap:8px;justify-content:center;overflow:hidden}
 .gTesta{display:flex;justify-content:space-between;align-items:baseline;max-width:960px;width:100%;margin:0 auto}.gTesta h2{margin:0;font:400 clamp(20px,6.5vmin,30px)/1.1 var(--display)}#gNum{font-weight:800;font-variant-numeric:tabular-nums}
@@ -92,3 +95,11 @@ input[type=range]{width:100%;accent-color:var(--vernice)}
 #sConsiglio p{margin:10px 0 16px;font-size:19px;font-weight:700;line-height:1.3;text-wrap:balance}
 #grande{position:fixed;left:0;right:0;top:38%;text-align:center;font:400 clamp(30px,5.4vmax,46px)/1.05 var(--display);color:var(--oro);-webkit-text-stroke:2px var(--inchiostro);paint-order:stroke fill;text-shadow:0 4px 0 var(--inchiostro);pointer-events:none;padding:0 16px;text-wrap:balance}
 #erroreT{position:fixed;inset:0;display:grid;place-items:center;padding:24px;text-align:center;font-weight:700;font-size:18px}
+/* Mappa del Salento: la mappa è disegnata sulla tela, sopra solo Menu in alto e il riquadro del paese in basso */
+#sMappa{position:fixed;inset:0;touch-action:none}
+#mMenu{position:absolute;top:calc(var(--st) + 12px);left:max(16px,var(--sl))}
+.mCarta{position:absolute;left:50%;bottom:calc(var(--sb) + 12px);transform:translateX(-50%);display:flex;align-items:center;gap:16px;width:max-content;max-width:calc(100% - 32px);box-sizing:border-box;padding:8px 10px 8px 16px;background:var(--panna);color:var(--notte);border:3px solid var(--notte);border-radius:18px;box-shadow:0 5px 0 var(--notte)}
+.mCarta h2{margin:0;font:400 clamp(17px,2.4vmax,23px)/1.1 var(--display)}
+.mCarta p{margin:2px 0 0;font-weight:800;font-size:14px;line-height:1.2}
+.mCarta .primo{padding:8px 20px;margin-bottom:6px}
+.mScelte{display:flex;gap:14px;align-items:center}.mScelte #mBoss{padding:8px 16px;margin-bottom:6px} /* nei paesi battuti: rigiocare il livello o solo il boss */

@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Baloo+2:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="style.css?v=132">
+<link rel="stylesheet" href="style.css?v=135">
 
 <div id="schermo">
 <canvas id="d2" aria-label="Gioco Cicciobomba"></canvas>
@@ -39,6 +39,11 @@
 <div id="avviso" hidden></div>
 <div id="grande" hidden></div>
 
+<section id="sMappa" hidden>
+  <button id="mMenu" class="btn piccolo">Menu</button>
+  <div class="mCarta"><div><h2 id="mNome"></h2><p id="mLivello"></p></div><div class="mScelte"><button id="mBoss" class="btn" hidden>Boss</button><button id="mGioca" class="btn primo">Gioca</button></div></div>
+</section>
+
 <section id="sMenu">
   <h1 class="mTesta"><img id="logo" alt="Cicciobomba" width="1200" height="564"></h1>
   <div class="mPulsanti">
@@ -46,7 +51,7 @@
     <button id="bGioca" class="mBtn mGioca">Gioca</button>
     <button id="bGuida" class="mBtn">Come si gioca</button>
   </div>
-  <div class="mPiede"><span id="record" hidden></span><small id="noteComandi">Tieni il telefono in orizzontale. Una sola corsa: se finisci i cuori riparti da capo.</small></div>
+  <div class="mPiede"><span id="record" hidden></span><small id="noteComandi">Tieni il telefono in orizzontale. Scegli il paese sulla mappa: se finisci i cuori riprovi il livello.</small></div>
 </section>
 
 <section id="sGuida" hidden>
@@ -89,6 +94,6 @@
 <div id="erroreT" hidden>Il gioco non è riuscito a partire. Controlla la connessione e ricarica la pagina.</div>
 
 </div>
-<script src="game.js?v=132"></script>
+<script src="game.js?v=135"></script>
 
 </body></html>

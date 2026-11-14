@@ -19,7 +19,7 @@ const puntoX=e=>SC.rot?e.clientY:e.clientX,puntoY=e=>SC.rot?innerWidth-e.clientX
 /* ---------- SALVATAGGIO ---------- */
 const CHIAVE='rotolamici-v1';
 const COLORI=['#3a3029','#3fb6a8','#e8655a','#6d8df0','#b56fd6','#7cc04b','#f08a3c','#e96fa6'];
-let S={record:0,gettoni:0,consigli:[],skin:['classica'],amici:[{nome:'Matteo',colore:COLORI[0],skin:'classica',foto:null}],sel:0,audio:true};
+let S={mappa:0,qui:0,fatti:[],record:0,gettoni:0,consigli:[],skin:['classica'],amici:[{nome:'Matteo',colore:COLORI[0],skin:'classica',foto:null}],sel:0,audio:true};
 try{const v=JSON.parse(localStorage.getItem(CHIAVE));if(v&&v.amici&&v.amici.length)S=Object.assign(S,v);}catch(e){}
 S.amici.forEach(a=>{if(a.skin!=='classica')a.skin='classica';});S.sel=0; /* le altre skin e la scelta degli amici non ci sono più: rotola sempre Matteo */
 S.amici.forEach(a=>{if(['#f2b632','#62cf4a','#ffb27a','#f05a58','#b05a2c'].includes(a.colore))a.colore=COLORI[0];});
@@ -250,6 +250,7 @@ tocchi.addEventListener('pointermove',e=>{const p=puntatori.get(e.pointerId);if(
 function suFine(e){if(puntatori.delete(e.pointerId))aggTasti();}
 tocchi.addEventListener('pointerup',suFine);tocchi.addEventListener('pointercancel',suFine);tocchi.addEventListener('contextmenu',e=>e.preventDefault());
 addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT')return;
+ if(G.modo==='mappa'&&!G.guida){const k=e.code;if(k==='ArrowRight'||k==='ArrowDown'||k==='KeyD')vaiA(MP.meta+1);else if(k==='ArrowLeft'||k==='ArrowUp'||k==='KeyA')vaiA(MP.meta-1);else if((k==='Enter'||k==='Space')&&!e.repeat){e.preventDefault();giocaQui(false);}else if(k==='KeyB'&&!e.repeat)giocaQui(true);else if(k==='Escape')vaiMenu();return;}
  if(G.stato==='consiglio'){if(e.code==='ArrowRight'||e.code==='Enter'||e.code==='Space'){e.preventDefault();if(!e.repeat)chiudiConsiglio();}return;}
  tasti[e.code]=true;
  if(e.code==='Space'){e.preventDefault();if(!e.repeat)azione(1);}
@@ -610,7 +611,7 @@ function disegna2d(){
   else if(t==='/')sp(c,'terrain_'+k+'_ramp_short_b',a,b,mz,mz,true);
   else if(t==='%')sp(c,'terrain_'+k+'_ramp_short_b',a,b,mz,mz);
   else if(t==='B'){const su=M.molla&&M.molla.k===y+'_'+x&&G.t-M.molla.t<.25;if(!((tb||tn)&&salaPezzo(c,SALA_MOLLA,su?991:0,0,982,852,a,b,mz)))sp(c,su?'spring_out':'spring',a,b,mz,mz);}
-  else if(t==='^'||t==='!'){const s=M.spine[y+'_'+x].s;if(tn&&PUNTE.im.complete&&PUNTE.im.width){const kp=ts*(V.dpr||1)/195,tp=muroPronto(PUNTE,kp),h=ts*.85*s,i=t==='!'?398:0;c.drawImage(tp,i*.5*kp,0,195*kp,205*kp,a,b+ts-h,ts+.6,h);}else sp(c,'spikes',a,b+ts*(1-s),mz,mz*s);}
+  else if(t==='^'||t==='!'){const s=M.spine[y+'_'+x].s;if(tn&&PUNTE.im.complete&&PUNTE.im.width){const kp=ts*(V.dpr||1)/195,tp=muroPronto(PUNTE,kp),h=ts*.85*s*PUNTE_H/205,i=t==='!'?398:0;c.drawImage(tp,i*.5*kp,0,195*kp,PUNTE_H*kp,a,b+ts-h,ts+.6,h);}else sp(c,'spikes',a,b+ts*(1-s),mz,mz*s);}
  }
  if(m.acqua&&!M.boss)bordiMuri(c,sx,sy,c0,c1,y0,y1);
  for(const key in M.crolli||{}){const k=M.crolli[key];if(k.c==='x'&&M.g[k.y][k.x]!=='x'&&k.via>3.3&&k.x>=c0&&k.x<=c1){c.globalAlpha=.35;if(!((tb||tn)&&salaBlocco(c,0,sx(k.x)-ts/2,sy(k.y)-ts/2,mz)))sp(c,'block_rest',sx(k.x)-ts/2,sy(k.y)-ts/2,mz,mz);c.globalAlpha=1;}}
@@ -802,8 +803,8 @@ const CIUFFI={im:new Image()};CIUFFI.im.src='assets/fondi/terra_ciuffi.png';cons
 /* sotto i bordi le radici e le foglie che pendono, ritagliate dalla parte 3 (paesaggio/buccia_spigolo_giu_originale.jpg, fondi/terra_radici.png a 0,7, RADICI_R in pixel dell'originale, appese per la cima) */
 /* le teste verdi (paesaggio/corone_originale.jpg, fondi/terra_corone.png a metà, CORONE_R in pixel dell'originale): una sola, in mezzo, sopra i blocchi e le colonne (cime larghe da 2 a 9 caselle che finiscono sul vuoto ai due lati: i tratti di pavimento tra casse e molle non contano), più grande sui blocchi più larghi; lì niente ciuffi */
 const CORONE={im:new Image()};CORONE.im.src='assets/fondi/terra_corone.png';const CORONE_R=[[0,0,641,711],[649,238,411,473],[1068,490,497,221]],CORONE_K=787/1573,CORONE_Z=1/290;
-/* le punte (^ e, più scure, quelle che rientrano !): una spina della buccia per casella con la sua base, dalla parte dell'utente (paesaggio/punte_originale.jpg, fondi/terra_punte.png a metà) */
-const PUNTE={im:new Image()};PUNTE.im.src='assets/fondi/terra_punte.png';
+/* le punte (^ e, più scure, quelle che rientrano !): una spina della buccia per casella, dalla parte dell'utente (paesaggio/punte_originale.jpg, fondi/terra_punte.png a metà). La basetta sotto (dalla riga PUNTE_H in giù) all'utente non piaceva: si disegna solo il cono, appoggiato al terreno */
+const PUNTE_H=170,PUNTE={im:new Image()};PUNTE.im.src='assets/fondi/terra_punte.png';
 const RADICI={im:new Image()};RADICI.im.src='assets/fondi/terra_radici.png';const RADICI_R=[[71,0,175,259],[314,0,195,197],[517,0,155,105],[680,0,206,126]],RADICI_K=626/894;
 function terraCella(x,y){const t=y<0?(cel(x,0)==='#'?'#':' '):cel(x,y);return t==='#'||t==='y'||!!(M.fintoSet&&M.fintoSet.has(y+'_'+x));}
 function terraBuccia(c,sx,sy,c0,c1,y0,y1){if(!BUCCIA.complete||!BUCCIA.width)return;const ts=V.ts,dpr=V.dpr||1,p=murTex(c,MAT_BUCCIA,Math.round(BUCCIA_TEX*ts*dpr)),r=BUCCIA_R*ts,F=new Path2D(),O=new Path2D(),aria=(x,y)=>!solidoK(x,y),sopra=[],sotto=[];
@@ -938,10 +939,10 @@ function latiMare(c,W,H,ts){const f=velato(MARE_LATI,LATI_VELO,1),g=velato(MARE_
 /* i pozzi dell'Abisso, misurati sulla mappa poco sotto il pelo dell'acqua: centri (c), larghezza del più largo (w) e quota della galleria in fondo che li unisce (g: sotto, la camera segue Matteo da un pozzo all'altro) */
 function pozziMare(){if(M._pz)return M._pz;const r=Math.floor(M.livello)-3,c=[];let w=1,x=0;while(x<M.w){if(pieno(cel(x,r))){x++;continue;}const a=x;while(x<M.w&&!pieno(cel(x,r)))x++;if(x-a>=6){c.push((a+x-1)/2);w=Math.max(w,x-a);}}
  let g=1;if(c.length>1){const m=Math.round((c[0]+c[1])/2);while(g<r&&pieno(cel(m,g)))g++;while(g<r&&!pieno(cel(m,g)))g++;}return M._pz={c:c.length?c:[M.w/2],w,g};}
-function fondaleMare(c){const W=V.W,H=V.H,ts=V.ts,gr=(y0,y1,a,b)=>{const g=c.createLinearGradient(0,y0,0,y1);g.addColorStop(0,a);g.addColorStop(1,b);return g;};
 /* sopra l'acqua, dalla parte della spiaggia: il fondale dell'utente (fondi/spiaggia_fondale.jpg, da paesaggio/spiaggia_fondale_originale.jpg) con la costa e il mare, fermo, largo quanto lo schermo, con l'orizzonte (BAIA_ORIZ dell'altezza) sul pelo dell'acqua del gioco; sopra, se avanza spazio, il colore del cielo in cima */
 const FONDO_BAIA=new Image();FONDO_BAIA.src='assets/fondi/spiaggia_fondale.jpg';const BAIA_ORIZ=.772,BAIA_CIELO='rgb(158,187,187)';
 function fondaleBaia(c,W,H,ys){const f=FONDO_BAIA;if(!f.complete||!f.width)return false;const k=Math.max(W/f.width,ys/(BAIA_ORIZ*f.height)),w=f.width*k,h=f.height*k,y0=ys-BAIA_ORIZ*h;if(y0>0){c.fillStyle=BAIA_CIELO;c.fillRect(0,0,W,y0+1);}c.drawImage(f,(W-w)/2,y0,w,h);return true;}
+function fondaleMare(c){const W=V.W,H=V.H,ts=V.ts,gr=(y0,y1,a,b)=>{const g=c.createLinearGradient(0,y0,0,y1);g.addColorStop(0,a);g.addColorStop(1,b);return g;};
  if(M.boss&&SPIAGGIA.complete&&SPIAGGIA.width){const k=Math.max(W/SPIAGGIA.width,H/SPIAGGIA.height),w=SPIAGGIA.width*k,h=SPIAGGIA.height*k;c.drawImage(SPIAGGIA,(W-w)/2,(H-h)/2,w,h);return;}
  if(M.boss){c.fillStyle=gr(0,H*.62,'#6fd0f5','#d9f5ff');c.fillRect(0,0,W,H*.63);c.fillStyle='#fff3bd';c.beginPath();c.arc(W*.8,H*.2,H*.09,0,6.3);c.fill();c.fillStyle='#ffffffd0';[[.2,.17,.11],[.32,.2,.08],[.58,.12,.09]].forEach(q=>{c.beginPath();c.ellipse(W*q[0],H*q[1],W*q[2],H*.035,0,0,6.3);c.fill();});c.fillStyle=gr(H*.62,H*.8,'#3cc0d8','#2a8fc0');c.fillRect(0,H*.62,W,H*.2);c.fillStyle='#f7dea3';c.fillRect(0,H*.8,W,H*.2);return;}
  const lv=M.livello,ys=H/2-(lv-V.cy)*ts,col=y=>{const d=clamp((lv-(V.cy+(H/2-y)/ts))/lv,0,1),q=[70+(10-70)*d,205+(32-205)*d,230+(92-230)*d].map(Math.round);return'rgb('+q+')';};
@@ -1183,8 +1184,148 @@ function chiudiGuida(){G.guida=false;S.guidaVista=4;salva();const d=gDopo;gDopo=
 $('gAvanti').onclick=()=>{if(gPag<GUIDA.length-1){gPag++;pagGuida();}else chiudiGuida();};
 $('gSalta').onclick=chiudiGuida;
 
+/* ---------- MAPPA DEL SALENTO: i livelli sono paesi, si sceglie dove andare ---------- */
+/* il fondo è la mappa in pixel art dell'utente fatta con Gemini (fondi/mappa_salento.jpg, da paesaggio/mappa_salento_originale.jpg): un Salento più o meno, con la spiaggia sullo Ionio a sinistra e le scogliere sull'Adriatico a destra. I paesi non stanno dove sono davvero, ma più o meno lì, sui prati liberi. Sopra il codice disegna strade, pastiglie (gialle, rosse se battute, grigie col lucchetto se chiuse), paesi, Matteo e le nuvole che passano. I paesi sono ancora quelli provvisori disegnati nel codice (PAESI) */
+const LUOGHI=[ /* liv: il livello che si gioca lì (indice di MONDI e BOSS); senza liv è ancora chiuso */
+ {nome:'Galugnananas',x:390,y:330,liv:0,dis:'galugnananas'}, /* il paese delle ananas; x e y in pixel della mappa */
+ {nome:"Torre dell'Orso",x:1120,y:560,liv:1,dis:'orsoAbisso'},
+ {nome:'Otranto',x:1090,y:1150,dis:'otranto'},
+ {nome:'Santa Maria di Leuca',x:1040,y:1730,dis:'leuca'},
+ {nome:'Gallipoli',x:560,y:1230,dis:'gallipoli'},
+];
+const CURVE=[.12,-.18,.2,-.16]; /* quanto piega la strada tra un paese e il successivo */
+const MAPPA=new Image();MAPPA.src='assets/fondi/mappa_salento.jpg';const MAPPA_W=1493,MAPPA_H=2000,MAPPA_ZOOM=1.15,MAPPA_U=4.5; /* la mappa è un po' più larga dello schermo: si scorre anche di lato. Paesi, pastiglie e Matteo sono grandi in proporzione alla mappa (u = MAPPA_U pixel della mappa), non allo schermo: su uno schermo grande erano giganteschi */
+const zoomMappa=()=>Math.max(V.W/MAPPA_W*MAPPA_ZOOM,V.H/MAPPA_H); /* si rifà a ogni fotogramma: se la finestra cambia grandezza la mappa la copre sempre tutta */
+/* strade: curve tra un paese e l'altro, misurate per camminarci sopra a velocità costante */
+function puntoStrada(i,t){const a=LUOGHI[i],b=LUOGHI[i+1],k=CURVE[i]||0,mx=(a.x+b.x)/2-(b.y-a.y)*k,my=(a.y+b.y)/2+(b.x-a.x)*k,u=1-t;return{x:u*u*a.x+2*u*t*mx+t*t*b.x,y:u*u*a.y+2*u*t*my+t*t*b.y};}
+const LSTRADA=LUOGHI.slice(1).map((_,i)=>{let L=0,p=puntoStrada(i,0);for(let s=1;s<=24;s++){const q=puntoStrada(i,s/24);L+=Math.hypot(q.x-p.x,q.y-p.y);p=q;}return L;});
+/* le nuvole che passano sopra la mappa: sparse una volta sola, sempre uguali (generatore con seme) */
+let semeM=7;const rndM=()=>(semeM=(semeM*16807)%2147483647)/2147483647;
+const NUVOLE=[];for(let n=0;n<7;n++)NUVOLE.push({x:rndM()*MAPPA_W,y:rndM()*MAPPA_H,s:.8+rndM()*.6});
+/* le miniature dei paesi arrivano da Gemini su fondo magenta: il magenta si toglie una volta sola quando servono (fondi/paese_*.jpg, ritagliate e rimpicciolite dagli originali in paesaggio/) */
+/* per ogni miniatura: alta h (in centesimi dello schermo) e il punto del disegno (fx, fy, in frazioni) che va sulla pastiglia: il prato davanti alla porta, la sabbia della spiaggetta */
+const PAESE_GAL={im:new Image(),h:46,fx:.5,fy:.65},PAESE_ORSO={im:new Image(),h:42,fx:.35,fy:.66,sfuma:110};PAESE_GAL.im.src='assets/fondi/paese_galugnananas.jpg';PAESE_ORSO.im.src='assets/fondi/paese_orso.jpg';
+function miniatura(c,p,x,y,u){const t=senzaMagenta(p.im,p.sfuma);if(!t)return;const h=p.h*u,w=h*t.width/t.height,s=c.imageSmoothingEnabled;c.imageSmoothingEnabled=true;c.drawImage(t,x-w*p.fx,y-h*p.fy,w,h);c.imageSmoothingEnabled=s;}
+function senzaMagenta(im,sfuma){if(im._t)return im._t;if(!im.complete||!im.width)return null;const o=document.createElement('canvas');o.width=im.width;o.height=im.height;const q=o.getContext('2d');q.drawImage(im,0,0);let d;try{d=q.getImageData(0,0,o.width,o.height);}catch(e){return im._t=o;}const p=d.data;
+ for(let i=0;i<p.length;i+=4){const m=Math.min(p[i],p[i+2])-p[i+1];if(m>20){p[i+3]=Math.round(255*clamp(1-(m-20)/70,0,1));p[i]-=m*.8;p[i+2]-=m*.8;}} /* dove il magenta si mescola al bordo resta un po' di colore, senza la sbavatura rosa */
+ if(sfuma){ /* l'acqua si fa trasparente piano piano verso l'esterno (distanza dal fondo, a due passate), così il mare della miniatura continua in quello della mappa; la roccia e la sabbia restano piene */
+  const W=o.width,H=o.height,D=new Float32Array(W*H);for(let i=0;i<W*H;i++)D[i]=p[i*4+3]<128?0:1e9;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;if(!D[i])continue;let v=D[i];if(x)v=Math.min(v,D[i-1]+1);if(y)v=Math.min(v,D[i-W]+1);if(x&&y)v=Math.min(v,D[i-W-1]+1.414);if(y&&x<W-1)v=Math.min(v,D[i-W+1]+1.414);if(!x||!y||x===W-1||y===H-1)v=Math.min(v,1);D[i]=v;}
+  for(let y=H-1;y>=0;y--)for(let x=W-1;x>=0;x--){const i=y*W+x;let v=D[i];if(x<W-1)v=Math.min(v,D[i+1]+1);if(y<H-1)v=Math.min(v,D[i+W]+1);if(x<W-1&&y<H-1)v=Math.min(v,D[i+W+1]+1.414);if(y<H-1&&x)v=Math.min(v,D[i+W-1]+1.414);D[i]=v;}
+  for(let i=0;i<W*H;i++){const j=i*4,acqua=clamp((p[j+2]-p[j]-5)/30,0,1);if(!acqua)continue;const k=clamp(D[i]/sfuma,0,1),a=k*k*(3-2*k);p[j+3]*=1-acqua*(1-a);}} /* solo dove il blu supera il rosso, cioè nell'acqua */
+ q.putImageData(d,0,0);return im._t=o;}
+const MP={pos:0,meta:0,cx:0,cy:0,libero:0,verso:1,passi:0,dopo:null};
+function quiMappa(){return Math.round(MP.pos);}
+/* --- disegni dei paesi: u è un centesimo dell'altezza dello schermo, (x,y) il piede del disegno --- */
+const INK='#2b2a33';
+function forma(c,pts,col,lw){c.beginPath();pts.forEach(([a,b],i)=>i?c.lineTo(a,b):c.moveTo(a,b));c.closePath();c.fillStyle=col;c.fill();c.lineWidth=lw;c.strokeStyle=INK;c.stroke();}
+function rett(c,x,y,w,h,col,lw){c.fillStyle=col;c.fillRect(x,y,w,h);c.lineWidth=lw;c.strokeStyle=INK;c.strokeRect(x,y,w,h);}
+function merli(c,x,y,w,u,n,col,lw){const m=w/(n*2-1);for(let i=0;i<n;i++)rett(c,x+i*2*m,y-u*1.6,m,u*1.6,col,lw);}
+function cilindro(c,x,y,w,h,col,ombra,lw){const r=w/2;c.beginPath();c.moveTo(x-r,y-h);c.lineTo(x-r,y);c.ellipse(x,y,r,r*.32,0,Math.PI,0,true);c.lineTo(x+r,y-h);c.closePath();c.fillStyle=col;c.fill();c.save();c.clip();c.fillStyle=ombra;c.fillRect(x+r*.35,y-h,r,h+r);c.restore();c.lineWidth=lw;c.strokeStyle=INK;c.stroke();}
+function ombraPaese(c,x,y,w,u){c.fillStyle='#00000030';c.beginPath();c.ellipse(x+u*1.5,y+u*.4,w,w*.22,0,0,7);c.fill();}
+const PAESI={
+ /* Galugnananas (Galugnano), il paese delle ananas: la miniatura dell'utente fatta con Gemini (castello-ananas, ananas giganti e ponti di corda su un'isoletta di roccia), con il prato davanti alla porta sulla pastiglia */
+ galugnananas(c,x,y,u){miniatura(c,PAESE_GAL,x,y+3.6*u,u);},
+ /* Torre dell'Orso, il livello del mare: la miniatura dell'utente, una baia a forma di C aperta a destra (roccia chiara, spiaggetta con la rete, l'acqua che esce verso il mare e sfuma in quello della mappa); la pastiglia sta sulla sabbia in basso, verso l'acqua, non sul campo da pallavolo, che copriva */
+ orsoAbisso(c,x,y,u){miniatura(c,PAESE_ORSO,x,y+3.6*u,u);},
+ lecce(c,x,y,u){const lw=u*.45,P='#f2d79e',S='#d9b06a';ombraPaese(c,x,y,u*22,u);
+  forma(c,[[x+14*u,y],[x+18*u,y-2.4*u],[x+18*u,y-14*u],[x+14*u,y-12*u]],S,lw); /* fianco in ombra */
+  rett(c,x-14*u,y-12*u,28*u,12*u,P,lw);for(let i=-3;i<=3;i++){if(!i)continue;rett(c,x+i*4*u-.8*u,y-11*u,1.6*u,10*u,'#fbe9c0',lw*.6);}
+  c.beginPath();c.moveTo(x-3*u,y);c.lineTo(x-3*u,y-6*u);c.arc(x,y-6*u,3*u,Math.PI,0);c.lineTo(x+3*u,y);c.closePath();c.fillStyle='#6b4a2e';c.fill();c.lineWidth=lw;c.strokeStyle=INK;c.stroke();
+  rett(c,x-15*u,y-14*u,30*u,2*u,S,lw);for(let i=0;i<9;i++)rett(c,x-13.6*u+i*3.3*u,y-13.6*u,.8*u,1.2*u,'#fbe9c0',lw*.4);
+  rett(c,x-10*u,y-25*u,20*u,11*u,P,lw);
+  c.beginPath();c.arc(x,y-19.5*u,4.2*u,0,7);c.fillStyle=S;c.fill();c.stroke();c.beginPath();for(let i=0;i<12;i++){const a=i*Math.PI/6;c.moveTo(x,y-19.5*u);c.lineTo(x+Math.cos(a)*4.2*u,y-19.5*u+Math.sin(a)*4.2*u);}c.lineWidth=lw*.5;c.stroke();c.beginPath();c.arc(x,y-19.5*u,1.4*u,0,7);c.fillStyle='#fbe9c0';c.fill();c.lineWidth=lw;c.stroke();
+  forma(c,[[x-11*u,y-25*u],[x-4*u,y-29*u],[x,y-31.5*u],[x+4*u,y-29*u],[x+11*u,y-25*u]],P,lw);c.beginPath();c.arc(x,y-31.8*u,1*u,0,7);c.fillStyle=S;c.fill();c.stroke();
+  /* la colonna di Sant'Oronzo */const cx=x+24*u;ombraPaese(c,cx,y,u*4,u);rett(c,cx-3*u,y-4*u,6*u,4*u,S,lw);rett(c,cx-1.2*u,y-27*u,2.4*u,23*u,P,lw);rett(c,cx-2.2*u,y-28.5*u,4.4*u,1.6*u,S,lw);c.beginPath();c.arc(cx,y-30.6*u,1.3*u,0,7);c.fillStyle='#7d8c96';c.fill();c.stroke();rett(c,cx-1*u,y-29.6*u,2*u,1.4*u,'#7d8c96',lw*.6);},
+ orso(c,x,y,u){const lw=u*.45,P='#ead29b',S='#c9a565';ombraPaese(c,x,y,u*10,u);
+  forma(c,[[x-8*u,y],[x+8*u,y],[x+6*u,y-20*u],[x-6*u,y-20*u]],P,lw);forma(c,[[x+3*u,y],[x+8*u,y],[x+6*u,y-20*u],[x+2.4*u,y-20*u]],S,lw);
+  rett(c,x-7.2*u,y-22.5*u,14.4*u,2.5*u,P,lw);merli(c,x-7.2*u,y-22.5*u,14.4*u,u,4,P,lw);
+  c.beginPath();c.moveTo(x-1.4*u,y-12*u);c.lineTo(x-1.4*u,y-15*u);c.arc(x,y-15*u,1.4*u,Math.PI,0);c.lineTo(x+1.4*u,y-12*u);c.closePath();c.fillStyle='#3a2c3a';c.fill();c.stroke();
+  rett(c,x-2.2*u,y-5*u,4.4*u,5*u,'#6b4a2e',lw);
+  /* un ombrellone e una barchetta sulla spiaggia accanto */const bx=x+13*u;c.lineWidth=lw;c.strokeStyle=INK;c.beginPath();c.moveTo(bx,y);c.lineTo(bx,y-8*u);c.stroke();forma(c,[[bx-5*u,y-7*u],[bx,y-10*u],[bx+5*u,y-7*u]],'#e8524a',lw);},
+ sorelle(c,x,y,u){const lw=u*.45;for(const[dx,h,w]of[[-5,13,7],[5,10,6]]){const sx=x+dx*u;c.fillStyle='#ffffffaa';c.beginPath();c.ellipse(sx,y,w*u*.9,w*u*.28,0,0,7);c.fill();
+  c.beginPath();c.moveTo(sx-w/2*u,y);c.bezierCurveTo(sx-w/2*u,y-h*.6*u,sx-w*.4*u,y-h*u,sx,y-h*u);c.bezierCurveTo(sx+w*.4*u,y-h*u,sx+w/2*u,y-h*.6*u,sx+w/2*u,y);c.closePath();c.fillStyle='#e8c88a';c.fill();c.save();c.clip();c.fillStyle='#c79b5b';c.fillRect(sx+w*.12*u,y-h*u,w*u,h*u);c.restore();c.lineWidth=lw;c.strokeStyle=INK;c.stroke();
+  c.beginPath();c.ellipse(sx,y-h*u+.6*u,w*.32*u,1.2*u,0,0,7);c.fillStyle='#6fae3f';c.fill();c.stroke();}},
+ otranto(c,x,y,u){const lw=u*.45,P='#dcbc80',S='#b8935a';ombraPaese(c,x,y,u*22,u);
+  rett(c,x-15*u,y-11*u,30*u,11*u,P,lw);merli(c,x-15*u,y-11*u,30*u,u,7,P,lw);
+  for(const dx of[-15,15]){cilindro(c,x+dx*u,y+.5*u,9*u,15*u,P,S,lw);merli(c,x+dx*u-4.5*u,y-14.5*u,9*u,u,3,P,lw);}
+  rett(c,x-4*u,y-17*u,8*u,17*u,P,lw);merli(c,x-4*u,y-17*u,8*u,u,3,P,lw);
+  c.beginPath();c.moveTo(x-2.4*u,y);c.lineTo(x-2.4*u,y-5*u);c.arc(x,y-5*u,2.4*u,Math.PI,0);c.lineTo(x+2.4*u,y);c.closePath();c.fillStyle='#3a2c3a';c.fill();c.stroke();
+  rett(c,x-.8*u,y-13*u,1.6*u,3*u,'#3a2c3a',lw*.6);
+  /* bandiera */c.beginPath();c.moveTo(x,y-18.6*u);c.lineTo(x,y-25*u);c.stroke();const o=Math.sin(G.t*4)*.6*u;forma(c,[[x,y-25*u],[x+5*u,y-24*u+o],[x,y-22*u]],'#e8524a',lw*.7);},
+ leuca(c,x,y,u){const lw=u*.45;ombraPaese(c,x,y,u*14,u);
+  rett(c,x-11*u,y-7*u,22*u,7*u,'#f4ecd7',lw);forma(c,[[x-12*u,y-7*u],[x-9*u,y-10*u],[x+9*u,y-10*u],[x+12*u,y-7*u]],'#c75d3c',lw);for(const dx of[-7,7])rett(c,x+dx*u-1.2*u,y-5*u,2.4*u,2.6*u,'#5b7fa6',lw*.6);
+  forma(c,[[x-3.6*u,y-9*u],[x+3.6*u,y-9*u],[x+2.6*u,y-34*u],[x-2.6*u,y-34*u]],'#fbf8ee',lw);c.fillStyle='#dcd6c4';c.beginPath();c.moveTo(x+1.2*u,y-9*u);c.lineTo(x+3.6*u,y-9*u);c.lineTo(x+2.6*u,y-34*u);c.lineTo(x+1*u,y-34*u);c.fill();for(const k of[16,25])rett(c,x-3.2*u+k*.04*u,y-k*u,6.4*u-k*.08*u,2*u,'#e8524a',lw*.6); /* fianco in ombra e due fasce rosse */
+  c.beginPath();c.moveTo(x-3.6*u,y-9*u);c.lineTo(x-2.6*u,y-34*u);c.lineTo(x+2.6*u,y-34*u);c.lineTo(x+3.6*u,y-9*u);c.lineWidth=lw;c.strokeStyle=INK;c.stroke();
+  rett(c,x-4*u,y-35.4*u,8*u,1.6*u,INK,lw);const acceso=.5+.5*Math.sin(G.t*3);rett(c,x-2.4*u,y-39.4*u,4.8*u,4*u,`rgb(255,${200+40*acceso|0},${80*acceso|0})`,lw);
+  c.beginPath();c.moveTo(x-3*u,y-39.4*u);c.quadraticCurveTo(x,y-43*u,x+3*u,y-39.4*u);c.closePath();c.fillStyle='#e8524a';c.fill();c.stroke();
+  c.save();c.globalAlpha=.18+.12*acceso;c.fillStyle='#fff3a0';const a=G.t*1.4,L=26*u;c.beginPath();c.moveTo(x,y-37.4*u);c.lineTo(x+Math.cos(a)*L,y-37.4*u+Math.sin(a)*L*.25-3*u);c.lineTo(x+Math.cos(a)*L,y-37.4*u+Math.sin(a)*L*.25+3*u);c.closePath();c.fill();c.restore();},
+ gallipoli(c,x,y,u){const lw=u*.45,P='#dcc08a',S='#b89a62';ombraPaese(c,x,y,u*20,u);
+  for(const[dx,h,w]of[[-16,9,7],[-10,12,6],[10,10,7],[16,7,6]])rett(c,x+dx*u-w/2*u,y-h*u,w*u,h*u,'#f7f3ea',lw);
+  c.beginPath();c.arc(x-10*u,y-12*u,3*u,Math.PI,0);c.fillStyle='#e9c86a';c.fill();c.lineWidth=lw;c.strokeStyle=INK;c.stroke();
+  cilindro(c,x,y+.5*u,18*u,11*u,P,S,lw);merli(c,x-9*u,y-10.5*u,18*u,u,5,P,lw);
+  rett(c,x-1.6*u,y-4*u,3.2*u,4*u,'#3a2c3a',lw*.7);for(const dx of[-6,5])rett(c,x+dx*u,y-8*u,1.4*u,2*u,'#3a2c3a',lw*.5);},
+};
+/* --- il resto della mappa --- */
+function pastiglia(c,x,y,u,stato,sel){const lw=u*.45,w=4.6*u,h=2.4*u,col=stato==='chiuso'?'#a7a7ad':stato==='fatto'?'#e8524a':'#f6c445';
+ c.fillStyle=INK;c.beginPath();c.ellipse(x,y+1.1*u,w+lw/2,h+lw/2,0,0,7);c.fill();c.fillStyle=stato==='chiuso'?'#6e6e74':stato==='fatto'?'#a8302b':'#c48a17';c.beginPath();c.ellipse(x,y+1*u,w,h,0,0,7);c.fill();
+ c.fillStyle=col;c.beginPath();c.ellipse(x,y,w,h,0,0,7);c.fill();c.lineWidth=lw;c.strokeStyle=INK;c.stroke();c.fillStyle='#ffffff88';c.beginPath();c.ellipse(x-1.4*u,y-.7*u,1.6*u,.6*u,0,0,7);c.fill();
+ if(stato==='chiuso'){rett(c,x-1.2*u,y-.9*u,2.4*u,1.8*u,'#e9e9ee',lw*.5);c.beginPath();c.arc(x,y-.9*u,.8*u,Math.PI,0);c.lineWidth=lw*.6;c.stroke();}
+ if(sel){c.save();c.globalAlpha=.5+.5*Math.sin(G.t*6);c.lineWidth=u*.6;c.strokeStyle='#fff';c.beginPath();c.ellipse(x,y,w+2*u,h+1.4*u,0,0,7);c.stroke();c.restore();}}
+function statoLuogo(i){const l=LUOGHI[i];if(i>(S.mappa|0)||l.liv==null)return'chiuso';return(S.fatti||[]).includes(l.liv)?'fatto':'aperto';}
+function scritta(c,t,x,y,z,col){c.font=`400 ${z}px "Bowlby One","Arial Black",sans-serif`;c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';c.lineWidth=z*.28;c.strokeStyle=INK;c.strokeText(t,x,y);c.fillStyle=col||'#fff';c.fillText(t,x,y);}
+function puntoMatteo(){const i=Math.min(Math.floor(MP.pos),LUOGHI.length-2);return puntoStrada(i,MP.pos-i);}
+function passoMappa(dt){
+ if(Math.abs(MP.meta-MP.pos)>1e-4){const i=MP.meta>MP.pos?Math.floor(MP.pos+1e-6):Math.ceil(MP.pos-1e-6)-1,v=320*dt/LSTRADA[i],d=Math.sign(MP.meta-MP.pos);MP.pos=d>0?Math.min(MP.meta,MP.pos+v):Math.max(MP.meta,MP.pos-v);MP.passi+=dt;
+  const p=puntoStrada(i,MP.pos-i),q=puntoStrada(i,clamp(MP.pos-i+d*.02,0,1));if(Math.abs(q.x-p.x)>.5)MP.verso=Math.sign(q.x-p.x);
+  if(Math.abs(MP.meta-MP.pos)<1e-4){MP.pos=MP.meta;S.qui=MP.meta;salva();cartaMappa();suono(520,.12,'triangle',.06,780);if(MP.dopo){const f=MP.dopo;MP.dopo=null;f();}}}
+ const m=puntoMatteo(),z=MP.z,W2=V.W/z/2,H2=V.H/z/2;MP.libero=Math.max(0,MP.libero-dt);
+ if(!MP.libero){MP.cx=lerp(MP.cx,m.x,1-Math.exp(-dt*3));MP.cy=lerp(MP.cy,m.y-40,1-Math.exp(-dt*3));}
+ MP.cx=clamp(MP.cx,W2,Math.max(W2,MAPPA_W-W2));MP.cy=clamp(MP.cy,H2,Math.max(H2,MAPPA_H-H2));
+ for(const n of NUVOLE){n.x+=dt*14;if(n.x>MAPPA_W+300)n.x=-300;}
+}
+/* la mappa si prepara una volta alla grandezza vera sullo schermo, con lo smusso: rimpicciolita al volo senza smussare veniva seghettata */
+function mappaPronta(z){if(!MAPPA.complete||!MAPPA.width)return null;const k=z*V.dpr,w=Math.round(MAPPA_W*k),h=Math.round(MAPPA_H*k);if(MP.tela&&MP.tela.width===w&&MP.tela.height===h)return MP.tela;
+ const o=document.createElement('canvas');o.width=w;o.height=h;const q=o.getContext('2d');q.imageSmoothingEnabled=true;q.imageSmoothingQuality='high';q.drawImage(MAPPA,0,0,w,h);MP.tela=o;return o;}
+function disegnaMappa(dt){
+ MP.z=zoomMappa();passoMappa(dt);const c=ctx2,z=MP.z,u=z*MAPPA_U,uS=Math.min(V.H,V.W/2)/100,W=V.W,H=V.H,sx=x=>(x-MP.cx)*z+W/2,sy=y=>(y-MP.cy)*z+H/2,vede=(x,y,m)=>sx(x)>-m&&sx(x)<W+m&&sy(y)>-m&&sy(y)<H+m*1.6;
+ c.setTransform(V.dpr,0,0,V.dpr,0,0);c.fillStyle='#2c5f86';c.fillRect(0,0,W,H);const tm=mappaPronta(z);if(tm)c.drawImage(tm,sx(0),sy(0),MAPPA_W*z,MAPPA_H*z);
+ /* strade: quelle aperte piene, quelle ancora chiuse tratteggiate */
+ c.lineCap='round';for(let i=0;i<LUOGHI.length-1;i++){const aperta=i+1<=(S.mappa|0);c.beginPath();for(let s=0;s<=24;s++){const q=puntoStrada(i,s/24);s?c.lineTo(sx(q.x),sy(q.y)):c.moveTo(sx(q.x),sy(q.y));}
+  if(aperta){c.lineWidth=u*2.2;c.strokeStyle='#5b4630';c.stroke();c.lineWidth=u*1.3;c.strokeStyle='#e6d3a0';c.stroke();}else{c.setLineDash([u*1.6,u*1.6]);c.lineWidth=u*.8;c.strokeStyle='#fff6dcb0';c.stroke();c.setLineDash([]);}}
+ /* tutto quello che sta in piedi si disegna dal fondo verso chi guarda */
+ const cose=[];
+ LUOGHI.forEach((l,i)=>{if(vede(l.x,l.y,40*u))cose.push({y:l.y-5,f:()=>PAESI[l.dis](c,sx(l.x),sy(l.y)-3.6*u,u)});});
+ cose.sort((a,b)=>a.y-b.y).forEach(o=>o.f());
+ const sel=quiMappa();LUOGHI.forEach((l,i)=>{pastiglia(c,sx(l.x),sy(l.y)+.6*u,u,statoLuogo(i),i===MP.meta&&Math.abs(MP.pos-MP.meta)<1e-4);scritta(c,l.nome,sx(l.x),sy(l.y)+3.4*u+uS*1.8,uS*2.6);});
+ /* Matteo che cammina sulla strada */
+ const m=puntoMatteo(),mx=sx(m.x),my=sy(m.y)+.2*u,r=10*u/3.8,va=Math.abs(MP.meta-MP.pos)>1e-4;c.fillStyle='#00000040';c.beginPath();c.ellipse(mx,my,r*.9,r*.28,0,0,7);c.fill();
+ if(va)passiSpr(c,mx,my,r,6+Math.floor(MP.passi*8)%4,MP.verso,0,0);else fermoSpr(c,mx,my,r,MP.verso,Math.sin(G.t*3)*.015,0);
+ /* nuvole sopra a tutto, con la loro ombra */
+ for(const n of NUVOLE){if(!vede(n.x,n.y,120))continue;const x=sx(n.x),y=sy(n.y),s=n.s*u;c.fillStyle='#0000001f';c.beginPath();c.ellipse(x+2*s,y+9*s,9*s,2.2*s,0,0,7);c.fill();
+  const pal=[[-4.5,0,3.2],[0,-2,4.4],[4.5,0,3.4],[0,1,3.4]];c.fillStyle='#d5e6f2';pal.forEach(([a,b,r])=>{c.beginPath();c.arc(x+a*s,y+b*s+.8*s,r*s,0,7);c.fill();});c.fillStyle='#fff';pal.forEach(([a,b,r])=>{c.beginPath();c.arc(x+a*s,y+b*s,r*s,0,7);c.fill();});}
+ c.save();c.globalAlpha=.55;scritta(c,'Mare Adriatico',sx(1180),sy(170),uS*3.2,'#d8ecff');scritta(c,'Mar Ionio',sx(230),sy(1420),uS*3.2,'#d8ecff');c.restore();
+}
+/* il riquadro in basso: il paese dove sta Matteo, il suo livello e Gioca */
+function cartaMappa(){const i=quiMappa(),l=LUOGHI[i],st=statoLuogo(i),b=$('mGioca');$('mNome').textContent=l.nome;
+ $('mLivello').textContent=l.liv==null?'Prossimamente…':'Livello '+(l.liv+1)+' · '+MONDI[l.liv].nome+' · boss '+BOSS[l.liv].nome+(st==='fatto'?' ✓':'');b.disabled=l.liv==null||i>(S.mappa|0);b.hidden=l.liv==null;const f=st==='fatto';b.textContent=f?'Livello':'Gioca';$('mBoss').hidden=!f;}
+function vaiMappa(avanza){V.ts=V.ts0;G.stato='mappa';G.modo='mappa';G.guida=false;giocoUI(false);$('grande').hidden=true;$('avviso').hidden=true;mostra('sMappa');MP.z=zoomMappa();
+ const q=clamp(S.qui|0,0,S.mappa|0);MP.pos=MP.meta=q;const m=puntoMatteo();MP.cx=m.x;MP.cy=m.y;MP.libero=0;MP.dopo=null;cartaMappa();
+ if(avanza&&q<(S.mappa|0))setTimeout(()=>{if(G.modo==='mappa')vaiA(S.mappa|0);},700); /* dopo aver battuto un boss Matteo va da solo al paese dopo */}
+function vaiA(i){i=clamp(i,0,S.mappa|0);if(i===MP.meta&&Math.abs(MP.pos-i)<1e-4)return false;MP.meta=i;MP.libero=0;return true;}
+/* nei paesi già battuti si può rigiocare tutto il livello o affrontare solo il boss (G.soloBoss: perdendo si riprova solo lui) */
+function giocaQui(soloBoss){const i=quiMappa(),l=LUOGHI[i];if(Math.abs(MP.pos-MP.meta)>1e-4||l.liv==null||i>(S.mappa|0))return;if(soloBoss&&statoLuogo(i)!=='fatto')return;audioOn();bloccaOrizzontale();dissolvi(()=>gioca(l.liv,soloBoss===true));}
+function gioca(liv,soloBoss){iniziaRun(null,liv);G.soloBoss=soloBoss;if(soloBoss)entraBoss(liv);}
+function tocco(x,y){const z=MP.z,u=z*MAPPA_U,sx=a=>(a-MP.cx)*z+V.W/2,sy=b=>(b-MP.cy)*z+V.H/2;let best=-1;
+ LUOGHI.forEach((l,i)=>{const px=sx(l.x),py=sy(l.y);if(Math.abs(x-px)<16*u&&y>py-40*u&&y<py+9*u)best=i;});if(best<0)return;
+ if(best>(S.mappa|0)){avviso(LUOGHI[best].liv==null?'Prossimamente!':'Prima batti il boss di '+LUOGHI[best-1].nome,1800);return;}
+ if(!vaiA(best))giocaQui();}
+{const sm=$('sMappa');let giu=null;
+ sm.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;giu={x:puntoX(e),y:puntoY(e),cx:MP.cx,cy:MP.cy,mosso:false};try{sm.setPointerCapture(e.pointerId);}catch(x){}});
+ sm.addEventListener('pointermove',e=>{if(!giu)return;const dx=puntoX(e)-giu.x,dy=puntoY(e)-giu.y;if(Math.hypot(dx,dy)>10)giu.mosso=true;if(giu.mosso){MP.libero=4;MP.cx=giu.cx-dx/MP.z;MP.cy=giu.cy-dy/MP.z;}});
+ sm.addEventListener('pointerup',e=>{if(giu&&!giu.mosso)tocco(puntoX(e),puntoY(e));giu=null;});sm.addEventListener('pointercancel',()=>giu=null);}
 /* ---------- FLUSSO ---------- */
-const sezioni=['sMenu','sAmici','sPausa','sFine','sGuida','sConsiglio'];
+const sezioni=['sMappa','sMenu','sAmici','sPausa','sFine','sGuida','sConsiglio'];
 function mostra(id){sezioni.forEach(s=>$(s).hidden=s!==id);}
 function hud(){const n=Math.max(0,G.cuori);const cu=$('cuori');cu.textContent='';for(let i=0;i<(VITE_INFINITE?1:n);i++){const m=document.createElement('img');m.src=icona('hud_heart');m.alt='';cu.append(m);}if(VITE_INFINITE)cu.append(' ∞');$('icMoneta').src=PIZZA.src;$('cuori').setAttribute('aria-label',n+' cuori');}
 let tAvv=0;function avviso(t,ms){const a=$('avviso');a.textContent=t;a.hidden=false;clearTimeout(tAvv);tAvv=setTimeout(()=>a.hidden=true,ms||2000);}
@@ -1196,7 +1337,7 @@ function dissolvi(fn){G.stato='velo';$('velo').classList.add('on');setTimeout(()
 function banner(t){$('grande').textContent=t;$('grande').hidden=false;$('avviso').hidden=true;G.pronti=1.4;G.stato='pronti';}
 /* con ?livello=2 nell'indirizzo la partita parte da lì, per provare un mondo da solo */
 const QS=new URLSearchParams(location.search),BOSS_SUBITO=QS.has('boss'),PARTENZA=Math.min(Math.max(0,(parseInt(QS.get('livello'))||parseInt(QS.get('boss'))||1)-1),MONDI.length-1); /* con ?boss=2 si entra subito nella stanza del boss */
-function iniziaRun(prova){Object.assign(G,{fiato:1,dettoFiato:false,carica:0,avvisato:false,base:0,cuori:MAXC,gettoni:0,uccisi:0,tempo:0,avanz:0,scossa:0,jelly:0,visti:G.visti||0});mostra('');giocoUI(true);hud();aggBarra();$('gett').textContent='0';entraCorsa(Array.isArray(prova)?0:PARTENZA,Array.isArray(prova)?prova:null);if(BOSS_SUBITO&&!Array.isArray(prova))entraBoss(PARTENZA);sveglia();}
+function iniziaRun(prova,liv){const L=typeof liv==='number'?liv:PARTENZA;Object.assign(G,{soloBoss:false,fiato:1,dettoFiato:false,carica:0,avvisato:false,base:0,cuori:MAXC,gettoni:0,uccisi:0,tempo:0,avanz:0,scossa:0,jelly:0,visti:G.visti||0});mostra('');giocoUI(true);hud();aggBarra();$('gett').textContent='0';entraCorsa(Array.isArray(prova)?0:L,Array.isArray(prova)?prova:null);if(BOSS_SUBITO&&!Array.isArray(prova)&&typeof liv!=='number')entraBoss(PARTENZA);sveglia();}
 function entraCorsa(i,prova){
  G.modo='2d';G.mondo=i;M=costruisci(i,prova);M.prova=!!prova;goo.length=0;fumi.length=0;polveri.length=0;G.combo=0;G.comboT=0;
  G.fiato=1;Object.assign(P2,{R:R_NORMALE,boomAria:false,gFermo:false,eraBomba:G.carica>=1,gonfioT:0,sgonfiaT:0,mangia:0,stanco:0,slancio:0,x:M.start.x,y:M.start.y,px:M.start.x,py:M.start.y,vx:0,vy:0,scatto:0,cd:0,inv:0,W:0,Wv:0,sx:M.start.x,sy:M.start.y,verso:1,ultimoSuolo:{x:0,y:1},rotola:false,carica:0,atterra:0,fermoT:0});
@@ -1225,21 +1366,23 @@ function entraBoss(i){
 /* battuto il boss si resta nella stanza, con lui a terra: si apre un'uscita a destra e una freccia la indica; fuori c'è la pozza del mondo dopo */
 function apriUscita(){M.uscita=true;G.stato='gioco';M.nemici.forEach(n=>n.vivo=false);[2,3,4].forEach(y=>M.g[y][M.w-1]=' ');(M.casse||[]).forEach(q=>{if(M.g[q.y][q.x]==='C'){M.g[q.y][q.x]=' ';schizzi2(q.x,q.y,10,'#c28a48',5);}});$('bossBox').hidden=true;sfx('door')||suono(140,.5,'sawtooth',.06,70);avviso('La porta è aperta: vai avanti!',2400);}
 function frecciaUscita(c,sx,sy,ts){c.fillStyle='#140c06';c.fillRect(sx(M.w-1)-ts/2,sy(4)-ts/2,ts+1,ts*3);const x=sx(M.w-3.4)+Math.sin(G.t*6)*ts*.22,y=sy(3.4),L=ts*1.15,A=ts*.34;c.beginPath();c.moveTo(x-L/2,y-A/2);c.lineTo(x+L*.02,y-A/2);c.lineTo(x+L*.02,y-A*1.25);c.lineTo(x+L/2+A*.5,y);c.lineTo(x+L*.02,y+A*1.25);c.lineTo(x+L*.02,y+A/2);c.lineTo(x-L/2,y+A/2);c.closePath();c.lineJoin='round';c.lineWidth=Math.max(3,ts*.13);c.strokeStyle='#2a1a10';c.stroke();c.fillStyle='#f6c445';c.fill();}
-function dopoBoss(){const i=G.mondo;G.base=G.avanz;G.cuori++;hud();if(i>=MONDI.length-1){fine(true);return;}apriUscita();}
+/* ogni livello sta da solo: battuto il boss si torna alla mappa e si apre il paese dopo (l'uscita verso la pozza, apriUscita, non si usa più) */
+function dopoBoss(){G.base=G.avanz;G.cuori++;hud();fine(true);}
+function sblocca(liv){S.fatti=S.fatti||[];if(!S.fatti.includes(liv))S.fatti.push(liv);const i=LUOGHI.findIndex(l=>l.liv===liv);if(i>=0){S.mappa=Math.max(S.mappa|0,Math.min(i+1,LUOGHI.length-1));S.qui=i;}salva();}
 let lucchetto=null;async function sveglia(){try{if(navigator.wakeLock&&!lucchetto){lucchetto=await navigator.wakeLock.request('screen');lucchetto.addEventListener('release',()=>lucchetto=null);}}catch(e){}}
 function metri(){return Math.round(G.avanz);}
 function incassa(){S.gettoni+=G.gettoni;G.gettoni=0;if(metri()>S.record)S.record=metri();salva();}
 function vaiMenu(){V.ts=V.ts0;G.stato='menu';G.modo='menu';giocoUI(false);$('grande').hidden=true;$('avviso').hidden=true;mostra('sMenu');const r=$('record');r.hidden=!S.record;r.textContent='Record: '+S.record+' metri';}
 function pausa(){mollaComandi();if(G.stato!=='gioco')return;G.stato='pausa';mostra('sPausa');}
 function fine(vinto){
- if(G.stato==='esito'||G.stato==='fineAtt')return;G.stato='fineAtt';G.finT=vinto?.9:.6;G.esito={vinto,gett:G.gettoni,m:metri()};incassa();suono(vinto?523:196,.5,'triangle',.13,vinto?1046:98);
+ if(G.stato==='esito'||G.stato==='fineAtt')return;G.stato='fineAtt';G.finT=vinto?.9:.6;G.esito={vinto,gett:G.gettoni,m:metri()};if(vinto)sblocca(G.mondo);incassa();suono(vinto?523:196,.5,'triangle',.13,vinto?1046:98);
 }
 function mostraFine(){
  const e=G.esito;giocoUI(false);G.stato='esito';
  $('fineTitolo').textContent=e.vinto?'Hai battuto '+BOSS[G.mondo].nome+'!':'Fine della corsa';
  const t=Math.round(G.tempo),mm=Math.floor(t/60),ss=String(t%60).padStart(2,'0');
- $('fineTesto').textContent=`${amico().nome} ha rotolato per ${e.m} metri in ${mm}:${ss}, ha eliminato ${G.uccisi===1?'1 nemico':G.uccisi+' nemici'} e ha mangiato ${e.gett} bocconi.`+(e.vinto?'':' Si riparte dall’inizio.');
- const b=$('bAvanti');b.textContent=e.vinto?'Gioca ancora':'Ricomincia';b.onclick=iniziaRun;mostra('sFine');
+ $('fineTesto').textContent=`${amico().nome} ha rotolato per ${e.m} metri in ${mm}:${ss}, ha eliminato ${G.uccisi===1?'1 nemico':G.uccisi+' nemici'} e ha mangiato ${e.gett} bocconi.`+(e.vinto?'':' Riprova il livello dall’inizio.');
+ const b=$('bAvanti'),l=G.mondo;b.textContent=e.vinto?'Mappa':'Riprova';const sb=!!G.soloBoss;b.onclick=e.vinto?()=>vaiMappa(true):()=>gioca(l,sb);$('bTappe').hidden=e.vinto;mostra('sFine');
 }
 
 /* ---------- MENU ---------- */
@@ -1262,17 +1405,18 @@ async function bloccaOrizzontale(){try{if(!document.fullscreenElement&&document.
 if(PARTENZA||BOSS_SUBITO)['pointerdown','keydown'].forEach(e=>addEventListener(e,()=>audioOn(),{once:true}));
 /* il browser concede lo schermo intero solo dopo un tocco: nei link diretti non c'è Gioca, quindi si entra al primo tocco. Serve pointerup, sul telefono pointerdown non basta */
 if(PARTENZA||BOSS_SUBITO)addEventListener('pointerup',()=>bloccaOrizzontale(),{once:true});
-$('bGioca').onclick=()=>{audioOn();bloccaOrizzontale();if((S.guidaVista|0)>=4||PARTENZA||BOSS_SUBITO)iniziaRun();else apriGuida(iniziaRun);};
+$('bGioca').onclick=()=>{audioOn();bloccaOrizzontale();if((S.guidaVista|0)>=4||PARTENZA||BOSS_SUBITO)vaiMappa();else apriGuida(()=>vaiMappa());};
+$('mGioca').onclick=()=>giocaQui(false);$('mBoss').onclick=()=>giocaQui(true);$('mMenu').onclick=()=>vaiMenu();
 $('bGuida').onclick=()=>{audioOn();apriGuida(null);};
 $('bAmici').onclick=()=>{audioOn();disegnaAmici();mostra('sAmici');};
 $('amiciChiudi').onclick=()=>mostra('sMenu');
 $('pausa').onclick=pausa;
 $('consAvanti').onclick=chiudiConsiglio;
 $('bRiprendi').onclick=()=>{mostra('');G.stato='gioco';};
-$('bEsci').onclick=()=>{incassa();vaiMenu();};
+$('bEsci').onclick=()=>{incassa();vaiMappa();};
 $('bAudio').onclick=()=>{S.audio=!S.audio;$('bAudio').textContent='Audio: '+(S.audio?'sì':'no');audioOn();salva();};
 $('bAudio').textContent='Audio: '+(S.audio?'sì':'no');
-$('bTappe').onclick=vaiMenu;
+$('bTappe').onclick=()=>vaiMappa();
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pausa();else{lucchetto=null;if(G.stato==='gioco'||G.stato==='pausa')sveglia();}});
 
 /* ---------- CICLO ---------- */
@@ -1299,6 +1443,7 @@ function ciclo(ora){
  if(G.stato==='pausa')return;
  G.t+=dt;
  if(G.modo==='menu'){if(G.guida)disegnaGuida();else disegnaMenu(dt);return;}
+ if(G.modo==='mappa'){if(G.guida)disegnaGuida();else disegnaMappa(dt);return;}
  leggiInput(dt);
  if(G.stato==='pronti'&&M&&M.boss){if(M.intro)introBoss(dt);else P2.animT+=dt;}
  if(G.stato==='pronti'&&M&&M.boss&&M.boss.cfg.palla&&G.pronti<SFIDA_T)$('grande').hidden=true;
@@ -1317,5 +1462,5 @@ misure2d();vestiPalla();vaiMenu();
 FOGLIO.addEventListener('load',()=>{vestiPalla();});KIT.addEventListener('load',hud);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(vestiPalla);
 requestAnimationFrame(ciclo);
-window.__rotolamici={azione,G,P2,V,get M(){return M},iniziaRun,entraBoss,entraCorsa,IN,PEZZI,ARENE,USO};
+window.__rotolamici={vaiMappa,MP,LUOGHI,S,azione,G,P2,V,get M(){return M},iniziaRun,entraBoss,entraCorsa,IN,PEZZI,ARENE,USO};
 })();
