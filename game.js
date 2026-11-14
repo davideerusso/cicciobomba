@@ -696,11 +696,20 @@ function disegna2d(){
  if(p.slancio>0&&!riduci){c.strokeStyle='#ffffffaa';c.lineWidth=3;for(let i=0;i<3;i++){const yy=sy(p.y-.3+i*.3),xx=sx(p.x-Math.sign(p.vx)*(.8+i*.25));c.beginPath();c.moveTo(xx,yy);c.lineTo(xx-Math.sign(p.vx)*ts*(.6+i*.2),yy);c.stroke();}}
  for(const q of goo){c.fillStyle=q.c;c.globalAlpha=clamp(q.v*2.4,0,1);c.beginPath();c.arc(sx(q.x),sy(q.y),q.r*ts,0,6.3);c.fill();}c.globalAlpha=1;
 }
+/* il fondo del menu segue il livello più avanti che si è aperto sulla mappa: gli ananas del livello 1 (cielo, ananas coi ponti e la buccia nuova coi ciuffi, come nella corsa) o la spiaggia della Baia d'Oriente del livello 2 (il fondale col mare e la sabbia col suo bordo). Il terreno scorre piano */
 function disegnaMenu(dt){
- const c=ctx2,m=MONDI[0],ts=V.ts,W=V.W,H=V.H;if(!riduci)V.cx+=dt*.5;
- c.setTransform(V.dpr,0,0,V.dpr,0,0);fondale(c,m);
- const base=H*.86,cols=Math.ceil(W/ts)+2,dx=-(V.cx*ts%ts);
- for(let y=0;y*ts<H-base+ts;y++)for(let i=0;i<cols;i++)sp(c,'terrain_sand_block_'+(y?'center':'top'),dx+i*ts,base+y*ts,ts+.8,ts+.8);
+ const c=ctx2,ts=V.ts,W=V.W,H=V.H,dpr=V.dpr||1,base=H*.86,liv=Math.max(0,...LUOGHI.filter((l,i)=>i<=(S.mappa|0)&&l.liv!=null).map(l=>l.liv));if(!riduci)V.cx+=dt*.5;
+ c.setTransform(dpr,0,0,dpr,0,0);
+ if(liv>=1){c.fillStyle='#3d7f93';c.fillRect(0,0,W,H);if(!fondaleBaia(c,W,H,H*.6))fondale(c,MONDI[0]);
+  if(SABBIA.complete&&SABBIA.width){const p=murTex(c,MAT_SABBIA,Math.round(SABBIA_TEX*ts*dpr));p.setTransform(new DOMMatrix([1/dpr,0,0,1/dpr,-V.cx*ts,base]));c.fillStyle=p;c.fillRect(0,base,W,H-base);}else{c.fillStyle='#e9b46a';c.fillRect(0,base,W,H-base);}
+  const P=BORDO_SAB;if(P.im.complete&&P.im.width){const kd=Math.round(ts*dpr)/BORDO_C,tb=muroPronto(P,kd),k=ts/BORDO_C,L=BORDO_W*k,o=((V.cx*ts)%L+L)%L;for(let x=-o;x<W;x+=L)c.drawImage(tb,BORDO_A*kd,0,BORDO_W*kd,P.im.height*kd,x,base-BORDO_SU*k,L+.6,P.im.height*k);}
+  return;}
+ fondale(c,MONDI[0]);
+ if(!BUCCIA.complete||!BUCCIA.width){c.fillStyle='#c98a2e';c.fillRect(0,base,W,H-base);return;}
+ const p=murTex(c,MAT_BUCCIA,Math.round(BUCCIA_TEX*ts*dpr));p.setTransform(new DOMMatrix([1/dpr,0,0,1/dpr,-V.cx*ts,base]));c.fillStyle=p;c.fillRect(0,base,W,H-base);
+ c.fillStyle=BUCCIA_LINEA;c.fillRect(0,base-1,W,Math.max(1.5,ts*.035)+1);
+ if(!CIUFFI.im.complete||!CIUFFI.im.width)return;const kd=CIUFFI_Z*ts*dpr/CIUFFI_K,tc=muroPronto(CIUFFI,kd),k=CIUFFI_K*kd,x0=Math.floor(V.cx)-1; /* i ciuffi come sulle cime della corsa: su metà delle caselle, scelti dalla posizione */
+ for(let x=x0;x<x0+W/ts+3;x++){const h=Math.imul(x*73856093^7*19349663,2654435761)>>>0;if(h%100>=50)continue;const q=CIUFFI_R[(h>>>8)%CIUFFI_R.length],w=q[2]*CIUFFI_Z*ts,hh=q[3]*CIUFFI_Z*ts,X=(x+.5-V.cx+((h>>>16)%100/100-.5)*.5)*ts;c.drawImage(tc,q[0]*k,q[1]*k,q[2]*k,q[3]*k,X-w/2,base-hh+ts*.015,w,hh);}
 }
 
 /* ---------- MARE (mondo 2): caselle, creature e fondale disegnati nel codice. Le caselle sono provvisorie: per metterne altre basta cambiare mareTile ---------- */
